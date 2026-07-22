@@ -25,6 +25,7 @@ interface RequestCardProps {
   hideSaveButton?: boolean;
   requesterCompletedAt?: string | null;
   ownerCompletedAt?: string | null;
+  completedAt?: string | null;
   onRequestChange?: (request: RequestRow) => void;
 }
 
@@ -38,6 +39,7 @@ export function RequestCard({
   hideSaveButton = false,
   requesterCompletedAt = null,
   ownerCompletedAt = null,
+  completedAt = null,
   onRequestChange,
 }: RequestCardProps) {
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +49,9 @@ export function RequestCard({
     !requesterCompletedAt;
   const waitingForProvider = status === "confirmed" && requesterCompletedAt && !ownerCompletedAt;
   const providerCompletedFirst = status === "confirmed" && ownerCompletedAt && !requesterCompletedAt;
+  const completedDateLabel = completedAt
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(completedAt))
+    : null;
 
   async function handleComplete() {
     setSubmitting(true);
@@ -97,6 +102,14 @@ export function RequestCard({
                 {submitting ? "Completing..." : "Complete"}
               </Button>
             </div>
+          )}
+        </div>
+      )}
+      {status === "completed" && (
+        <div className="rounded-xl border border-border bg-card p-3">
+          <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+          {completedDateLabel && (
+            <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
           )}
         </div>
       )}

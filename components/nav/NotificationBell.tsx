@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, CheckCircle2, XCircle } from "lucide-react";
+import { Bell, CheckCircle2, Inbox, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getUnseenResponses, markResponsesSeen } from "@/lib/queries/requests";
+import {
+  getUnseenResponses,
+  getUnseenTutorRequestsForOwner,
+  markResponsesSeen,
+  markTutorRequestsSeenByOwner,
+} from "@/lib/queries/requests";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,15 +27,23 @@ interface NotificationBellProps {
 }
 
 export function NotificationBell({ profileId }: NotificationBellProps) {
-  const [unseen, setUnseen] = useState<RequestRow[]>([]);
+  const [unseenResponses, setUnseenResponses] = useState<RequestRow[]>([]);
+  const [unseenTutorRequests, setUnseenTutorRequests] = useState<RequestRow[]>([]);
   const [open, setOpen] = useState(false);
+  const unseenCount = unseenResponses.length + unseenTutorRequests.length;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const supabase = createClient();
-      const rows = await getUnseenResponses(supabase, profileId);
-      if (!cancelled) setUnseen(rows);
+      const [responses, tutorRequests] = await Promise.all([
+        getUnseenResponses(supabase, profileId),
+        getUnseenTutorRequestsForOwner(supabase, profileId),
+      ]);
+      if (!cancelled) {
+        setUnseenResponses(responses);
+        setUnseenTutorRequests(tutorRequests);
+      }
     }
     load();
     return () => {
@@ -40,10 +53,14 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
 
   async function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (!next && unseen.length > 0) {
+    if (!next && unseenCount > 0) {
       const supabase = createClient();
-      await markResponsesSeen(supabase);
-      setUnseen([]);
+      await Promise.all([
+        unseenResponses.length > 0 ? markResponsesSeen(supabase) : Promise.resolve(),
+        unseenTutorRequests.length > 0 ? markTutorRequestsSeenByOwner(supabase, profileId) : Promise.resolve(),
+      ]);
+      setUnseenResponses([]);
+      setUnseenTutorRequests([]);
     }
   }
 
@@ -57,7 +74,7 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
-        {unseen.length > 0 && (
+        {unseenCount > 0 && (
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand-orange" />
         )}
       </Button>
@@ -71,25 +88,35 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
         </SheetHeader>
 
         <div className="flex flex-col gap-3 px-4">
-          {unseen.length === 0 ? (
+          {unseenCount === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">You&apos;re all caught up!</p>
           ) : (
-            unseen.map((request) => {
-              const category = CATEGORIES[request.service_type];
-              const accepted = request.status === "confirmed";
-              return (
-                <div key={request.id} className="flex items-start gap-3 rounded-xl bg-secondary px-4 py-3">
-                  {accepted ? (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
-                  ) : (
-                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                  )}
+            <>
+              {unseenTutorRequests.map((request) => (
+                <div key={`owner-${request.id}`} className="flex items-start gap-3 rounded-xl bg-secondary px-4 py-3">
+                  <Inbox className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
                   <p className="text-sm text-secondary-foreground">
-                    Your {category.singularLabel.toLowerCase()} request was {accepted ? "accepted" : "declined"}.
+                    A student requested a session with you.
                   </p>
                 </div>
-              );
-            })
+              ))}
+              {unseenResponses.map((request) => {
+                const category = CATEGORIES[request.service_type];
+                const accepted = request.status === "confirmed";
+                return (
+                  <div key={`student-${request.id}`} className="flex items-start gap-3 rounded-xl bg-secondary px-4 py-3">
+                    {accepted ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    )}
+                    <p className="text-sm text-secondary-foreground">
+                      Your {category.singularLabel.toLowerCase()} request was {accepted ? "accepted" : "declined"}.
+                    </p>
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
       </SheetContent>

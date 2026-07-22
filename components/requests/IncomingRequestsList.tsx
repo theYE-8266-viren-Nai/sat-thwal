@@ -59,6 +59,9 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
       request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at;
     const studentCompletedFirst =
       request.status === "confirmed" && request.requester_completed_at && !request.owner_completed_at;
+    const completedDateLabel = request.completed_at
+      ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(request.completed_at))
+      : null;
 
     return (
       <div
@@ -118,6 +121,15 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
                   {pendingId === request.id ? "Completing..." : "Complete"}
                 </Button>
               </div>
+            )}
+          </div>
+        )}
+
+        {request.status === "completed" && (
+          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+            <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+            {completedDateLabel && (
+              <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
             )}
           </div>
         )}

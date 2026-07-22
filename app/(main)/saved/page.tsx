@@ -75,8 +75,19 @@ export default function SavedPage() {
     };
   }, []);
 
+  function getDisplayStatus(request: RequestRow): RequestStatus {
+    if (
+      request.status === "confirmed" &&
+      request.requester_completed_at &&
+      request.owner_completed_at
+    ) {
+      return "completed";
+    }
+    return request.status;
+  }
+
   function requestsByStatus(status: RequestStatus) {
-    return requests.filter((r) => r.request.status === status);
+    return requests.filter((r) => getDisplayStatus(r.request) === status);
   }
 
   function handleRequestChange(updated: RequestRow) {
@@ -104,13 +115,14 @@ export default function SavedPage() {
             key={request.id}
             requestId={request.id}
             data={card}
-            status={request.status}
+            status={getDisplayStatus(request)}
             note={request.note}
             profileId={profileId}
             initialSaved={false}
             hideSaveButton
             requesterCompletedAt={request.requester_completed_at}
             ownerCompletedAt={request.owner_completed_at}
+            completedAt={request.completed_at}
             onRequestChange={handleRequestChange}
           />
         ))}

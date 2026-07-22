@@ -4,6 +4,7 @@
 alter table requests
   add column if not exists seen_by_student boolean not null default true;
 
+drop policy if exists "tutors can read requests for their listing" on requests;
 create policy "tutors can read requests for their listing" on requests
   for select using (
     service_type = 'tutor' and exists (
@@ -11,6 +12,7 @@ create policy "tutors can read requests for their listing" on requests
     )
   );
 
+drop policy if exists "tutors can update requests for their listing" on requests;
 create policy "tutors can update requests for their listing" on requests
   for update using (
     service_type = 'tutor' and exists (
