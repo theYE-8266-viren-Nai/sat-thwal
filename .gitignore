@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local generated credentials
+/driver-credentials.txt
+
 # vercel
 .vercel
 

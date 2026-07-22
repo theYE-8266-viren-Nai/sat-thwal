@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { RatingStars } from "@/components/services/RatingStars";
 import { SaveButton } from "@/components/services/SaveButton";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
@@ -44,12 +43,7 @@ export function ServiceCardCompact({ data, profileId, initialSaved }: ServiceCar
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="line-clamp-1 text-base font-semibold text-foreground">{data.title}</h3>
-            {typeof data.rating === "number" && (
-              <RatingStars rating={data.rating} reviewCount={data.reviewCount} />
-            )}
-          </div>
+          <h3 className="line-clamp-1 text-base font-semibold text-foreground">{data.title}</h3>
           <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
           {[primaryMeta, secondaryMeta].filter(Boolean).map((meta, i) => {
             const Icon = META_ICONS[(meta as ServiceCardMeta).icon];

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
-import { RatingStars } from "@/components/services/RatingStars";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceDetailData } from "@/types/detail";
 
@@ -26,12 +25,7 @@ export function ServiceDetailHeader({ data }: { data: ServiceDetailData }) {
         <Badge className="w-fit px-2.5 text-xs font-semibold text-white" style={{ backgroundColor: category.color }}>
           {category.singularLabel}
         </Badge>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-xl font-bold text-foreground">{data.title}</h1>
-          {typeof data.rating === "number" && (
-            <RatingStars rating={data.rating} reviewCount={data.reviewCount} />
-          )}
-        </div>
+        <h1 className="text-xl font-bold text-foreground">{data.title}</h1>
         {data.verified && <VerifiedBadge />}
       </div>
     </div>

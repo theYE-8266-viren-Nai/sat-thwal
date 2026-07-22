@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create:route-drivers": "node scripts/create-route-drivers.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
