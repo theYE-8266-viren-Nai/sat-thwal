@@ -15,7 +15,7 @@ export interface CategoryConfig {
 export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
   tutor: {
     category: "tutor",
-    label: "Find a Tutor",
+    label: "Tutor",
     singularLabel: "Tutor",
     href: "/tutors",
     icon: BookOpen,
@@ -25,7 +25,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
   },
   hostel: {
     category: "hostel",
-    label: "Find a Hostel",
+    label: "Hostel",
     singularLabel: "Hostel",
     href: "/hostels",
     icon: Building2,
@@ -45,7 +45,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
   },
   transportation: {
     category: "transportation",
-    label: "Find Transportation",
+    label: "Transportation",
     singularLabel: "University Ferry",
     href: "/transportation",
     icon: Bus,
