@@ -42,7 +42,7 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
     setOpen(next);
     if (!next && unseen.length > 0) {
       const supabase = createClient();
-      await markResponsesSeen(supabase, profileId);
+      await markResponsesSeen(supabase);
       setUnseen([]);
     }
   }

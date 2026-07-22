@@ -45,6 +45,28 @@ export async function updateRequestStatus(
   if (error) throw error;
 }
 
+export async function markRequestCompletedByRequester(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("mark_request_completed_by_requester", {
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function markRequestCompletedByOwner(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("mark_request_completed_by_owner", {
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function getRequestsForTutor(supabase: SupabaseClient<Database>, tutorId: string) {
   const { data, error } = await supabase
     .from("requests")
@@ -79,11 +101,7 @@ export async function getUnseenResponses(supabase: SupabaseClient<Database>, pro
   return data ?? [];
 }
 
-export async function markResponsesSeen(supabase: SupabaseClient<Database>, profileId: string) {
-  const { error } = await supabase
-    .from("requests")
-    .update({ seen_by_student: true })
-    .eq("profile_id", profileId)
-    .eq("seen_by_student", false);
+export async function markResponsesSeen(supabase: SupabaseClient<Database>) {
+  const { error } = await supabase.rpc("mark_request_responses_seen");
   if (error) throw error;
 }

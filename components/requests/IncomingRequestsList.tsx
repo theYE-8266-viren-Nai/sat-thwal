@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check, CheckCircle2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { updateRequestStatus } from "@/lib/queries/requests";
+import { markRequestCompletedByOwner, updateRequestStatus } from "@/lib/queries/requests";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
   const [pendingId, setPendingId] = useState<string | null>(null);
   const pendingRequests = rows.filter((request) => request.status === "pending");
   const acceptedRequests = rows.filter((request) => request.status === "confirmed");
+  const completedRequests = rows.filter((request) => request.status === "completed");
 
   async function respond(requestId: string, status: "confirmed" | "cancelled") {
     setPendingId(requestId);
@@ -38,7 +39,27 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
     }
   }
 
+  async function complete(requestId: string) {
+    setPendingId(requestId);
+    try {
+      const supabase = createClient();
+      const updated = await markRequestCompletedByOwner(supabase, requestId);
+      setRows((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
+      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
+    } catch {
+      toast.error("Couldn't mark this request complete. Try again.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   function renderRequestCard(request: RequestRow) {
+    const canComplete = request.status === "confirmed" && !request.owner_completed_at;
+    const waitingForStudent =
+      request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at;
+    const studentCompletedFirst =
+      request.status === "confirmed" && request.requester_completed_at && !request.owner_completed_at;
+
     return (
       <div
         key={request.id}
@@ -77,6 +98,29 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
             </Button>
           </div>
         )}
+
+        {request.status === "confirmed" && (canComplete || waitingForStudent || studentCompletedFirst) && (
+          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+            {waitingForStudent ? (
+              <p className="text-sm text-muted-foreground">Waiting for student to confirm completion.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {studentCompletedFirst && (
+                  <p className="text-sm text-muted-foreground">Student marked this complete.</p>
+                )}
+                <Button
+                  size="touch"
+                  className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+                  disabled={pendingId === request.id}
+                  onClick={() => complete(request.id)}
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {pendingId === request.id ? "Completing..." : "Complete"}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -109,6 +153,16 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
         {acceptedRequests.length > 0
           ? acceptedRequests.map((request) => renderRequestCard(request))
           : renderEmpty("No accepted requests yet.")}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">Completed requests</h2>
+          <p className="text-sm text-muted-foreground">Requests both sides marked complete.</p>
+        </div>
+        {completedRequests.length > 0
+          ? completedRequests.map((request) => renderRequestCard(request))
+          : renderEmpty("No completed requests yet.")}
       </section>
     </div>
   );

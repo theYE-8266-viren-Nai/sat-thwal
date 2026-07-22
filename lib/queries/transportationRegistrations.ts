@@ -101,7 +101,7 @@ export async function getDriverRegistrations(
     .eq("driver_id", driverId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as TransportationRegistrationWithDetails[];
+  return (data ?? []) as unknown as TransportationRegistrationWithDetails[];
 }
 
 export async function getDriverNotifications(
@@ -129,7 +129,7 @@ export async function updateTransportationRegistrationStatus(
     .eq("id", registrationId)
     .maybeSingle();
   if (registrationError) throw registrationError;
-  const registration = registrationData as TransportationRegistrationWithRoute | null;
+  const registration = registrationData as unknown as TransportationRegistrationWithRoute | null;
   if (!registration) throw new Error("Registration not found.");
   if (registration.status === "approved" && status === "approved") {
     return registration;

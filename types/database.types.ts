@@ -152,6 +152,9 @@ type RequestRow = {
   status: RequestStatus;
   note: string | null;
   seen_by_student: boolean;
+  requester_completed_at: string | null;
+  owner_completed_at: string | null;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -240,6 +243,19 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      mark_request_completed_by_owner: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      mark_request_completed_by_requester: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      mark_request_responses_seen: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+    };
   };
 }

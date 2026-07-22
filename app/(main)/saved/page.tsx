@@ -79,6 +79,12 @@ export default function SavedPage() {
     return requests.filter((r) => r.request.status === status);
   }
 
+  function handleRequestChange(updated: RequestRow) {
+    setRequests((prev) =>
+      prev.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
+    );
+  }
+
   function renderRequestGrid(status: RequestStatus, emptyMessage: string) {
     const items = requestsByStatus(status);
     if (loading) {
@@ -96,12 +102,16 @@ export default function SavedPage() {
         {items.map(({ request, card }) => (
           <RequestCard
             key={request.id}
+            requestId={request.id}
             data={card}
             status={request.status}
             note={request.note}
             profileId={profileId}
             initialSaved={false}
             hideSaveButton
+            requesterCompletedAt={request.requester_completed_at}
+            ownerCompletedAt={request.owner_completed_at}
+            onRequestChange={handleRequestChange}
           />
         ))}
       </div>
