@@ -12,7 +12,7 @@ interface RecommendationResultsProps {
 export function RecommendationResults({ query, results, profileId, savedKeys }: RecommendationResultsProps) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4">
+      <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <AIAvatar className="h-9 w-9 shrink-0" />
         <p className="text-sm text-foreground">
           Here&apos;s what I found for &ldquo;{query}&rdquo; — one pick from each service, matched to

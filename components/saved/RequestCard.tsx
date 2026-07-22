@@ -1,4 +1,5 @@
 import { ServiceCard } from "@/components/services/ServiceCard";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { RequestStatus } from "@/types/database.types";
 import type { ServiceCardData } from "@/types/domain";
@@ -27,14 +28,9 @@ interface RequestCardProps {
 export function RequestCard({ data, status, profileId, initialSaved }: RequestCardProps) {
   return (
     <div className="flex flex-col gap-2">
-      <span
-        className={cn(
-          "w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold",
-          STATUS_STYLES[status],
-        )}
-      >
+      <Badge className={cn("w-fit px-2.5 text-xs font-semibold", STATUS_STYLES[status])}>
         {STATUS_LABEL[status]}
-      </span>
+      </Badge>
       <ServiceCard data={data} profileId={profileId} initialSaved={initialSaved} />
     </div>
   );

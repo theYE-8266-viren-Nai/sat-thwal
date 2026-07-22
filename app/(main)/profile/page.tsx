@@ -40,14 +40,14 @@ export default async function ProfilePage() {
       <PreferenceEditor profile={profile} />
 
       <ProfileSection title="Activity">
-        <Link href="/saved" className="flex items-center justify-between py-3">
+        <Link href="/saved" className="flex min-h-11 items-center justify-between py-3">
           <span className="text-sm text-muted-foreground">Saved services</span>
           <span className="flex items-center gap-1 text-sm font-medium text-foreground">
             {savedItems.length}
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </span>
         </Link>
-        <Link href="/saved" className="flex items-center justify-between py-3">
+        <Link href="/saved" className="flex min-h-11 items-center justify-between py-3">
           <span className="text-sm text-muted-foreground">Request history</span>
           <span className="flex items-center gap-1 text-sm font-medium text-foreground">
             {requests.length}

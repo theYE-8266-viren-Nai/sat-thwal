@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export function AmenitiesList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
@@ -8,13 +9,10 @@ export function AmenitiesList({ title, items }: { title: string; items: string[]
       <h3 className="mb-2 text-sm font-semibold text-foreground">{title}</h3>
       <div className="flex flex-wrap gap-2">
         {items.map((item) => (
-          <span
-            key={item}
-            className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
-          >
+          <Badge key={item} variant="secondary" className="h-auto gap-1 px-3 py-1 font-medium">
             <Check className="h-3 w-3" />
             {item}
-          </span>
+          </Badge>
         ))}
       </div>
     </div>

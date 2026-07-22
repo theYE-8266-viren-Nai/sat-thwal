@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
 import { RatingStars } from "@/components/services/RatingStars";
 import { SaveButton } from "@/components/services/SaveButton";
@@ -74,12 +75,12 @@ export function ServiceCard({ data, profileId, initialSaved }: ServiceCardProps)
 
           <div className="mt-auto flex items-center justify-between pt-2">
             <span className="font-semibold text-foreground">{data.priceLabel}</span>
-            <span
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+            <Badge
+              className="h-auto px-3 py-1.5 text-xs font-semibold text-white"
               style={{ backgroundColor: category.color }}
             >
               {data.ctaLabel}
-            </span>
+            </Badge>
           </div>
         </div>
       </Card>

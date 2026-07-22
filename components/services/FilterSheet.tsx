@@ -143,10 +143,14 @@ export function FilterSheet({ fields, value, onChange, formatRangeValue }: Filte
           ))}
         </div>
         <SheetFooter className="flex-row gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => onChange({})}>
+          <Button variant="outline" size="touch" className="flex-1 rounded-xl" onClick={() => onChange({})}>
             Clear all
           </Button>
-          <Button className="flex-1 bg-brand-indigo hover:bg-brand-indigo-dark" onClick={() => setOpen(false)}>
+          <Button
+            size="touch"
+            className="flex-1 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
+            onClick={() => setOpen(false)}
+          >
             Show results
           </Button>
         </SheetFooter>

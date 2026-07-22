@@ -51,17 +51,17 @@ export function DetailActionBar({
   }
 
   return (
-    <div className="sticky bottom-[70px] z-30 flex items-center gap-2 border-t border-border bg-card px-4 py-3 sm:px-5 md:bottom-0 md:px-8">
+    <div className="sticky bottom-[calc(var(--bottom-nav-h)+var(--safe-bottom))] z-30 flex items-center gap-2 border-t border-border bg-card px-4 pt-3 pb-[calc(0.75rem+var(--safe-bottom))] sm:px-5 md:bottom-0 md:px-8">
       <SaveButton
         profileId={profileId}
         category={category}
         serviceId={serviceId}
         initialSaved={initialSaved}
-        className="static shrink-0 shadow-none"
+        className="static h-11 w-11 shrink-0 shadow-none"
       />
       <Button
         variant="outline"
-        size="icon"
+        size="icon-touch"
         className="shrink-0 rounded-full"
         onClick={handleShare}
         aria-label="Share"
@@ -76,7 +76,12 @@ export function DetailActionBar({
         title={title}
         contactInfo={contactInfo}
         trigger={
-          <Button variant="outline" className="shrink-0 gap-2 rounded-full px-3 sm:px-4" aria-label="Contact provider">
+          <Button
+            variant="outline"
+            size="touch"
+            className="shrink-0 rounded-full px-3 sm:px-4"
+            aria-label="Contact provider"
+          >
             <MessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline">Contact</span>
           </Button>
@@ -90,6 +95,7 @@ export function DetailActionBar({
         title={title}
         trigger={
           <Button
+            size="touch"
             className="min-w-0 flex-1 rounded-full text-white"
             style={{ backgroundColor: categoryConfig.color }}
           >

@@ -51,7 +51,7 @@ export function SaveButton({ profileId, category, serviceId, initialSaved, class
       aria-label={saved ? "Remove from saved" : "Save"}
       aria-pressed={saved}
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-colors hover:bg-white",
+        "flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-colors hover:bg-white",
         className,
       )}
     >

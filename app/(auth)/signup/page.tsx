@@ -51,7 +51,7 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button asChild className="w-full bg-brand-indigo hover:bg-brand-indigo-dark">
+          <Button asChild size="touch" className="w-full rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark">
             <Link href="/login">Back to login</Link>
           </Button>
         </CardContent>
@@ -101,7 +101,12 @@ export default function SignupPage() {
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading} className="mt-2 bg-brand-indigo hover:bg-brand-indigo-dark">
+          <Button
+            type="submit"
+            size="touch"
+            disabled={loading}
+            className="mt-2 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
+          >
             {loading ? "Creating account..." : "Continue"}
           </Button>
         </form>

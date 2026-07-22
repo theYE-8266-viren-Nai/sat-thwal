@@ -62,7 +62,12 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading} className="mt-2 bg-brand-indigo hover:bg-brand-indigo-dark">
+          <Button
+            type="submit"
+            size="touch"
+            disabled={loading}
+            className="mt-2 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
+          >
             {loading ? "Logging in..." : "Log in"}
           </Button>
         </form>

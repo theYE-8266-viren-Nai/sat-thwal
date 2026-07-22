@@ -8,7 +8,7 @@ export function NotificationBell() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size="icon-touch"
       className="relative rounded-full"
       onClick={() => toast("You're all caught up!", { description: "No new notifications." })}
       aria-label="Notifications"

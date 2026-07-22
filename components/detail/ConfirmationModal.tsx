@@ -8,14 +8,14 @@ import { createRequest } from "@/lib/queries/requests";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import type { ServiceCategory } from "@/types/domain";
 
 type ConfirmationAction = "book" | "request" | "requestSeat" | "contact";
@@ -96,54 +96,64 @@ export function ConfirmationModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className="max-h-[85vh] overflow-y-auto rounded-t-2xl pb-[calc(1rem+var(--safe-bottom))]"
+      >
         {done ? (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
+          <div className="flex flex-col items-center gap-3 px-4 py-6 text-center">
             <CheckCircle2 className="h-12 w-12 text-brand-mint" />
-            <DialogTitle>Request sent</DialogTitle>
+            <SheetTitle>Request sent</SheetTitle>
             <p className="text-sm text-muted-foreground">
               Your request for {title} was sent. You can track its status from Saved & Requests.
             </p>
-            <Button className="mt-2 w-full bg-brand-indigo hover:bg-brand-indigo-dark" onClick={() => setOpen(false)}>
+            <Button
+              size="touch"
+              className="mt-2 w-full rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
+              onClick={() => setOpen(false)}
+            >
               Done
             </Button>
           </div>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle>{copy.title}</DialogTitle>
-              <DialogDescription>
+            <SheetHeader>
+              <SheetTitle>{copy.title}</SheetTitle>
+              <SheetDescription>
                 {action === "contact" ? `Contact details for ${title}.` : `${copy.description} (${title})`}
-              </DialogDescription>
-            </DialogHeader>
+              </SheetDescription>
+            </SheetHeader>
 
-            {action === "contact" ? (
-              <p className="rounded-xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
-                {contactInfo}
-              </p>
-            ) : (
-              <Textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Add a note for the provider (optional)"
-                rows={3}
-              />
-            )}
+            <div className="px-4">
+              {action === "contact" ? (
+                <p className="rounded-xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                  {contactInfo}
+                </p>
+              ) : (
+                <Textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Add a note for the provider (optional)"
+                  rows={3}
+                />
+              )}
+            </div>
 
-            <DialogFooter>
+            <SheetFooter>
               <Button
+                size="touch"
                 onClick={handleConfirm}
                 disabled={submitting}
-                className="w-full bg-brand-indigo hover:bg-brand-indigo-dark"
+                className="w-full rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
               >
                 {submitting ? "Sending..." : copy.confirmLabel}
               </Button>
-            </DialogFooter>
+            </SheetFooter>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

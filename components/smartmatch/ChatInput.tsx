@@ -28,7 +28,7 @@ export function ChatInput({ onSubmit, disabled }: ChatInputProps) {
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="icon-touch"
         className="shrink-0 rounded-full text-muted-foreground"
         aria-label="Voice input"
         onClick={() => toast("Voice input isn't available in this prototype yet.")}
@@ -44,7 +44,7 @@ export function ChatInput({ onSubmit, disabled }: ChatInputProps) {
       />
       <Button
         type="submit"
-        size="icon"
+        size="icon-touch"
         disabled={disabled || !value.trim()}
         className="shrink-0 rounded-full bg-brand-indigo hover:bg-brand-indigo-dark"
         aria-label="Send"

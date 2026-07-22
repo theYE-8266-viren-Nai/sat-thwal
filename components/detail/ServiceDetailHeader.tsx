@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
 import { RatingStars } from "@/components/services/RatingStars";
 import { CATEGORIES } from "@/lib/constants/categories";
@@ -22,12 +23,9 @@ export function ServiceDetailHeader({ data }: { data: ServiceDetailData }) {
         )}
       </div>
       <div className="flex flex-col gap-2 px-5 pt-4 md:px-8">
-        <span
-          className="w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
-          style={{ backgroundColor: category.color }}
-        >
+        <Badge className="w-fit px-2.5 text-xs font-semibold text-white" style={{ backgroundColor: category.color }}>
           {category.singularLabel}
-        </span>
+        </Badge>
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-xl font-bold text-foreground">{data.title}</h1>
           {typeof data.rating === "number" && (

@@ -31,7 +31,7 @@ export function SmartMatchSearchBox() {
       <button
         type="submit"
         aria-label="Ask SmartMatch AI"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25"
       >
         <Search className="h-4 w-4 text-white" />
       </button>

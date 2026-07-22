@@ -100,10 +100,10 @@ export default function OnboardingPage() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button
-        size="lg"
+        size="touch"
         disabled={!canContinue || loading}
         onClick={handleContinue}
-        className="bg-brand-indigo hover:bg-brand-indigo-dark"
+        className="rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
       >
         {loading ? "Saving..." : "Continue"}
       </Button>
