@@ -1,0 +1,883 @@
+I will not include the AI matching yet for now just display the user information which I have asked in the app (I will use them later for the matching ,this is the prototype)for the conversational AI assistant interface , I want to implment that but not AI yet I will use Next JS and for the backend Supabase (No over engineer) /engineering:testing-strategy / Create a mobile-first responsive web application called “UniMate Myanmar”, an AI-powered student life platform for university students in Myanmar.
+
+PRODUCT PURPOSE
+
+Sat Thwal helps students find four essential services in one place:
+
+
+
+
+
+Tutors for university subjects
+
+
+
+Affordable private hostels when university dormitories are unavailable
+
+
+
+Student-friendly restaurants and meal services
+
+
+
+University transportation, student shuttles and ferries
+
+The main value proposition is:
+
+“One student request. Four personalized solutions.”
+
+TARGET USERS
+
+The main users are university students in UIT(University of Information Techonology)
+
+For this prototype, focus primarily on the student experience. Service providers include tutors, hostel owners, restaurants and transportation providers.
+
+CORE AI FEATURE
+
+Include an AI assistant called “SmartMatch AI”.
+
+Students can describe their needs using natural language, for example:
+
+“I am a first-year UIT student. I need a programming tutor, a hostel under 150,000 MMK, affordable food and transportation from Hledan.”
+
+The AI assistant should show personalized recommendations from the four service categories based on:
+
+
+
+
+
+University
+
+
+
+Current academic year
+
+
+
+Location
+
+
+
+Budget
+
+
+
+Subject
+
+
+
+Schedule
+
+
+
+Distance
+
+
+
+Student preferences
+
+For this prototype, use realistic mock data and simulate the AI recommendations.
+
+DESIGN DIRECTION
+
+Create a clean, youthful, friendly and trustworthy interface designed for Myanmar university students.
+
+Use:
+
+
+
+
+
+Deep indigo as the main brand color
+
+
+
+Mint green as a supporting color
+
+
+
+Warm orange for important actions and promotions
+
+
+
+Soft off-white page backgrounds
+
+
+
+Dark navy text
+
+
+
+Rounded cards
+
+
+
+Soft shadows
+
+
+
+Clear typography
+
+
+
+Comfortable spacing
+
+
+
+Accessible color contrast
+
+
+
+Simple line icons
+
+The design should feel modern and polished but not overly corporate, childish or visually crowded.
+
+Use a mobile bottom navigation bar with:
+
+
+
+
+
+Home
+
+
+
+Explore
+
+
+
+SmartMatch
+
+
+
+Saved
+
+
+
+Profile
+
+Create a responsive desktop layout with a left sidebar or top navigation.
+
+ONBOARDING PAGE
+
+Create a friendly onboarding flow with:
+
+
+
+
+
+Set Thwal Myanmar logo
+
+
+
+Headline: “Everything students need, in one place.”
+
+
+
+Supporting text explaining the platform
+
+
+
+University selection
+
+
+
+Current academic year selection
+
+
+
+Township or location selection
+
+
+
+Monthly budget range
+
+
+
+Preferred subjects
+
+
+
+Continue button
+
+HOME DASHBOARD
+
+Create a personalized student dashboard containing:
+
+
+
+
+
+Greeting such as “Hello, Thae 👋”
+
+
+
+Current university and location
+
+
+
+Notification icon
+
+
+
+Large SmartMatch AI search box
+
+
+
+Four main service category cards
+
+
+
+Recommended services
+
+
+
+Nearby student services
+
+
+
+Student discounts and offers
+
+
+
+Recently viewed services
+
+The four service cards are:
+
+
+
+
+
+Find a Tutor
+
+
+
+Find a Hostel
+
+
+
+Find Food
+
+
+
+Find Transportation
+
+Each category card should have a distinct icon and subtle supporting color while maintaining one consistent brand identity.
+
+SMARTMATCH AI PAGE
+
+Create a conversational AI assistant interface.
+
+Include:
+
+
+
+
+
+Heading: “What do you need help with today?”
+
+
+
+Friendly AI assistant avatar
+
+
+
+Chat input
+
+
+
+Voice input icon
+
+
+
+Send button
+
+
+
+Suggested prompts
+
+
+
+Recent searches
+
+Suggested prompts:
+
+
+
+
+
+Find a tutor for Data Structures
+
+
+
+Find a hostel under 150,000 MMK
+
+
+
+Find meals under 5,000 MMK
+
+
+
+Find transportation from Hledan to UIT
+
+Show an example AI response containing four personalized recommendation cards, one from each service category.
+
+TUTOR LISTING PAGE
+
+Display realistic tutor cards containing:
+
+
+
+
+
+Profile photo
+
+
+
+Tutor name
+
+
+
+Subject
+
+
+
+University
+
+
+
+Rating
+
+
+
+Number of reviews
+
+
+
+Price per session
+
+
+
+Online or in-person availability
+
+
+
+Verified badge
+
+
+
+Save button
+
+
+
+View profile button
+
+Add filters for:
+
+
+
+
+
+University
+
+
+
+Subject
+
+
+
+Price
+
+
+
+Online or in-person
+
+
+
+Township
+
+
+
+Rating
+
+
+
+Availability
+
+HOSTEL LISTING PAGE
+
+Display hostel cards containing:
+
+
+
+
+
+Hostel image
+
+
+
+Hostel name
+
+
+
+Distance from university
+
+
+
+Monthly rent
+
+
+
+Gender policy
+
+
+
+Facilities
+
+
+
+Available room count
+
+
+
+Verified badge
+
+
+
+Save button
+
+
+
+View details button
+
+Add filters for:
+
+
+
+
+
+University
+
+
+
+Monthly budget
+
+
+
+Distance
+
+
+
+Male, female or mixed hostel
+
+
+
+Room type
+
+
+
+Facilities
+
+
+
+Meals included
+
+
+
+Room availability
+
+FOOD LISTING PAGE
+
+Display restaurant and meal cards containing:
+
+
+
+
+
+Food image
+
+
+
+Restaurant name
+
+
+
+Meal name
+
+
+
+Price
+
+
+
+Rating
+
+
+
+Distance
+
+
+
+Delivery or pickup
+
+
+
+Student discount
+
+
+
+Order button
+
+Add filters for:
+
+
+
+
+
+Price range
+
+
+
+Distance
+
+
+
+Delivery or pickup
+
+
+
+Vegetarian
+
+
+
+Halal
+
+
+
+Student meal packages
+
+
+
+Opening hours
+
+TRANSPORTATION PAGE
+
+Use the label “ University Ferry” so the service is understandable to both Myanmar and international users.
+
+Display transportation cards containing:
+
+
+
+
+
+Route
+
+
+
+Pickup location
+
+
+
+University destination
+
+
+
+Departure time
+
+
+
+Return time
+
+
+
+Monthly price
+
+
+
+Available seats
+
+
+
+Verified driver badge
+
+
+
+Request seat button
+
+Add filters for:
+
+
+
+
+
+University
+
+
+
+Pickup township
+
+
+
+Route
+
+
+
+Departure time
+
+
+
+Monthly price
+
+
+
+Available seats
+
+SERVICE DETAIL PAGE
+
+Create a reusable detail-page layout for all service types.
+
+Include:
+
+
+
+
+
+Image or profile section
+
+
+
+Service name
+
+
+
+Provider information
+
+
+
+Verified badge
+
+
+
+Rating and reviews
+
+
+
+Pricing
+
+
+
+Availability
+
+
+
+Location
+
+
+
+Service description
+
+
+
+Amenities or included services
+
+
+
+Save button
+
+
+
+Share button
+
+
+
+Contact provider button
+
+
+
+Primary booking or request button
+
+SAVED AND REQUESTS PAGE
+
+Include tabs for:
+
+
+
+
+
+Saved
+
+
+
+Pending requests
+
+
+
+Confirmed
+
+
+
+Completed
+
+Allow students to view saved tutors, hostels, restaurants and transportation services.
+
+STUDENT PROFILE PAGE
+
+Include:
+
+
+
+
+
+Student profile image
+
+
+
+Name
+
+
+
+University
+
+
+
+Academic year
+
+
+
+Township
+
+
+
+Preferred subjects
+
+
+
+Budget preferences
+
+
+
+Saved services
+
+
+
+Request history
+
+
+
+Notification preferences
+
+
+
+Language selection
+
+
+
+Logout button
+
+MOCK DATA
+
+Use realistic Myanmar names, universities, townships and MMK prices.
+
+Include examples from universities such as:
+
+
+
+
+
+University of Information Technology
+
+
+
+University of Computer Studies, Yangon
+
+
+
+Yangon Technological University
+
+
+
+University of Yangon
+
+
+
+Yangon University of Economics
+
+Use locations such as:
+
+
+
+
+
+Hledan
+
+
+
+Kamayut
+
+
+
+Insein
+
+
+
+Hlaing
+
+
+
+South Okkalapa
+
+
+
+North Okkalapa
+
+
+
+Tamwe
+
+Do not use lorem ipsum. Use realistic content throughout the interface.
+
+PROTOTYPE BEHAVIOR
+
+Make all main navigation buttons functional.
+
+Use mock data for listings and recommendations.
+
+When the user submits a SmartMatch request, show a loading state and then display personalized recommendation cards.
+
+When the user presses Save, update the icon and add the service to the Saved page.
+
+When the user presses Book, Request or Contact, open a confirmation modal.
+
+Do not implement real payments, real-time messaging or complex backend logic yet.
+
+Start by generating the design system, navigation structure, onboarding page and student home dashboard.
+
+Before writing the implementation, use Plan mode and explain the proposed component structure, routes and reusable UI components. Primary deep indigo: #4F46E5
+
+Primary dark: #3730A3
+
+Secondary mint green: #34D399
+
+Accent warm orange: #F59E0B
+
+Background soft off-white: #F8FAFC
+
+Card background: #FFFFFF
+
+Main text dark navy: #172033
+
+Secondary text: #64748B
+
+Borders: #E2E8F0
+
+
+
+Service category colors:
+
+Tutor: #8B5CF6
+
+Hostel: #3B82F6
+
+Food: #F97316
+
+Transportation: #10B981 take a look at this lovable url for the reference https://id-preview--8384908e-bd9b-4790-83c2-961fea207341.lovable.app/home?__lovable_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiTEJKUGg5NkFYdGJHQWY4bURYcUJIY1FIN3VrMiIsInByb2plY3RfaWQiOiI4Mzg0OTA4ZS1iZDliLTQ3OTAtODNjMi05NjFmZWEyMDczNDEiLCJhY2Nlc3NfdHlwZSI6InByb2plY3QiLCJpc3MiOiJsb3ZhYmxlLWFwaSIsInN1YiI6IjgzODQ5MDhlLWJkOWItNDc5MC04M2MyLTk2MWZlYTIwNzM0MSIsImF1ZCI6WyJsb3ZhYmxlLWFwcCJdLCJleHAiOjE3ODUzMDYzMTYsIm5iZiI6MTc4NDcwMTUxNiwiaWF0IjoxNzg0NzAxNTE2fQ.RaW43hJ4Po9bM9Wn_xpcs5Lz212jxBSqT5MPVFMfcQNil_ZBl9VVl_UuCx8fuxf15cLG5eUTpm-lyrkWKusJ8JALECXgJattKPNTENJDeLqOA3dhGFWoVEha1lQzPoRSk6Az7fg0aoqmPsPrVfGO4we_0xs-Uvl8ChLlKFvFzUJlNTQVzoN4UUMCfmZonnH6XuOyG7_IZWSXSV0qdnKXTAhvCEodPtR6QZCaNtJtdH0cGDgu99ADBEEkpRwbZ5oQaatgkDaaP3Y0niy05HHxQK9tGmdZs19o-zpjwu6EWmFJAh_OYiTlpwfj-XkjNl96H7Pd8ZNZK1PJ0ETy8n_Pc40t32gemXaOTrBiBtkzgkpe4J3sHzSOnrio150DeYBls6G6QZ8qVVoiuNQI7UZJh-5gfRarikdSiSFtiG6d0iT7M_3GOJnHgIVLB7B4wOQPWhA2g_us6qY7eyz-WAFCli-0qsnoStxdKbRUQXCDZMPjMYxfqkPTB-LTEBAdr94W-Y6PmwggYksJDc8fc1XAiDEchq_Z2N_59c7jGRVw3Vwb5I2jf7qnPGhNi9dccdEHkC2xlXM2yt0KyhgZzENsR4vHAgCpa2h9S-YcRoUFoDup_SzuafjxRzLToMmYb2AsDohv4_ZvgDQqIuFcZhQtoHKe4J5omOaHFkY3SpGR5Q4
