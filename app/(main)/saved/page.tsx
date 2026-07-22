@@ -137,6 +137,7 @@ export default function SavedPage() {
             key={request.id}
             data={card}
             status={request.status}
+            note={request.note}
             profileId={profileId}
             initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
           />
@@ -147,20 +148,20 @@ export default function SavedPage() {
 
   return (
     <div>
-      <PageHeader title="Saved & Requests" />
+      <PageHeader title="Saved & Bookings" />
       <div className="px-5 md:px-8">
         <Tabs defaultValue="saved">
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="saved">Saved</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="pending">Pending bookings</TabsTrigger>
             <TabsTrigger value="confirmed">Confirmed</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           <TabsContent value="saved" className="pt-4">
-            {renderGrid(savedCards, "You haven't saved any tutors, hostels, food, or rides yet.")}
+            {renderGrid(savedCards, "You haven't saved any tutors, hostels, food, or UIT rides yet.")}
           </TabsContent>
           <TabsContent value="pending" className="pt-4">
-            {renderRequestGrid("pending", "No pending requests right now.")}
+            {renderRequestGrid("pending", "No pending bookings right now.")}
           </TabsContent>
           <TabsContent value="confirmed" className="pt-4">
             {renderRequestGrid("confirmed", "No confirmed requests yet.")}

@@ -1,4 +1,5 @@
 import type { ServiceCategory } from "./domain";
+import type { RouteStop } from "./domain";
 
 export interface ServiceDetailData {
   id: string;
@@ -18,4 +19,8 @@ export interface ServiceDetailData {
   ctaLabel: string;
   contactInfo: string;
   ownerProfileId?: string | null;
+  routeStops?: RouteStop[];
+  vehicleType?: string | null;
+  availableSeats?: number;
+  totalSeats?: number;
 }

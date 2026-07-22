@@ -1,11 +1,27 @@
 export const TOWNSHIPS = [
+  "8 Mile",
+  "Ahlone",
+  "San Chaung",
+  "Sanchaung",
+  "Bahan",
+  "Bayint Naung",
+  "Dagon Seikkan",
   "Hledan",
+  "Kyimyindaing",
+  "Mayangone",
+  "Mingaladon",
+  "Min Galar Don",
+  "Shwe Pyi Thar",
+  "Thaketa",
   "Kamayut",
   "Insein",
   "Hlaing",
+  "Thingangyun",
   "South Okkalapa",
   "North Okkalapa",
+  "North Dagon",
   "Tamwe",
+  "Yankin",
 ] as const;
 
 export type Township = (typeof TOWNSHIPS)[number];

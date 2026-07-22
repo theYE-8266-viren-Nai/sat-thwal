@@ -86,6 +86,8 @@ create table if not exists transportation_routes (
   driver_name text not null,
   route_name text not null,
   pickup_township text not null,
+  route_stops text[] not null default '{}',
+  route_pickup_times text[] not null default '{}',
   university text not null,
   departure_time time not null,
   return_time time not null,

@@ -43,8 +43,8 @@ const ACTION_COPY: Record<ConfirmationAction, { title: string; description: stri
   },
   requestSeat: {
     title: "Request a seat",
-    description: "Send a seat request for this route. The driver will confirm your spot.",
-    confirmLabel: "Request seat",
+    description: "Add your detailed pickup address. The driver will confirm your pending seat request.",
+    confirmLabel: "Book seat",
   },
   contact: {
     title: "Contact provider",
@@ -74,12 +74,19 @@ export function ConfirmationModal({
       return;
     }
 
+    if (action === "requestSeat" && !note.trim()) {
+      toast.error("Please add your detailed pickup address.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const supabase = createClient();
-      await createRequest(supabase, profileId, category, serviceId, note || undefined);
+      const requestNote =
+        action === "requestSeat" ? `Pickup address: ${note.trim()}` : note.trim() || undefined;
+      await createRequest(supabase, profileId, category, serviceId, requestNote);
       setDone(true);
-      toast.success("Request sent!", { description: `Track it from Saved & Requests.` });
+      toast.success("Request pending", { description: `Track it from Saved & Bookings.` });
     } catch {
       toast.error("Couldn't send your request. Try again.");
     } finally {
@@ -107,7 +114,7 @@ export function ConfirmationModal({
             <CheckCircle2 className="h-12 w-12 text-brand-mint" />
             <SheetTitle>Request sent</SheetTitle>
             <p className="text-sm text-muted-foreground">
-              Your request for {title} was sent. You can track its status from Saved & Requests.
+              Your request for {title} is pending. You can track its status from Saved & Bookings.
             </p>
             <Button
               size="touch"
@@ -135,8 +142,12 @@ export function ConfirmationModal({
                 <Textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Add a note for the provider (optional)"
-                  rows={3}
+                  placeholder={
+                    action === "requestSeat"
+                      ? "Enter your detailed pickup address"
+                      : "Add a note for the provider (optional)"
+                  }
+                  rows={action === "requestSeat" ? 4 : 3}
                 />
               )}
             </div>

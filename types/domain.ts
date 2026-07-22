@@ -7,6 +7,12 @@ export interface ServiceCardMeta {
   label: string;
 }
 
+export interface RouteStop {
+  id: string;
+  name: string;
+  pickupTime?: string;
+}
+
 export interface ServiceCardData {
   id: string;
   category: ServiceCategory;
@@ -20,6 +26,13 @@ export interface ServiceCardData {
   meta: ServiceCardMeta[];
   ctaLabel: string;
   href: string;
+  routeStops?: RouteStop[];
+  driverName?: string;
+  vehicleType?: string | null;
+  departureTimeLabel?: string;
+  returnTimeLabel?: string;
+  availableSeats?: number;
+  totalSeats?: number;
 }
 
 export type FilterFieldType = "select" | "range" | "toggle" | "multiselect";

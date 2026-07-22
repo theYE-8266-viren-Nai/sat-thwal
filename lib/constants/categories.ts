@@ -51,7 +51,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
     icon: Bus,
     color: "var(--category-transport)",
     detailCtaLabel: "View Details",
-    bookCtaLabel: "Request Seat",
+    bookCtaLabel: "Book Seat",
   },
 };
 

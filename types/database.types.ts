@@ -88,6 +88,8 @@ type TransportationRow = {
   driver_name: string;
   route_name: string;
   pickup_township: string;
+  route_stops: string[];
+  route_pickup_times: string[];
   university: string;
   departure_time: string;
   return_time: string;

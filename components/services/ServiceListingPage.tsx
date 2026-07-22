@@ -21,6 +21,7 @@ interface ServiceListingPageProps<TRow> {
   formatRangeValue?: (n: number) => string;
   fetchRows: (supabase: SupabaseClient<Database>) => Promise<TRow[]>;
   toCard: (row: TRow) => ServiceCardData;
+  renderCard?: (card: ServiceCardData, profileId: string, initialSaved: boolean) => ReactNode;
   matchesSearch: (row: TRow, query: string) => boolean;
   applyFilters: (row: TRow, filters: FilterState) => boolean;
   emptyMessage: string;
@@ -41,6 +42,7 @@ export function ServiceListingPage<TRow>({
   formatRangeValue,
   fetchRows,
   toCard,
+  renderCard,
   matchesSearch,
   applyFilters,
   emptyMessage,
@@ -116,12 +118,17 @@ export function ServiceListingPage<TRow>({
           {!loading &&
             profileId &&
             filteredCards.map((card) => (
-              <ServiceCardCompact
-                key={card.id}
-                data={card}
-                profileId={profileId}
-                initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-              />
+              <div key={card.id}>
+                {renderCard ? (
+                  renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
+                ) : (
+                  <ServiceCardCompact
+                    data={card}
+                    profileId={profileId}
+                    initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+                  />
+                )}
+              </div>
             ))}
         </div>
       ) : (
@@ -132,12 +139,17 @@ export function ServiceListingPage<TRow>({
           {!loading &&
             profileId &&
             filteredCards.map((card) => (
-              <ServiceCard
-                key={card.id}
-                data={card}
-                profileId={profileId}
-                initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-              />
+              <div key={card.id}>
+                {renderCard ? (
+                  renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
+                ) : (
+                  <ServiceCard
+                    data={card}
+                    profileId={profileId}
+                    initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+                  />
+                )}
+              </div>
             ))}
         </div>
       )}

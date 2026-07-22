@@ -43,10 +43,18 @@ insert into meals (restaurant_id, name, price, image_url, is_student_package) va
 ((select id from restaurants where name = 'Campus Corner Cafe'), 'Fried Rice Student Combo', 2800, 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', true),
 ((select id from restaurants where name = 'Campus Corner Cafe'), 'Iced Coffee + Toast', 2000, 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', false);
 
-insert into transportation_routes (driver_name, route_name, pickup_township, university, departure_time, return_time, monthly_price, total_seats, available_seats, vehicle_type, verified) values
-('Ko Zaw Lin', 'Hledan - UIT Shuttle', 'Hledan', 'University of Information Technology', '07:15', '16:30', 35000, 12, 3, 'Van', true),
-('Ko Htun Htun', 'Kamayut - University of Yangon Line', 'Kamayut', 'University of Yangon', '07:00', '16:00', 30000, 15, 5, 'Van', true),
-('Daw Khin Mar Oo', 'Insein - YTU Ferry', 'Insein', 'Yangon Technological University', '06:45', '17:00', 40000, 10, 2, 'Ferry + Van', true),
-('Ko Aung Naing', 'Hlaing - UIT Express', 'Hlaing', 'University of Information Technology', '07:30', '16:15', 28000, 14, 6, 'Van', false),
-('Ko Min Thu', 'Tamwe - YUE Shuttle', 'Tamwe', 'Yangon University of Economics', '07:10', '16:45', 32000, 12, 4, 'Van', true),
-('Daw Nilar Win', 'South Okkalapa - UCSY Line', 'South Okkalapa', 'University of Computer Studies, Yangon', '06:50', '17:15', 38000, 16, 7, 'Bus', true);
+insert into transportation_routes (driver_name, route_name, pickup_township, route_stops, route_pickup_times, university, departure_time, return_time, monthly_price, total_seats, available_seats, vehicle_type, verified) values
+('Ko Nay Lin', 'Sanchaung - UIT Express', 'Sanchaung', array['Sanchaung', 'Hledan', 'Hlaing', 'UIT'], array['07:00', '07:15', '07:25', '07:45'], 'University of Information Technology', '07:00', '16:15', 28000, 12, 6, 'Van', true),
+('Daw May Thu', 'South Okkalapa - North Dagon - UIT', 'South Okkalapa', array['South Okkalapa', 'North Dagon', 'Hlaing', 'UIT'], array['06:30', '06:50', '07:20', '07:45'], 'University of Information Technology', '06:30', '17:10', 45000, 16, 6, 'Bus', true),
+('Ko Min Thu', 'Tamwe - Bahan - UIT Line', 'Tamwe', array['Tamwe', 'Bahan', 'Hledan', 'UIT'], array['06:45', '07:00', '07:18', '07:45'], 'University of Information Technology', '06:45', '16:45', 34000, 12, 4, 'Van', true),
+('Daw Khin Mar Oo', 'Insein - Bayint Naung - UIT Ferry', 'Insein', array['Insein', 'Bayint Naung', 'Hlaing', 'UIT'], array['06:50', '07:05', '07:25', '07:45'], 'University of Information Technology', '06:50', '17:00', 40000, 10, 2, 'Ferry + Van', true),
+('Daw Nilar Win', 'Thingangyun - Tamwe - UIT Bus', 'Thingangyun', array['Thingangyun', 'Tamwe', 'Hledan', 'UIT'], array['06:40', '06:55', '07:25', '07:50'], 'University of Information Technology', '06:40', '17:15', 38000, 16, 7, 'Bus', true),
+('Ko Htet Aung', 'Yankin - Bahan - UIT Shuttle', 'Yankin', array['Yankin', 'Bahan', 'Kamayut', 'UIT'], array['06:35', '06:50', '07:10', '07:40'], 'University of Information Technology', '06:35', '16:40', 36000, 14, 5, 'Van', true),
+('Ko Aung Myint', 'North Dagon - Thingangyun - UIT', 'North Dagon', array['North Dagon', 'South Okkalapa', 'Thingangyun', 'UIT'], array['06:25', '06:45', '07:05', '07:50'], 'University of Information Technology', '06:25', '17:05', 43000, 15, 5, 'Bus', true),
+('Ko Pyae Sone', 'Mayangone - 8 Mile - UIT', 'Mayangone', array['Mayangone', '8 Mile', 'Hlaing', 'UIT'], array['07:05', '07:15', '07:30', '07:45'], 'University of Information Technology', '07:05', '16:20', 30000, 12, 8, 'Van', true),
+('Daw Hnin Wai', 'Ahlone - Sanchaung - UIT', 'Ahlone', array['Ahlone', 'Sanchaung', 'Hledan', 'UIT'], array['06:55', '07:10', '07:25', '07:50'], 'University of Information Technology', '06:55', '16:35', 35000, 13, 4, 'Van', true),
+('Ko Hein Htet', 'Dagon Seikkan - Thaketa - UIT', 'Dagon Seikkan', array['Dagon Seikkan', 'Thaketa', 'Tamwe', 'Hledan', 'UIT'], array['06:10', '06:30', '06:55', '07:25', '07:55'], 'University of Information Technology', '06:10', '17:20', 48000, 18, 9, 'Bus', true),
+('Daw Su Mon', 'Mingaladon - North Okkalapa - UIT', 'Mingaladon', array['Mingaladon', 'North Okkalapa', 'Mayangone', 'UIT'], array['06:20', '06:45', '07:10', '07:50'], 'University of Information Technology', '06:20', '17:00', 46000, 15, 3, 'Van', true),
+('Ko Wai Yan', 'Kyimyindaing - Sanchaung - UIT', 'Kyimyindaing', array['Kyimyindaing', 'Sanchaung', 'Kamayut', 'UIT'], array['06:50', '07:05', '07:20', '07:45'], 'University of Information Technology', '06:50', '16:30', 33000, 12, 6, 'Van', true),
+('Ko Than Lwin', 'Min Galar Don - Shwe Pyi Thar - Insein - UIT', 'Min Galar Don', array['Min Galar Don', 'Shwe Pyi Thar', 'Insein', 'UIT'], array['06:40', '07:00', '07:20', '07:50'], 'University of Information Technology', '06:40', '16:40', 42000, 14, 4, 'Van', true),
+('Ko Aung Naing', 'Hlaing - UIT Express', 'Hlaing', array['Hlaing', 'UIT'], array['07:30', '07:45'], 'University of Information Technology', '07:30', '16:15', 28000, 14, 6, 'Van', false);

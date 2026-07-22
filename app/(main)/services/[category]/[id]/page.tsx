@@ -13,6 +13,7 @@ import { DetailInfoSection } from "@/components/detail/DetailInfoSection";
 import { AmenitiesList } from "@/components/detail/AmenitiesList";
 import { DetailActionBar } from "@/components/detail/DetailActionBar";
 import { RecordRecentlyViewed } from "@/components/detail/RecordRecentlyViewed";
+import { RouteTimeline } from "@/components/transportation/RouteTimeline";
 import type { ServiceCategory } from "@/types/domain";
 import type { ServiceDetailData } from "@/types/detail";
 
@@ -74,6 +75,15 @@ export default async function ServiceDetailPage({
         <DetailInfoSection icon={Clock} title="Availability" lines={detail.availabilityLines} />
         <DetailInfoSection icon={MapPin} title="Location" lines={[detail.locationLabel]} />
       </div>
+
+      {typedCategory === "transportation" && detail.routeStops && (
+        <div className="px-5 py-4 md:px-8">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Complete route</h3>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <RouteTimeline stops={detail.routeStops} />
+          </div>
+        </div>
+      )}
 
       <div className="px-5 py-2 md:px-8">
         <h3 className="mb-1 text-sm font-semibold text-foreground">Description</h3>
