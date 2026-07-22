@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Share2, MessageCircle, Pencil } from "lucide-react";
+import { Share2, MessageCircle, Pencil, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/services/SaveButton";
@@ -14,6 +14,11 @@ const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat"
   hostel: "request",
   food: "book",
   transportation: "requestSeat",
+};
+
+const OWNER_EDIT_HREF: Partial<Record<ServiceCategory, string>> = {
+  tutor: "/tutors/edit",
+  hostel: "/hostels/edit",
 };
 
 interface DetailActionBarProps {
@@ -65,15 +70,23 @@ export function DetailActionBar({
         >
           <Share2 className="h-4 w-4" />
         </Button>
+        {category === "tutor" && (
+          <Button asChild variant="outline" size="touch" className="shrink-0 rounded-full px-3 sm:px-4">
+            <Link href="/tutors/requests">
+              <Inbox className="h-4 w-4" />
+              <span className="hidden sm:inline">Requests</span>
+            </Link>
+          </Button>
+        )}
         <Button
           asChild
           size="touch"
           className="min-w-0 flex-1 rounded-full text-white"
           style={{ backgroundColor: categoryConfig.color }}
         >
-          <Link href="/tutors/edit">
+          <Link href={OWNER_EDIT_HREF[category] ?? "#"}>
             <Pencil className="h-4 w-4" />
-            <span className="truncate">Edit Profile</span>
+            <span className="truncate">Edit Listing</span>
           </Link>
         </Button>
       </div>
