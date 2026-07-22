@@ -11,6 +11,7 @@ import { SuggestedPrompts } from "@/components/smartmatch/SuggestedPrompts";
 import { RecentSearches } from "@/components/smartmatch/RecentSearches";
 import { LoadingIndicator } from "@/components/smartmatch/LoadingIndicator";
 import { RecommendationResults } from "@/components/smartmatch/RecommendationResults";
+import { VoiceAssistantButton } from "@/components/smartmatch/VoiceAssistantButton";
 import type { ServiceCardData } from "@/types/domain";
 
 type Status = "idle" | "loading" | "results" | "error";
@@ -107,6 +108,7 @@ export function SmartMatchClient() {
               AI matching is unavailable right now, so these are basic tutor and hostel matches.
             </div>
           )}
+          <VoiceAssistantButton query={query} results={results} />
           <RecommendationResults query={query} results={results} profileId={profileId} savedKeys={savedKeys} />
         </>
       )}

@@ -50,6 +50,13 @@ export async function POST(request: Request) {
   const aiCards = aiMatches ? rankedMatchesToCards(aiMatches, catalog) : [];
   const useAiResults = aiCards.length > 0;
 
+  console.log("[SmartMatch]", {
+    query,
+    source: useAiResults ? "openrouter" : "fallback",
+    aiMatches,
+    resultTitles: (useAiResults ? aiCards : fallbackSmartMatch(query, catalog, profile)).map((c) => c.title),
+  });
+
   return NextResponse.json(useAiResults ? aiCards : fallbackSmartMatch(query, catalog, profile), {
     headers: {
       "X-SmartMatch-Source": useAiResults ? "openrouter" : "fallback",
@@ -90,7 +97,7 @@ async function getOpenRouterMatches(
               tutors: catalog.tutors.slice(0, MAX_CATALOG_ITEMS).map(safeTutor),
               hostels: catalog.hostels.slice(0, MAX_CATALOG_ITEMS).map(safeHostel),
               instructions:
-                "Return the best tutor and hostel matches for the query, ranked by relevance. Include at most 6 total results.",
+                "Return the best tutor and/or hostel matches for the query, ranked by relevance. Include at most 6 total results. If the query clearly only asks for one category (e.g. only rooms/hostels, or only a tutor), do not include results from the other category, even if the student's profile has preferences for it.",
             }),
           },
         ],
@@ -137,13 +144,20 @@ async function getOpenRouterMatches(
 
     const data = await response.json();
     const content = getMessageContent(data);
-    if (!content) return null;
+    if (!content) {
+      console.warn("OpenRouter SmartMatch: no message content in response", data);
+      return null;
+    }
 
     const parsed = JSON.parse(content) as OpenRouterMatchResponse;
-    if (!Array.isArray(parsed.results)) return null;
+    if (!Array.isArray(parsed.results)) {
+      console.warn("OpenRouter SmartMatch: response missing results array", parsed);
+      return null;
+    }
 
     return parsed.results.filter(isRankedMatch).slice(0, MAX_RESULTS);
-  } catch {
+  } catch (error) {
+    console.warn("OpenRouter SmartMatch: request threw", error);
     return null;
   }
 }
@@ -164,10 +178,12 @@ function rankedMatchesToCards(
 
       if (match.category === "tutor") {
         const tutor = tutorsById.get(match.id);
+        if (!tutor) console.warn("OpenRouter SmartMatch: tutor id not in catalog", match.id);
         return tutor ? tutorToCard(tutor) : null;
       }
 
       const hostel = hostelsById.get(match.id);
+      if (!hostel) console.warn("OpenRouter SmartMatch: hostel id not in catalog", match.id);
       return hostel ? hostelToCard(hostel) : null;
     })
     .filter((card): card is ServiceCardData => Boolean(card));
