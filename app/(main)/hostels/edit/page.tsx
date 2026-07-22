@@ -21,7 +21,6 @@ export default async function HostelEditPage() {
         userId={user.id}
         defaultName={hostel.name}
         defaultImageUrl={hostel.image_url ?? ""}
-        defaultUniversity={hostel.university}
         defaultTownship={hostel.township}
         defaultDistanceKm={String(hostel.distance_km)}
         defaultMonthlyRent={String(hostel.monthly_rent)}

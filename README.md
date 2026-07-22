@@ -31,7 +31,7 @@ Next.js (App Router, TypeScript) · Tailwind CSS · shadcn/ui · Supabase (Auth 
 
 ## What's implemented
 
-- Email/password auth, onboarding (university, academic year, township, budget, subjects) writing
+- Email/password auth, onboarding (academic year, township, budget, subjects) writing
   to a `profiles` table.
 - Home dashboard, Explore, four service listings (Tutors, Hostels, Food, University Ferry) with
   filters, a shared service detail page, Save + booking/request confirmation flows, and a

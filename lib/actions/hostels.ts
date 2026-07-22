@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getHostelByOwner, insertHostelListing, updateHostelListing } from "@/lib/queries/hostels";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
 import type { GenderPolicy } from "@/types/database.types";
@@ -10,7 +9,6 @@ import type { GenderPolicy } from "@/types/database.types";
 export interface HostelRoomInput {
   name: string;
   imageUrl: string;
-  university: string;
   township: string;
   distanceKm: string;
   monthlyRent: string;
@@ -24,16 +22,12 @@ export interface HostelRoomInput {
 
 function validateHostelRoomInput(input: HostelRoomInput) {
   const name = input.name.trim();
-  const university = input.university.trim();
   const township = input.township.trim();
   const distance = Number.parseFloat(input.distanceKm);
   const rent = Number.parseInt(input.monthlyRent, 10);
   const availableRooms = Number.parseInt(input.availableRooms, 10);
 
   if (!name) return { ok: false as const, error: "Give your listing a name." };
-  if (!UNIVERSITIES.includes(university as (typeof UNIVERSITIES)[number])) {
-    return { ok: false as const, error: "Select a valid university." };
-  }
   if (!TOWNSHIPS.includes(township as (typeof TOWNSHIPS)[number])) {
     return { ok: false as const, error: "Select a valid township." };
   }
@@ -55,7 +49,7 @@ function validateHostelRoomInput(input: HostelRoomInput) {
 
   return {
     ok: true as const,
-    value: { name, university, township, distance, rent, availableRooms },
+    value: { name, township, distance, rent, availableRooms },
   };
 }
 
@@ -73,13 +67,12 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
 
   const validated = validateHostelRoomInput(input);
   if (!validated.ok) return validated;
-  const { name, university, township, distance, rent, availableRooms } = validated.value;
+  const { name, township, distance, rent, availableRooms } = validated.value;
 
   try {
     const created = await insertHostelListing(supabase, {
       name,
       image_url: input.imageUrl.trim() || null,
-      university,
       township,
       distance_km: distance,
       monthly_rent: rent,
@@ -109,13 +102,12 @@ export async function editHostelRoom(input: HostelRoomInput): Promise<HostelRoom
 
   const validated = validateHostelRoomInput(input);
   if (!validated.ok) return validated;
-  const { name, university, township, distance, rent, availableRooms } = validated.value;
+  const { name, township, distance, rent, availableRooms } = validated.value;
 
   try {
     const updated = await updateHostelListing(supabase, existing.id, {
       name,
       image_url: input.imageUrl.trim() || null,
-      university,
       township,
       distance_km: distance,
       monthly_rent: rent,

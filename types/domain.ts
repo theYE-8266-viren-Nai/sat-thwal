@@ -60,7 +60,6 @@ export interface StudentProfile {
   fullName: string | null;
   avatarUrl: string | null;
   phone: string | null;
-  university: string | null;
   academicYear: string | null;
   township: string | null;
   budgetMin: number | null;

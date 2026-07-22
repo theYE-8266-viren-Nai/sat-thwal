@@ -61,7 +61,6 @@ export default function TransportationPage() {
           row.route_name.toLowerCase().includes(q) ||
           row.pickup_township.toLowerCase().includes(q) ||
           stops.some((stop) => stop.name.toLowerCase().includes(q)) ||
-          row.university.toLowerCase().includes(q) ||
           (row.vehicle_type?.toLowerCase().includes(q) ?? false) ||
           row.driver_name.toLowerCase().includes(q)
         );

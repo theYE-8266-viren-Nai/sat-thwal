@@ -35,10 +35,10 @@ export default async function HomePage() {
   const savedKeys = new Set(savedItems.map((s) => `${s.service_type}:${s.service_id}`));
 
   const recommended: ServiceCardData[] = [
-    ...tutors.filter((t) => t.university === profile?.university).slice(0, 2).map(tutorToCard),
-    ...hostels.filter((h) => h.university === profile?.university).slice(0, 2).map(hostelToCard),
+    ...tutors.slice(0, 2).map(tutorToCard),
+    ...hostels.slice(0, 2).map(hostelToCard),
     ...[...foodItems].sort((a, b) => b.restaurant.rating - a.restaurant.rating).slice(0, 2).map(foodToCard),
-    ...routes.filter((r) => r.university === profile?.university).slice(0, 2).map(routeToCard),
+    ...routes.slice(0, 2).map(routeToCard),
   ].slice(0, 6);
 
   const nearby: ServiceCardData[] = [
@@ -54,7 +54,6 @@ export default async function HomePage() {
     <div className="pb-6">
       <GreetingHeader
         name={firstName}
-        university={profile?.university ?? null}
         township={profile?.township ?? null}
         profileId={user.id}
       />

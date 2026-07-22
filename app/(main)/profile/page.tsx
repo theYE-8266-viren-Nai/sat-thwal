@@ -32,7 +32,6 @@ export default async function ProfilePage() {
       <PageHeader title="Profile" />
       <ProfileHeader
         name={profile.fullName ?? "Student"}
-        university={profile.university}
         academicYear={profile.academicYear}
         avatarUrl={profile.avatarUrl}
       />

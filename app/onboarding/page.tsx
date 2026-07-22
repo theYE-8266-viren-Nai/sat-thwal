@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { getRoleLandingPath } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfile } from "@/lib/queries/profiles";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { ACADEMIC_YEARS } from "@/lib/constants/subjects";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [university, setUniversity] = useState("");
   const [academicYear, setAcademicYear] = useState("");
   const [township, setTownship] = useState("");
   const [budget, setBudget] = useState<[number, number]>([50000, 150000]);
@@ -24,7 +22,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const canContinue = university && academicYear && township;
+  const canContinue = academicYear && township;
 
   async function handleContinue() {
     setError(null);
@@ -49,7 +47,6 @@ export default function OnboardingPage() {
       }
 
       await updateProfile(supabase, user.id, {
-        university,
         academic_year: academicYear,
         township,
         budget_min: budget[0],
@@ -82,14 +79,6 @@ export default function OnboardingPage() {
       </div>
 
       <div className="flex flex-col gap-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <LabeledSelect
-          id="university"
-          label="University"
-          placeholder="Select your university"
-          value={university}
-          onChange={setUniversity}
-          options={UNIVERSITIES}
-        />
         <LabeledSelect
           id="academicYear"
           label="Current academic year"

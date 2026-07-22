@@ -22,7 +22,6 @@ export default async function TutorEditPage() {
         defaultName={tutor.name}
         defaultPhotoUrl={tutor.photo_url ?? ""}
         defaultSubjects={tutor.subjects}
-        defaultUniversity={tutor.university}
         defaultTownship={tutor.township}
         defaultBio={tutor.bio ?? ""}
         defaultPrice={String(tutor.price_per_session)}

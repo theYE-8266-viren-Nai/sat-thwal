@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfile } from "@/lib/queries/profiles";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { ACADEMIC_YEARS } from "@/lib/constants/subjects";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
@@ -23,7 +22,6 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [university, setUniversity] = useState(profile.university ?? "");
   const [academicYear, setAcademicYear] = useState(profile.academicYear ?? "");
   const [township, setTownship] = useState(profile.township ?? "");
   const [budget, setBudget] = useState<[number, number]>([
@@ -37,7 +35,6 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
     try {
       const supabase = createClient();
       await updateProfile(supabase, profile.id, {
-        university,
         academic_year: academicYear,
         township,
         budget_min: budget[0],
@@ -55,7 +52,6 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
   }
 
   function handleCancel() {
-    setUniversity(profile.university ?? "");
     setAcademicYear(profile.academicYear ?? "");
     setTownship(profile.township ?? "");
     setBudget([profile.budgetMin ?? 50000, profile.budgetMax ?? 150000]);
@@ -67,7 +63,6 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
     return (
       <>
         <ProfileSection title="Academic details">
-          <InfoRow label="University" value={profile.university ?? "Not set"} />
           <InfoRow label="Academic year" value={profile.academicYear ?? "Not set"} />
           <InfoRow label="Township" value={profile.township ?? "Not set"} />
         </ProfileSection>
@@ -110,14 +105,6 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
   return (
     <section className="mt-6 flex flex-col gap-5 px-5 md:px-8">
       <div className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <LabeledSelect
-          id="profile-university"
-          label="University"
-          placeholder="Select your university"
-          value={university}
-          onChange={setUniversity}
-          options={UNIVERSITIES}
-        />
         <LabeledSelect
           id="profile-academic-year"
           label="Current academic year"

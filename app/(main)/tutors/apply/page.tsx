@@ -23,7 +23,6 @@ export default async function TutorApplyPage() {
       <TutorApplyForm
         userId={user.id}
         defaultName={profile?.full_name ?? ""}
-        defaultUniversity={profile?.university ?? ""}
         defaultTownship={profile?.township ?? ""}
       />
     </div>

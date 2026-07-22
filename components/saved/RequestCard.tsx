@@ -52,6 +52,7 @@ export function RequestCard({
   const completedDateLabel = completedAt
     ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(completedAt))
     : null;
+  const providerLabel = data.category === "tutor" ? "Tutor completed" : "Provider completed";
 
   async function handleComplete() {
     setSubmitting(true);
@@ -77,6 +78,18 @@ export function RequestCard({
           <span className="text-xs text-muted-foreground">{note}</span>
         )}
       </div>
+      {status === "completed" && (
+        <div className="rounded-xl border border-border bg-card p-3">
+          <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full bg-secondary px-2.5 py-1">Student completed</span>
+            <span className="rounded-full bg-secondary px-2.5 py-1">{providerLabel}</span>
+          </div>
+          {completedDateLabel && (
+            <p className="mt-2 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
+          )}
+        </div>
+      )}
       <ServiceCard
         data={data}
         profileId={profileId}
@@ -102,14 +115,6 @@ export function RequestCard({
                 {submitting ? "Completing..." : "Complete"}
               </Button>
             </div>
-          )}
-        </div>
-      )}
-      {status === "completed" && (
-        <div className="rounded-xl border border-border bg-card p-3">
-          <p className="text-sm font-medium text-foreground">Completed by both sides</p>
-          {completedDateLabel && (
-            <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
           )}
         </div>
       )}

@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import type { SessionMode } from "@/types/database.types";
 import { editTutorProfile } from "@/lib/actions/tutors";
@@ -21,7 +20,6 @@ interface TutorEditFormProps {
   defaultName: string;
   defaultPhotoUrl: string;
   defaultSubjects: string[];
-  defaultUniversity: string;
   defaultTownship: string;
   defaultBio: string;
   defaultPrice: string;
@@ -40,7 +38,6 @@ export function TutorEditForm({
   defaultName,
   defaultPhotoUrl,
   defaultSubjects,
-  defaultUniversity,
   defaultTownship,
   defaultBio,
   defaultPrice,
@@ -52,7 +49,6 @@ export function TutorEditForm({
   const [name, setName] = useState(defaultName);
   const [photoUrl, setPhotoUrl] = useState(defaultPhotoUrl);
   const [subjects, setSubjects] = useState<string[]>(defaultSubjects);
-  const [university, setUniversity] = useState(defaultUniversity);
   const [township, setTownship] = useState(defaultTownship);
   const [bio, setBio] = useState(defaultBio);
   const [price, setPrice] = useState(defaultPrice);
@@ -60,7 +56,7 @@ export function TutorEditForm({
   const [availabilityNote, setAvailabilityNote] = useState(defaultAvailabilityNote);
   const [submitting, setSubmitting] = useState(false);
 
-  const canSubmit = !!name && subjects.length > 0 && !!university && !!township && !!price && !submitting;
+  const canSubmit = !!name && subjects.length > 0 && !!township && !!price && !submitting;
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -69,7 +65,6 @@ export function TutorEditForm({
         name,
         photoUrl,
         subjects,
-        university,
         township,
         bio,
         pricePerSession: price,
@@ -99,15 +94,6 @@ export function TutorEditForm({
         <ImageUpload bucket="tutor-photos" userId={userId} label="Photo" value={photoUrl} onChange={setPhotoUrl} />
 
         <SubjectMultiSelect value={subjects} onChange={setSubjects} />
-
-        <LabeledSelect
-          id="tutor-university"
-          label="University"
-          placeholder="Select university"
-          value={university}
-          onChange={setUniversity}
-          options={UNIVERSITIES}
-        />
 
         <LabeledSelect
           id="tutor-township"
