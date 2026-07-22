@@ -55,7 +55,8 @@ export function DetailActionBar({
 }: DetailActionBarProps) {
   const categoryConfig = CATEGORIES[category];
   const requestAlreadyExists =
-    (category === "tutor" || category === "hostel") && existingRequestStatus !== null;
+    (category === "tutor" || category === "hostel" || category === "transportation") &&
+    existingRequestStatus !== null;
   const requestBlocked = requestBlockReason !== null;
 
   async function handleShare() {
