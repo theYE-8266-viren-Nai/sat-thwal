@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getProfile, profileToStudentProfile } from "@/lib/queries/profiles";
-import { getTutors } from "@/lib/queries/tutors";
-import { getHostels } from "@/lib/queries/hostels";
-import { getFoodItems } from "@/lib/queries/food";
-import { getRoutes } from "@/lib/queries/transportation";
 import { getSavedItems } from "@/lib/queries/savedItems";
-import { simulateSmartMatch, type SmartMatchCatalog } from "@/lib/smartmatch/simulate";
 import { getRecentSearches, addRecentSearch } from "@/lib/recentlyViewed";
 import { AIAvatar } from "@/components/smartmatch/AIAvatar";
 import { ChatInput } from "@/components/smartmatch/ChatInput";
@@ -17,20 +11,19 @@ import { SuggestedPrompts } from "@/components/smartmatch/SuggestedPrompts";
 import { RecentSearches } from "@/components/smartmatch/RecentSearches";
 import { LoadingIndicator } from "@/components/smartmatch/LoadingIndicator";
 import { RecommendationResults } from "@/components/smartmatch/RecommendationResults";
-import type { ServiceCardData, StudentProfile } from "@/types/domain";
+import type { ServiceCardData } from "@/types/domain";
 
-type Status = "idle" | "loading" | "results";
+type Status = "idle" | "loading" | "results" | "error";
 
 export function SmartMatchClient() {
   const searchParams = useSearchParams();
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [catalog, setCatalog] = useState<SmartMatchCatalog | null>(null);
   const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ServiceCardData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -42,23 +35,16 @@ export function SmartMatchClient() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [profileRow, tutors, hostels, foodItems, routes, saved] = await Promise.all([
-        getProfile(supabase, user.id),
-        getTutors(supabase),
-        getHostels(supabase),
-        getFoodItems(supabase),
-        getRoutes(supabase),
+      const [saved] = await Promise.all([
         getSavedItems(supabase, user.id),
       ]);
 
       setProfileId(user.id);
-      if (profileRow) setProfile(profileToStudentProfile(profileRow));
-      setCatalog({ tutors, hostels, foodItems, routes });
       setSavedKeys(new Set(saved.map((s) => `${s.service_type}:${s.service_id}`)));
 
       const initialQuery = searchParams.get("q");
       if (initialQuery) {
-        void handleSubmit(initialQuery, { tutors, hostels, foodItems, routes }, profileRow ? profileToStudentProfile(profileRow) : null);
+        void handleSubmit(initialQuery);
       }
     }
 
@@ -66,22 +52,32 @@ export function SmartMatchClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleSubmit(
-    text: string,
-    catalogOverride?: SmartMatchCatalog,
-    profileOverride?: StudentProfile | null,
-  ) {
-    const activeCatalog = catalogOverride ?? catalog;
-    if (!activeCatalog) return;
-
+  async function handleSubmit(text: string) {
     setQuery(text);
     setStatus("loading");
+    setError(null);
     addRecentSearch(text);
     setRecentSearches(getRecentSearches());
 
-    const matches = await simulateSmartMatch(text, activeCatalog, profileOverride ?? profile);
-    setResults(matches);
-    setStatus("results");
+    try {
+      const response = await fetch("/api/smartmatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: text }),
+      });
+
+      if (!response.ok) {
+        throw new Error("SmartMatch request failed");
+      }
+
+      const matches = (await response.json()) as ServiceCardData[];
+      setResults(Array.isArray(matches) ? matches : []);
+      setStatus("results");
+    } catch {
+      setResults([]);
+      setError("SmartMatch couldn't analyze that request right now. Please try again.");
+      setStatus("error");
+    }
   }
 
   return (
@@ -91,17 +87,23 @@ export function SmartMatchClient() {
         <div>
           <h1 className="text-xl font-bold text-foreground">What do you need help with today?</h1>
           <p className="text-sm text-muted-foreground">
-            Tell SmartMatch AI what you&apos;re looking for across tutors, hostels, food, and transportation.
+            Tell SmartMatch AI what you&apos;re looking for across tutors and hostels.
           </p>
         </div>
       </div>
 
-      <ChatInput onSubmit={(text) => handleSubmit(text)} disabled={!catalog || status === "loading"} />
+      <ChatInput onSubmit={(text) => handleSubmit(text)} disabled={!profileId || status === "loading"} />
 
       {status === "loading" && <LoadingIndicator />}
 
       {status === "results" && profileId && (
         <RecommendationResults query={query} results={results} profileId={profileId} savedKeys={savedKeys} />
+      )}
+
+      {status === "error" && error && (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
       )}
 
       {status === "idle" && (

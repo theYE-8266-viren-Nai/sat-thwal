@@ -1,8 +1,8 @@
 const PROMPTS = [
   "Find a tutor for Data Structures",
   "Find a hostel under 150,000 MMK",
-  "Find meals under 5,000 MMK",
-  "Find transportation from Hledan to UIT",
+  "Find a math tutor near Hlaing",
+  "Find a room near my university",
 ];
 
 export function SuggestedPrompts({ onSelect }: { onSelect: (prompt: string) => void }) {

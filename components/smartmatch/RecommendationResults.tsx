@@ -15,20 +15,27 @@ export function RecommendationResults({ query, results, profileId, savedKeys }: 
       <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <AIAvatar className="h-9 w-9 shrink-0" />
         <p className="text-sm text-foreground">
-          Here&apos;s what I found for &ldquo;{query}&rdquo; — one pick from each service, matched to
-          your budget, location, and preferences.
+          Here&apos;s what I found for &ldquo;{query}&rdquo; - tutor and hostel picks matched to your
+          budget, location, and preferences.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {results.map((item) => (
-          <ServiceCard
-            key={`${item.category}-${item.id}`}
-            data={item}
-            profileId={profileId}
-            initialSaved={savedKeys.has(`${item.category}:${item.id}`)}
-          />
-        ))}
-      </div>
+
+      {results.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+          No tutor or hostel matches found yet. Try a different subject, township, or budget.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {results.map((item) => (
+            <ServiceCard
+              key={`${item.category}-${item.id}`}
+              data={item}
+              profileId={profileId}
+              initialSaved={savedKeys.has(`${item.category}:${item.id}`)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
