@@ -30,7 +30,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function HostelsPage() {
   return (
     <ServiceListingPage<HostelRow>
-      title="Find a Hostel"
+      title="Hostel"
       searchPlaceholder="Search hostels, townships..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={(n) => (n < 1000 ? `${n} km` : formatMMK(n))}

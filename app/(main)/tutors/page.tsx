@@ -44,7 +44,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function TutorsPage() {
   return (
     <ServiceListingPage<TutorRow>
-      title="Find a Tutor"
+      title="Tutor"
       searchPlaceholder="Search tutors, subjects..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={formatMMK}

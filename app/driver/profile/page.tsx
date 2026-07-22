@@ -1,49 +1,5 @@
-import { Bus, FileText, Mail, MapPin, Phone, UserRound } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { requireDriverProfile } from "@/lib/driver/auth";
+import { redirect } from "next/navigation";
 
 export default async function DriverProfilePage() {
-  const { driverProfile, profile, user } = await requireDriverProfile();
-
-  const rows = [
-    { label: "Name", value: driverProfile?.provider_name ?? profile.full_name ?? "Not added", icon: UserRound },
-    { label: "Email", value: user.email ?? "Not added", icon: Mail },
-    { label: "Phone", value: driverProfile?.service_phone ?? profile.phone ?? "Not added", icon: Phone },
-    { label: "Township", value: driverProfile?.township ?? profile.township ?? "Not added", icon: MapPin },
-    {
-      label: "Vehicle type",
-      value: driverProfile?.vehicle_types.length ? driverProfile.vehicle_types.join(", ") : "Not added",
-      icon: Bus,
-    },
-    { label: "Vehicle number", value: driverProfile?.vehicle_number ?? "Not added", icon: Bus },
-    { label: "License number", value: driverProfile?.license_number ?? "Not added", icon: FileText },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <section>
-        <h2 className="text-2xl font-semibold text-foreground">Driver profile</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          These details are used to identify your provider account.
-        </p>
-      </section>
-
-      <Card className="gap-0 divide-y divide-border p-0">
-        {rows.map((row) => {
-          const Icon = row.icon;
-          return (
-            <div key={row.label} className="flex items-center gap-3 px-4 py-4">
-              <Icon className="h-5 w-5 text-brand-mint" />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {row.label}
-                </p>
-                <p className="mt-1 text-sm text-foreground">{row.value}</p>
-              </div>
-            </div>
-          );
-        })}
-      </Card>
-    </div>
-  );
+  redirect("/driver/dashboard");
 }
