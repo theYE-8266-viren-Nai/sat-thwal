@@ -1,6 +1,7 @@
 "use client";
 
-import { Share2, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Share2, MessageCircle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/services/SaveButton";
@@ -22,6 +23,7 @@ interface DetailActionBarProps {
   title: string;
   contactInfo: string;
   initialSaved: boolean;
+  isOwner?: boolean;
 }
 
 export function DetailActionBar({
@@ -31,6 +33,7 @@ export function DetailActionBar({
   title,
   contactInfo,
   initialSaved,
+  isOwner = false,
 }: DetailActionBarProps) {
   const categoryConfig = CATEGORIES[category];
 
@@ -48,6 +51,33 @@ export function DetailActionBar({
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard");
     }
+  }
+
+  if (isOwner) {
+    return (
+      <div className="sticky bottom-[calc(var(--bottom-nav-h)+var(--safe-bottom))] z-30 flex items-center gap-2 border-t border-border bg-card px-4 pt-3 pb-[calc(0.75rem+var(--safe-bottom))] sm:px-5 md:bottom-0 md:px-8">
+        <Button
+          variant="outline"
+          size="icon-touch"
+          className="shrink-0 rounded-full"
+          onClick={handleShare}
+          aria-label="Share"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+        <Button
+          asChild
+          size="touch"
+          className="min-w-0 flex-1 rounded-full text-white"
+          style={{ backgroundColor: categoryConfig.color }}
+        >
+          <Link href="/tutors/edit">
+            <Pencil className="h-4 w-4" />
+            <span className="truncate">Edit Profile</span>
+          </Link>
+        </Button>
+      </div>
+    );
   }
 
   return (

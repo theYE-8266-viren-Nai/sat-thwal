@@ -17,4 +17,5 @@ export interface ServiceDetailData {
   amenities: string[];
   ctaLabel: string;
   contactInfo: string;
+  ownerProfileId?: string | null;
 }

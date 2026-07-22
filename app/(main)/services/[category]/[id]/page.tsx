@@ -59,6 +59,7 @@ export default async function ServiceDetailPage({
 
   if (!detail) notFound();
 
+  const isOwner = detail.ownerProfileId === user.id;
   const saved = await isSaved(supabase, user.id, typedCategory, id);
 
   return (
@@ -88,6 +89,7 @@ export default async function ServiceDetailPage({
         title={detail.title}
         contactInfo={detail.contactInfo}
         initialSaved={saved}
+        isOwner={isOwner}
       />
     </div>
   );

@@ -69,6 +69,21 @@ export async function insertTutorProfile(
   return data;
 }
 
+export async function updateTutorProfile(
+  supabase: SupabaseClient<Database>,
+  tutorId: string,
+  updates: Database["public"]["Tables"]["tutors"]["Update"],
+) {
+  const { data, error } = await supabase
+    .from("tutors")
+    .update(updates)
+    .eq("id", tutorId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export function tutorToCard(tutor: TutorRow): ServiceCardData {
   const modeLabel =
     tutor.session_mode === "both"
@@ -122,5 +137,6 @@ export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
     amenities: tutor.subjects,
     ctaLabel: "Request Session",
     contactInfo: "Message via Sat Thwal to get this tutor's contact details.",
+    ownerProfileId: tutor.owner_profile_id,
   };
 }
