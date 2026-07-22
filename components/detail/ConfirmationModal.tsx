@@ -102,23 +102,15 @@ export function ConfirmationModal({
       if (action === "requestSeat" && category === "transportation") {
         const pickupStop =
           routeStops.find((stop) => stop.id === pickupStopId) ?? routeStops[0];
-        try {
-          await createTransportationRegistration(
-            supabase,
-            profileId,
-            serviceId,
-            pickupStop?.id ?? "pickup-stop",
-            pickupStop?.name ?? "Pickup stop",
-            pickupStop?.pickupTime,
-            note.trim(),
-          );
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "";
-          if (message !== "Transportation route not found." && message !== "This route is not assigned to a driver yet.") {
-            throw error;
-          }
-          await createRequest(supabase, profileId, category, serviceId, note.trim());
-        }
+        await createTransportationRegistration(
+          supabase,
+          profileId,
+          serviceId,
+          pickupStop?.id ?? "pickup-stop",
+          pickupStop?.name ?? "Pickup stop",
+          pickupStop?.pickupTime,
+          note.trim(),
+        );
       } else {
         await createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
       }

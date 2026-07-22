@@ -3,7 +3,6 @@ export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type UserRole = "student" | "driver" | "admin" | "restaurant";
-export type TransportationRegistrationStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 type ProfileRow = {
   id: string;
@@ -108,22 +107,6 @@ type TransportationRow = {
   created_at: string;
 }
 
-type TransportationRegistrationRow = {
-  id: string;
-  student_id: string;
-  route_id: string;
-  driver_id: string;
-  pickup_stop_id: string;
-  pickup_stop_name: string;
-  pickup_time: string | null;
-  pickup_address: string;
-  status: TransportationRegistrationStatus;
-  rejection_reason: string | null;
-  created_at: string;
-  updated_at: string;
-  approved_at: string | null;
-}
-
 type NotificationRow = {
   id: string;
   recipient_id: string;
@@ -166,6 +149,11 @@ type RequestRow = {
   service_id: string;
   status: RequestStatus;
   note: string | null;
+  pickup_stop_id: string | null;
+  pickup_stop_name: string | null;
+  pickup_time: string | null;
+  pickup_address: string | null;
+  rejection_reason: string | null;
   seen_by_student: boolean;
   requester_completed_at: string | null;
   owner_completed_at: string | null;
@@ -211,19 +199,6 @@ export type Database = {
         Row: TransportationRow;
         Insert: Partial<TransportationRow>;
         Update: Partial<TransportationRow>;
-        Relationships: [];
-      };
-      transportation_registrations: {
-        Row: TransportationRegistrationRow;
-        Insert: Partial<TransportationRegistrationRow> & {
-          student_id: string;
-          route_id: string;
-          driver_id: string;
-          pickup_stop_id: string;
-          pickup_stop_name: string;
-          pickup_address: string;
-        };
-        Update: Partial<TransportationRegistrationRow>;
         Relationships: [];
       };
       notifications: {
@@ -279,6 +254,10 @@ export type Database = {
       mark_request_responses_seen: {
         Args: Record<string, never>;
         Returns: undefined;
+      };
+      confirm_transportation_request: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
       };
     };
   };

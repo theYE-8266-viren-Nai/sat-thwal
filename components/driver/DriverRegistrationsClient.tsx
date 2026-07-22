@@ -10,25 +10,15 @@ import { RegistrationStatusActions } from "@/components/driver/RegistrationStatu
 import type {
   TransportationRegistrationWithDetails,
 } from "@/lib/queries/transportationRegistrations";
-import type { TransportationRegistrationStatus } from "@/types/database.types";
+import type { RequestStatus } from "@/types/database.types";
+import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 
-const STATUS_TABS: Array<TransportationRegistrationStatus | "all"> = [
+const STATUS_TABS: Array<RequestStatus | "all"> = [
   "pending",
-  "approved",
-  "rejected",
+  "confirmed",
+  "cancelled",
   "all",
 ];
-
-function statusLabel(status: TransportationRegistrationStatus) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function statusClass(status: TransportationRegistrationStatus) {
-  if (status === "approved") return "bg-brand-mint text-white";
-  if (status === "rejected") return "bg-destructive/10 text-destructive";
-  if (status === "cancelled") return "bg-muted text-muted-foreground";
-  return "bg-brand-indigo text-white";
-}
 
 interface DriverRegistrationsClientProps {
   registrations: TransportationRegistrationWithDetails[];
@@ -58,7 +48,7 @@ export function DriverRegistrationsClient({ registrations }: DriverRegistrations
     });
   }, [query, registrations]);
 
-  function registrationsFor(tab: TransportationRegistrationStatus | "all") {
+  function registrationsFor(tab: RequestStatus | "all") {
     if (tab === "all") return filtered;
     return filtered.filter((registration) => registration.status === tab);
   }
@@ -105,8 +95,8 @@ export function DriverRegistrationsClient({ registrations }: DriverRegistrations
                         <h3 className="font-semibold text-foreground">
                           {registration.student?.full_name ?? "Student"}
                         </h3>
-                        <Badge className={statusClass(registration.status)}>
-                          {statusLabel(registration.status)}
+                        <Badge className={REQUEST_STATUS_STYLES[registration.status]}>
+                          {REQUEST_STATUS_LABEL[registration.status]}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -116,6 +106,11 @@ export function DriverRegistrationsClient({ registrations }: DriverRegistrations
                     <RegistrationStatusActions
                       registrationId={registration.id}
                       status={registration.status}
+                      studentName={registration.student?.full_name}
+                      routeName={registration.route?.route_name}
+                      pickupStopName={registration.pickup_stop_name}
+                      pickupTime={registration.pickup_time}
+                      remainingSeats={registration.route?.available_seats}
                     />
                   </div>
 

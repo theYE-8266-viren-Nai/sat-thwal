@@ -2,9 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, RequestStatus } from "@/types/database.types";
 import type { ServiceCategory } from "@/types/domain";
 
-type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
+export type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
-function normalizeRequestStatus<T extends RequestRow>(request: T): T {
+export function normalizeRequestStatus<T extends RequestRow>(request: T): T {
   if (
     request.status === "confirmed" &&
     request.requester_completed_at &&
@@ -48,7 +48,7 @@ export async function getExistingActiveRequest(
   category: ServiceCategory,
   serviceId: string,
 ) {
-  if (category !== "tutor" && category !== "hostel") return null;
+  if (category !== "tutor" && category !== "hostel" && category !== "transportation") return null;
 
   const { data, error } = await supabase
     .from("requests")
@@ -90,6 +90,17 @@ export async function getPeerRequestBlockReason(
     return data ? "Room owners can't request other rooms." : null;
   }
 
+  if (category === "transportation") {
+    const { data, error } = await supabase
+      .from("transportation_routes")
+      .select("id")
+      .eq("driver_id", profileId)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? "Drivers can't book seats on transportation routes." : null;
+  }
+
   return null;
 }
 
@@ -121,10 +132,68 @@ export async function createRequest(
   return normalizeRequestStatus(data);
 }
 
+export async function createTransportationRequest(
+  supabase: SupabaseClient<Database>,
+  studentId: string,
+  routeId: string,
+  pickupStopId: string | undefined,
+  pickupStopName: string | undefined,
+  pickupTime: string | undefined,
+  pickupAddress: string,
+) {
+  const { data: route, error: routeError } = await supabase
+    .from("transportation_routes")
+    .select("driver_id, route_name")
+    .eq("id", routeId)
+    .maybeSingle();
+  if (routeError) throw routeError;
+  if (!route) throw new Error("Transportation route not found.");
+  if (!route.driver_id) throw new Error("This route is not assigned to a driver yet.");
+
+  const blockReason = await getPeerRequestBlockReason(supabase, studentId, "transportation");
+  if (blockReason) throw new Error(blockReason);
+
+  const existing = await getExistingActiveRequest(supabase, studentId, "transportation", routeId);
+  if (existing) {
+    throw new Error("You've already requested this route. Track it from Saved & Bookings.");
+  }
+
+  const { data, error } = await supabase
+    .from("requests")
+    .insert({
+      profile_id: studentId,
+      service_type: "transportation",
+      service_id: routeId,
+      pickup_stop_id: pickupStopId,
+      pickup_stop_name: pickupStopName,
+      pickup_time: pickupTime,
+      pickup_address: pickupAddress,
+    })
+    .select("*")
+    .single();
+  if (error) {
+    throw new Error(getRequestInsertErrorMessage(error));
+  }
+
+  return { request: normalizeRequestStatus(data), driverId: route.driver_id, routeName: route.route_name };
+}
+
+export async function getRequestsForRoute(supabase: SupabaseClient<Database>, routeId: string) {
+  const { data, error } = await supabase
+    .from("requests")
+    .select("*")
+    .eq("service_type", "transportation")
+    .eq("service_id", routeId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(normalizeRequestStatus);
+}
+
 export async function updateRequestStatus(
   supabase: SupabaseClient<Database>,
   requestId: string,
   status: RequestStatus,
+  rejectionReason?: string,
 ) {
   const isResponse = status === "confirmed" || status === "cancelled";
   const { error } = await supabase
@@ -133,6 +202,7 @@ export async function updateRequestStatus(
       status,
       updated_at: new Date().toISOString(),
       ...(isResponse ? { seen_by_student: false } : {}),
+      ...(status === "cancelled" ? { rejection_reason: rejectionReason ?? null } : {}),
     })
     .eq("id", requestId);
   if (error) throw error;

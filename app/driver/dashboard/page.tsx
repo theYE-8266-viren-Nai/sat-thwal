@@ -35,19 +35,19 @@ export default async function DriverDashboardPage() {
   }
 
   const pendingCount = registrations.filter((item) => item.status === "pending").length;
-  const approvedCount = registrations.filter((item) => item.status === "approved").length;
+  const approvedCount = registrations.filter((item) => item.status === "confirmed").length;
   const unreadCount = notifications.filter((item) => !item.is_read).length;
   const availableSeats = routes.reduce((sum, route) => sum + route.available_seats, 0);
   const approvedByRoute = new Map<string, number>();
   registrations
-    .filter((item) => item.status === "approved")
-    .forEach((item) => approvedByRoute.set(item.route_id, (approvedByRoute.get(item.route_id) ?? 0) + 1));
+    .filter((item) => item.status === "confirmed")
+    .forEach((item) => approvedByRoute.set(item.service_id, (approvedByRoute.get(item.service_id) ?? 0) + 1));
   const pendingByRoute = new Map<string, number>();
   registrations
     .filter((item) => item.status === "pending")
-    .forEach((item) => pendingByRoute.set(item.route_id, (pendingByRoute.get(item.route_id) ?? 0) + 1));
+    .forEach((item) => pendingByRoute.set(item.service_id, (pendingByRoute.get(item.service_id) ?? 0) + 1));
   const primaryRoute = routes[0];
-  const approvedPassengers = registrations.filter((item) => item.status === "approved");
+  const approvedPassengers = registrations.filter((item) => item.status === "confirmed");
   const displayName = driverProfile.provider_name || profile.full_name || "Driver";
 
   const stats = [

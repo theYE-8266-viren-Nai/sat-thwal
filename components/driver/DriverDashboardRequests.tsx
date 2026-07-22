@@ -28,15 +28,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RegistrationStatusActions } from "@/components/driver/RegistrationStatusActions";
 import { getRouteStops } from "@/lib/queries/transportation";
 import type { TransportationRegistrationWithDetails } from "@/lib/queries/transportationRegistrations";
-import type { TransportationRegistrationStatus } from "@/types/database.types";
+import type { RequestStatus } from "@/types/database.types";
+import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 import { cn } from "@/lib/utils";
 
-const STATUS_FILTERS: Array<TransportationRegistrationStatus | "all"> = [
+const STATUS_FILTERS: Array<RequestStatus | "all"> = [
   "all",
   "pending",
-  "approved",
-  "rejected",
+  "confirmed",
   "cancelled",
+  "completed",
 ];
 
 function initials(name?: string | null) {
@@ -46,17 +47,6 @@ function initials(name?: string | null) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function statusClass(status: TransportationRegistrationStatus) {
-  if (status === "approved") return "bg-brand-mint/15 text-emerald-700";
-  if (status === "rejected") return "bg-destructive/10 text-destructive";
-  if (status === "cancelled") return "bg-slate-100 text-slate-600";
-  return "bg-amber-100 text-amber-700";
-}
-
-function statusLabel(status: TransportationRegistrationStatus) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 function requestDate(value: string) {
@@ -78,7 +68,7 @@ interface DriverDashboardRequestsProps {
 
 export function DriverDashboardRequests({ registrations }: DriverDashboardRequestsProps) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<TransportationRegistrationStatus | "all">("pending");
+  const [status, setStatus] = useState<RequestStatus | "all">("pending");
   const [routeId, setRouteId] = useState("all");
   const [date, setDate] = useState("");
   const [sort, setSort] = useState("newest");
@@ -111,7 +101,7 @@ export function DriverDashboardRequests({ registrations }: DriverDashboardReques
           .toLowerCase();
         const matchesQuery = normalized ? searchable.includes(normalized) : true;
         const matchesStatus = status === "all" ? true : registration.status === status;
-        const matchesRoute = routeId === "all" ? true : registration.route_id === routeId;
+        const matchesRoute = routeId === "all" ? true : registration.service_id === routeId;
         const matchesDate = date ? registration.created_at.slice(0, 10) === date : true;
         return matchesQuery && matchesStatus && matchesRoute && matchesDate;
       })
@@ -157,7 +147,7 @@ export function DriverDashboardRequests({ registrations }: DriverDashboardReques
             className="h-10 rounded-xl border-border bg-background pl-9"
           />
         </div>
-        <Select value={status} onValueChange={(value) => setStatus(value as TransportationRegistrationStatus | "all")}>
+        <Select value={status} onValueChange={(value) => setStatus(value as RequestStatus | "all")}>
           <SelectTrigger className="h-10 w-full rounded-xl border-border bg-background lg:w-40">
             <Filter className="h-4 w-4" />
             <SelectValue />
@@ -165,7 +155,7 @@ export function DriverDashboardRequests({ registrations }: DriverDashboardReques
           <SelectContent>
             {STATUS_FILTERS.map((item) => (
               <SelectItem key={item} value={item}>
-                {item === "all" ? "All statuses" : statusLabel(item)}
+                {item === "all" ? "All statuses" : REQUEST_STATUS_LABEL[item]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -273,8 +263,8 @@ function TransportationRequestCard({ registration }: { registration: Transportat
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-semibold text-foreground">{studentName}</h3>
-              <Badge className={cn("rounded-full", statusClass(registration.status))}>
-                {statusLabel(registration.status)}
+              <Badge className={cn("rounded-full", REQUEST_STATUS_STYLES[registration.status])}>
+                {REQUEST_STATUS_LABEL[registration.status]}
               </Badge>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">

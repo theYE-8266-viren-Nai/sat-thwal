@@ -16,12 +16,15 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { updateTransportationRegistrationStatus } from "@/lib/queries/transportationRegistrations";
-import type { TransportationRegistrationStatus } from "@/types/database.types";
+import {
+  confirmTransportationRequest,
+  rejectTransportationRequest,
+} from "@/lib/queries/transportationRegistrations";
+import type { RequestStatus } from "@/types/database.types";
 
 interface RegistrationStatusActionsProps {
   registrationId: string;
-  status: TransportationRegistrationStatus;
+  status: RequestStatus;
   studentName?: string | null;
   routeName?: string | null;
   pickupStopName?: string | null;
@@ -38,25 +41,35 @@ export function RegistrationStatusActions({
   pickupTime,
   remainingSeats,
 }: RegistrationStatusActionsProps) {
-  const [submitting, setSubmitting] = useState<TransportationRegistrationStatus | null>(null);
+  const [submitting, setSubmitting] = useState<"confirmed" | "cancelled" | null>(null);
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const router = useRouter();
   const disabled = status !== "pending" || submitting !== null;
 
-  async function updateStatus(nextStatus: TransportationRegistrationStatus, reason?: string) {
+  async function approve() {
     try {
-      setSubmitting(nextStatus);
+      setSubmitting("confirmed");
       const supabase = createClient();
-      await updateTransportationRegistrationStatus(
-        supabase,
-        registrationId,
-        nextStatus,
-        reason,
-      );
-      toast.success(nextStatus === "approved" ? "Seat request approved" : "Seat request rejected");
+      await confirmTransportationRequest(supabase, registrationId);
+      toast.success("Seat request approved");
       setApproveOpen(false);
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not update this request.";
+      toast.error(message);
+    } finally {
+      setSubmitting(null);
+    }
+  }
+
+  async function reject() {
+    try {
+      setSubmitting("cancelled");
+      const supabase = createClient();
+      await rejectTransportationRequest(supabase, registrationId, rejectionReason.trim() || undefined);
+      toast.success("Seat request rejected");
       setRejectOpen(false);
       setRejectionReason("");
       router.refresh();
@@ -77,7 +90,7 @@ export function RegistrationStatusActions({
         onClick={() => setApproveOpen(true)}
         aria-label="Approve seat request"
       >
-        {submitting === "approved" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+        {submitting === "confirmed" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
         Approve
       </Button>
       <Button
@@ -88,7 +101,7 @@ export function RegistrationStatusActions({
         onClick={() => setRejectOpen(true)}
         aria-label="Reject seat request"
       >
-        {submitting === "rejected" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+        {submitting === "cancelled" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
         Reject
       </Button>
 
@@ -111,9 +124,9 @@ export function RegistrationStatusActions({
             <Button
               className="bg-brand-mint text-white hover:bg-brand-mint/90"
               disabled={submitting !== null}
-              onClick={() => updateStatus("approved")}
+              onClick={approve}
             >
-              {submitting === "approved" && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting === "confirmed" && <Loader2 className="h-4 w-4 animate-spin" />}
               Approve Request
             </Button>
           </DialogFooter>
@@ -145,9 +158,9 @@ export function RegistrationStatusActions({
             <Button
               variant="destructive"
               disabled={submitting !== null}
-              onClick={() => updateStatus("rejected", rejectionReason.trim() || undefined)}
+              onClick={reject}
             >
-              {submitting === "rejected" && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting === "cancelled" && <Loader2 className="h-4 w-4 animate-spin" />}
               Reject Request
             </Button>
           </DialogFooter>

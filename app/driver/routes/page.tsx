@@ -18,17 +18,17 @@ export default async function DriverRoutesPage() {
   const approvedByRoute = new Map<string, typeof registrations>();
   const pendingByRoute = new Map<string, number>();
   registrations
-    .filter((registration) => registration.status === "approved")
+    .filter((registration) => registration.status === "confirmed")
     .forEach((registration) => {
-      const routeRegistrations = approvedByRoute.get(registration.route_id) ?? [];
-      approvedByRoute.set(registration.route_id, [...routeRegistrations, registration]);
+      const routeRegistrations = approvedByRoute.get(registration.service_id) ?? [];
+      approvedByRoute.set(registration.service_id, [...routeRegistrations, registration]);
     });
   registrations
     .filter((registration) => registration.status === "pending")
     .forEach((registration) =>
       pendingByRoute.set(
-        registration.route_id,
-        (pendingByRoute.get(registration.route_id) ?? 0) + 1,
+        registration.service_id,
+        (pendingByRoute.get(registration.service_id) ?? 0) + 1,
       ),
     );
 
