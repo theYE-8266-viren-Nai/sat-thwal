@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, Search } from "lucide-react";
+import { GraduationCap, Inbox, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TutorCtaButtonsProps {
@@ -15,6 +15,14 @@ export function TutorCtaButtons({ existingTutorId }: TutorCtaButtonsProps) {
           Find Tutor
         </Link>
       </Button>
+      {existingTutorId && (
+        <Button asChild size="touch" variant="outline" className="flex-1 rounded-xl">
+          <Link href="/tutors/requests">
+            <Inbox className="h-4 w-4" />
+            Requests
+          </Link>
+        </Button>
+      )}
       <Button
         asChild
         size="touch"
