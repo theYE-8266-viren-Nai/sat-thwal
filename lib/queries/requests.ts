@@ -33,6 +33,36 @@ export async function getExistingActiveRequest(
   return data;
 }
 
+export async function getPeerRequestBlockReason(
+  supabase: SupabaseClient<Database>,
+  profileId: string,
+  category: ServiceCategory,
+) {
+  if (category === "tutor") {
+    const { data, error } = await supabase
+      .from("tutors")
+      .select("id")
+      .eq("owner_profile_id", profileId)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? "Tutors can't request other tutors." : null;
+  }
+
+  if (category === "hostel") {
+    const { data, error } = await supabase
+      .from("hostels")
+      .select("id")
+      .eq("owner_profile_id", profileId)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? "Room owners can't request other rooms." : null;
+  }
+
+  return null;
+}
+
 export async function createRequest(
   supabase: SupabaseClient<Database>,
   profileId: string,
@@ -40,6 +70,11 @@ export async function createRequest(
   serviceId: string,
   note?: string,
 ) {
+  const blockReason = await getPeerRequestBlockReason(supabase, profileId, category);
+  if (blockReason) {
+    throw new Error(blockReason);
+  }
+
   const existing = await getExistingActiveRequest(supabase, profileId, category, serviceId);
   if (existing) {
     throw new Error("You've already requested this listing. Track it from Saved & Bookings.");

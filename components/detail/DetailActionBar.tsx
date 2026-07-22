@@ -38,6 +38,7 @@ interface DetailActionBarProps {
   isOwner?: boolean;
   routeStops?: RouteStop[];
   existingRequestStatus?: RequestStatus | null;
+  requestBlockReason?: string | null;
 }
 
 export function DetailActionBar({
@@ -50,10 +51,12 @@ export function DetailActionBar({
   isOwner = false,
   routeStops,
   existingRequestStatus = null,
+  requestBlockReason = null,
 }: DetailActionBarProps) {
   const categoryConfig = CATEGORIES[category];
   const requestAlreadyExists =
     (category === "tutor" || category === "hostel") && existingRequestStatus !== null;
+  const requestBlocked = requestBlockReason !== null;
 
   async function handleShare() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -143,7 +146,7 @@ export function DetailActionBar({
           </Button>
         }
       />
-      {requestAlreadyExists ? (
+      {requestAlreadyExists || requestBlocked ? (
         <Button
           size="touch"
           className="min-w-0 flex-1 rounded-full"
@@ -152,7 +155,8 @@ export function DetailActionBar({
         >
           <CheckCircle2 className="h-4 w-4" />
           <span className="truncate">
-            {existingRequestStatus ? REQUEST_STATUS_LABEL[existingRequestStatus] : "Requested"}
+            {requestBlockReason ??
+              (existingRequestStatus ? REQUEST_STATUS_LABEL[existingRequestStatus] : "Requested")}
           </span>
         </Button>
       ) : (
