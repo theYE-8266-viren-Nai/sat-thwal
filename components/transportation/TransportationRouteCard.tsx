@@ -80,6 +80,7 @@ export function TransportationRouteCard({
           serviceId={data.id}
           profileId={profileId}
           title={data.title}
+          routeStops={data.routeStops}
           trigger={
             <Button
               size="touch"

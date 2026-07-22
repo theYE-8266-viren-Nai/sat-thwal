@@ -9,7 +9,19 @@ export type TransportationRow = Database["public"]["Tables"]["transportation_rou
 const UIT_UNIVERSITY = "University of Information Technology";
 const SAMPLE_CREATED_AT = "2026-07-22T00:00:00.000Z";
 
+type SampleTransportationRoute = Omit<TransportationRow, "driver_id" | "vehicle_number"> &
+  Partial<Pick<TransportationRow, "driver_id" | "vehicle_number">>;
+
+function sampleRoute(route: SampleTransportationRoute): TransportationRow {
+  return {
+    driver_id: null,
+    vehicle_number: null,
+    ...route,
+  };
+}
+
 export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
+  sampleRoute(
   {
     id: "11111111-1111-4111-8111-111111111111",
     driver_name: "Ko Nay Lin",
@@ -27,6 +39,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "22222222-2222-4222-8222-222222222222",
     driver_name: "Daw May Thu",
@@ -44,6 +58,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "33333333-3333-4333-8333-333333333333",
     driver_name: "Ko Min Thu",
@@ -61,6 +77,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "44444444-4444-4444-8444-444444444444",
     driver_name: "Daw Khin Mar Oo",
@@ -78,6 +96,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "55555555-5555-4555-8555-555555555555",
     driver_name: "Daw Nilar Win",
@@ -95,6 +115,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "66666666-6666-4666-8666-666666666666",
     driver_name: "Ko Htet Aung",
@@ -112,6 +134,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "77777777-7777-4777-8777-777777777777",
     driver_name: "Ko Aung Myint",
@@ -129,6 +153,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "88888888-8888-4888-8888-888888888888",
     driver_name: "Ko Pyae Sone",
@@ -146,6 +172,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "99999999-9999-4999-8999-999999999999",
     driver_name: "Daw Hnin Wai",
@@ -163,6 +191,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     driver_name: "Ko Hein Htet",
@@ -180,6 +210,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
     driver_name: "Daw Su Mon",
@@ -197,6 +229,8 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
+  sampleRoute(
   {
     id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
     driver_name: "Ko Wai Yan",
@@ -214,6 +248,7 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     verified: true,
     created_at: SAMPLE_CREATED_AT,
   },
+  ),
 ];
 
 function mergeSampleRoutes(routes: TransportationRow[]) {

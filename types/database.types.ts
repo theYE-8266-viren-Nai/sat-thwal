@@ -2,6 +2,8 @@ export type SessionMode = "online" | "in_person" | "both";
 export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
+export type UserRole = "student" | "driver" | "admin";
+export type TransportationRegistrationStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 type ProfileRow = {
   id: string;
@@ -17,6 +19,7 @@ type ProfileRow = {
   language_preference: string;
   notification_opt_in: boolean;
   onboarding_completed: boolean;
+  role: UserRole;
   created_at: string;
   updated_at: string;
 }
@@ -98,7 +101,38 @@ type TransportationRow = {
   total_seats: number;
   available_seats: number;
   vehicle_type: string | null;
+  vehicle_number: string | null;
+  driver_id: string | null;
   verified: boolean;
+  created_at: string;
+}
+
+type TransportationRegistrationRow = {
+  id: string;
+  student_id: string;
+  route_id: string;
+  driver_id: string;
+  pickup_stop_id: string;
+  pickup_stop_name: string;
+  pickup_time: string | null;
+  pickup_address: string;
+  status: TransportationRegistrationStatus;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  approved_at: string | null;
+}
+
+type NotificationRow = {
+  id: string;
+  recipient_id: string;
+  sender_id: string | null;
+  route_id: string | null;
+  registration_id: string | null;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -159,6 +193,29 @@ export type Database = {
         Row: TransportationRow;
         Insert: Partial<TransportationRow>;
         Update: Partial<TransportationRow>;
+        Relationships: [];
+      };
+      transportation_registrations: {
+        Row: TransportationRegistrationRow;
+        Insert: Partial<TransportationRegistrationRow> & {
+          student_id: string;
+          route_id: string;
+          driver_id: string;
+          pickup_stop_id: string;
+          pickup_stop_name: string;
+          pickup_address: string;
+        };
+        Update: Partial<TransportationRegistrationRow>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: NotificationRow;
+        Insert: Partial<NotificationRow> & {
+          recipient_id: string;
+          title: string;
+          message: string;
+        };
+        Update: Partial<NotificationRow>;
         Relationships: [];
       };
       saved_items: {

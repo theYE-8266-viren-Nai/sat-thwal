@@ -5,8 +5,16 @@ import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createRequest } from "@/lib/queries/requests";
+import { createTransportationRegistration } from "@/lib/queries/transportationRegistrations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -17,6 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { ServiceCategory } from "@/types/domain";
+import type { RouteStop } from "@/types/domain";
 
 type ConfirmationAction = "book" | "request" | "requestSeat" | "contact";
 
@@ -27,6 +36,7 @@ interface ConfirmationModalProps {
   profileId: string;
   title: string;
   contactInfo?: string;
+  routeStops?: RouteStop[];
   trigger: React.ReactNode;
 }
 
@@ -60,10 +70,12 @@ export function ConfirmationModal({
   profileId,
   title,
   contactInfo,
+  routeStops = [],
   trigger,
 }: ConfirmationModalProps) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
+  const [pickupStopId, setPickupStopId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const copy = ACTION_COPY[action];
@@ -71,6 +83,11 @@ export function ConfirmationModal({
   async function handleConfirm() {
     if (action === "contact") {
       setOpen(false);
+      return;
+    }
+
+    if (action === "requestSeat" && routeStops.length > 0 && !pickupStopId) {
+      toast.error("Please choose your pickup stop.");
       return;
     }
 
@@ -82,13 +99,34 @@ export function ConfirmationModal({
     setSubmitting(true);
     try {
       const supabase = createClient();
-      const requestNote =
-        action === "requestSeat" ? `Pickup address: ${note.trim()}` : note.trim() || undefined;
-      await createRequest(supabase, profileId, category, serviceId, requestNote);
+      if (action === "requestSeat" && category === "transportation") {
+        const pickupStop =
+          routeStops.find((stop) => stop.id === pickupStopId) ?? routeStops[0];
+        try {
+          await createTransportationRegistration(
+            supabase,
+            profileId,
+            serviceId,
+            pickupStop?.id ?? "pickup-stop",
+            pickupStop?.name ?? "Pickup stop",
+            pickupStop?.pickupTime,
+            note.trim(),
+          );
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "";
+          if (message !== "Transportation route not found." && message !== "This route is not assigned to a driver yet.") {
+            throw error;
+          }
+          await createRequest(supabase, profileId, category, serviceId, note.trim());
+        }
+      } else {
+        await createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
+      }
       setDone(true);
       toast.success("Request pending", { description: `Track it from Saved & Bookings.` });
-    } catch {
-      toast.error("Couldn't send your request. Try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Couldn't send your request. Try again.";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -98,6 +136,7 @@ export function ConfirmationModal({
     setOpen(next);
     if (!next) {
       setNote("");
+      setPickupStopId("");
       setDone(false);
     }
   }
@@ -139,16 +178,33 @@ export function ConfirmationModal({
                   {contactInfo}
                 </p>
               ) : (
-                <Textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={
-                    action === "requestSeat"
-                      ? "Enter your detailed pickup address"
-                      : "Add a note for the provider (optional)"
-                  }
-                  rows={action === "requestSeat" ? 4 : 3}
-                />
+                <div className="flex flex-col gap-3">
+                  {action === "requestSeat" && routeStops.length > 0 && (
+                    <Select value={pickupStopId} onValueChange={setPickupStopId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Choose pickup stop" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {routeStops.map((stop) => (
+                          <SelectItem key={stop.id} value={stop.id}>
+                            {stop.name}
+                            {stop.pickupTime ? ` - ${stop.pickupTime}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={
+                      action === "requestSeat"
+                        ? "Enter your detailed pickup address"
+                        : "Add a note for the provider (optional)"
+                    }
+                    rows={action === "requestSeat" ? 4 : 3}
+                  />
+                </div>
               )}
             </div>
 

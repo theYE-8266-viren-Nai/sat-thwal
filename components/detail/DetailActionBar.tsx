@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/services/SaveButton";
 import { ConfirmationModal } from "@/components/detail/ConfirmationModal";
 import { CATEGORIES } from "@/lib/constants/categories";
-import type { ServiceCategory } from "@/types/domain";
+import type { RouteStop, ServiceCategory } from "@/types/domain";
 
 const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat"> = {
   tutor: "request",
@@ -29,6 +29,7 @@ interface DetailActionBarProps {
   contactInfo: string;
   initialSaved: boolean;
   isOwner?: boolean;
+  routeStops?: RouteStop[];
 }
 
 export function DetailActionBar({
@@ -39,6 +40,7 @@ export function DetailActionBar({
   contactInfo,
   initialSaved,
   isOwner = false,
+  routeStops,
 }: DetailActionBarProps) {
   const categoryConfig = CATEGORIES[category];
 
@@ -136,6 +138,7 @@ export function DetailActionBar({
         serviceId={serviceId}
         profileId={profileId}
         title={title}
+        routeStops={routeStops}
         trigger={
           <Button
             size="touch"

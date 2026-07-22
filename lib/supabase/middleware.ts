@@ -33,6 +33,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isDriverRoute = pathname.startsWith("/driver");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -40,20 +41,34 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isPublicRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/home";
-    return NextResponse.redirect(url);
-  }
-
-  if (user && pathname !== "/onboarding") {
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_completed")
+      .select("onboarding_completed, role")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (profile && !profile.onboarding_completed && !isPublicRoute) {
+    const isDriver = profile?.role === "driver" || profile?.role === "admin";
+
+    if (isPublicRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = isDriver ? "/driver/dashboard" : "/home";
+      return NextResponse.redirect(url);
+    }
+
+    if (isDriver && !isDriverRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/driver/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    if (!isDriver && isDriverRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/home";
+      return NextResponse.redirect(url);
+    }
+
+    if (profile && !isDriver && pathname !== "/onboarding" && !profile.onboarding_completed) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
       return NextResponse.redirect(url);

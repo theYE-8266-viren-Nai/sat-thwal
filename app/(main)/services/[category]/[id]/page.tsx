@@ -100,6 +100,7 @@ export default async function ServiceDetailPage({
         contactInfo={detail.contactInfo}
         initialSaved={saved}
         isOwner={isOwner}
+        routeStops={detail.routeStops}
       />
     </div>
   );
