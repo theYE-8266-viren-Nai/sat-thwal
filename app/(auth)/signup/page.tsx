@@ -34,7 +34,7 @@ export default function SignupPage() {
       return;
     }
     if (data.session) {
-      router.push("/onboarding");
+      router.push("/onboarding/verify-id");
       router.refresh();
       return;
     }

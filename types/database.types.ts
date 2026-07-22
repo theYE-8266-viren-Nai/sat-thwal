@@ -17,6 +17,9 @@ type ProfileRow = {
   language_preference: string;
   notification_opt_in: boolean;
   onboarding_completed: boolean;
+  student_id_verified: boolean;
+  student_id_verified_at: string | null;
+  student_id_image_path: string | null;
   role: UserRole;
   created_at: string;
   updated_at: string;

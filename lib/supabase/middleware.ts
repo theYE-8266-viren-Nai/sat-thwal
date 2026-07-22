@@ -30,11 +30,20 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  const { pathname } = request.nextUrl;
+
+  // API routes handle their own auth (see supabase.auth.getUser() calls in
+  // each route) and must always return JSON, never an HTML page redirect —
+  // the page-level gates below (onboarding, verification, role routing)
+  // don't apply here.
+  if (pathname.startsWith("/api")) {
+    return response;
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   const isDriverRoute = pathname.startsWith("/driver");
   const isAdminRoute = pathname.startsWith("/admin");
@@ -49,7 +58,7 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_completed, role")
+      .select("onboarding_completed, role, student_id_verified")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -123,7 +132,21 @@ export async function updateSession(request: NextRequest) {
       !isDriver &&
       !isAdmin &&
       !isRestaurant &&
+      pathname !== "/onboarding/verify-id" &&
+      !profile.student_id_verified
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding/verify-id";
+      return NextResponse.redirect(url);
+    }
+
+    if (
+      profile &&
+      !isDriver &&
+      !isAdmin &&
+      !isRestaurant &&
       pathname !== "/onboarding" &&
+      profile.student_id_verified &&
       !profile.onboarding_completed
     ) {
       const url = request.nextUrl.clone();
