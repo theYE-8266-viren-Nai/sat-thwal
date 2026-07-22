@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { getSavedItems } from "@/lib/queries/savedItems";
@@ -8,7 +8,8 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { FilterSheet } from "@/components/services/FilterSheet";
 import { ServiceCard } from "@/components/services/ServiceCard";
-import { ServiceCardSkeleton } from "@/components/services/ServiceCardSkeleton";
+import { ServiceCardCompact } from "@/components/services/ServiceCardCompact";
+import { ServiceCardSkeleton, ServiceCardCompactSkeleton } from "@/components/services/ServiceCardSkeleton";
 import { EmptyState } from "@/components/services/EmptyState";
 import type { Database } from "@/types/database.types";
 import type { FilterFieldConfig, FilterState, ServiceCardData } from "@/types/domain";
@@ -23,6 +24,14 @@ interface ServiceListingPageProps<TRow> {
   matchesSearch: (row: TRow, query: string) => boolean;
   applyFilters: (row: TRow, filters: FilterState) => boolean;
   emptyMessage: string;
+  listHeading?: string;
+  listVariant?: "grid" | "compact";
+  renderSections?: (args: {
+    rows: TRow[];
+    profileId: string | null;
+    savedKeys: Set<string>;
+    loading: boolean;
+  }) => ReactNode;
 }
 
 export function ServiceListingPage<TRow>({
@@ -35,6 +44,9 @@ export function ServiceListingPage<TRow>({
   matchesSearch,
   applyFilters,
   emptyMessage,
+  listHeading,
+  listVariant = "grid",
+  renderSections,
 }: ServiceListingPageProps<TRow>) {
   const [rows, setRows] = useState<TRow[]>([]);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -80,6 +92,7 @@ export function ServiceListingPage<TRow>({
   return (
     <div>
       <PageHeader title={title} subtitle={`${filteredCards.length} available`} />
+
       <div className="flex items-center gap-2 px-5 pb-4 md:px-8">
         <SearchInput value={query} onChange={setQuery} placeholder={searchPlaceholder} />
         <FilterSheet
@@ -90,21 +103,44 @@ export function ServiceListingPage<TRow>({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
-        {loading &&
-          Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
+      {renderSections?.({ rows, profileId, savedKeys, loading })}
 
-        {!loading &&
-          profileId &&
-          filteredCards.map((card) => (
-            <ServiceCard
-              key={card.id}
-              data={card}
-              profileId={profileId}
-              initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-            />
-          ))}
-      </div>
+      {listHeading && (
+        <h2 className="mb-3 mt-7 px-5 text-lg font-bold text-foreground md:px-8">{listHeading}</h2>
+      )}
+      {listVariant === "compact" ? (
+        <div className="flex flex-col gap-3 px-5 md:px-8">
+          {loading &&
+            Array.from({ length: 6 }).map((_, i) => <ServiceCardCompactSkeleton key={i} />)}
+
+          {!loading &&
+            profileId &&
+            filteredCards.map((card) => (
+              <ServiceCardCompact
+                key={card.id}
+                data={card}
+                profileId={profileId}
+                initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+              />
+            ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
+          {loading &&
+            Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
+
+          {!loading &&
+            profileId &&
+            filteredCards.map((card) => (
+              <ServiceCard
+                key={card.id}
+                data={card}
+                profileId={profileId}
+                initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+              />
+            ))}
+        </div>
+      )}
 
       {!loading && filteredCards.length === 0 && <EmptyState message={emptyMessage} />}
     </div>

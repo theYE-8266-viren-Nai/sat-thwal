@@ -14,3 +14,17 @@ export function ServiceCardSkeleton() {
     </Card>
   );
 }
+
+export function ServiceCardCompactSkeleton() {
+  return (
+    <Card className="flex flex-row items-center gap-4 overflow-hidden border-border p-4 shadow-sm">
+      <Skeleton className="h-32 w-32 shrink-0 rounded-md" />
+      <div className="flex flex-1 flex-col gap-2">
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+      </div>
+      <Skeleton className="h-4 w-14 shrink-0" />
+    </Card>
+  );
+}
