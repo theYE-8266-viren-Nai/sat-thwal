@@ -51,15 +51,21 @@ export function DetailActionBar({
   }
 
   return (
-    <div className="sticky bottom-0 z-30 flex items-center gap-2 border-t border-border bg-card px-5 py-3 md:px-8">
+    <div className="sticky bottom-[70px] z-30 flex items-center gap-2 border-t border-border bg-card px-4 py-3 sm:px-5 md:bottom-0 md:px-8">
       <SaveButton
         profileId={profileId}
         category={category}
         serviceId={serviceId}
         initialSaved={initialSaved}
-        className="static shadow-none"
+        className="static shrink-0 shadow-none"
       />
-      <Button variant="outline" size="icon" className="rounded-full" onClick={handleShare} aria-label="Share">
+      <Button
+        variant="outline"
+        size="icon"
+        className="shrink-0 rounded-full"
+        onClick={handleShare}
+        aria-label="Share"
+      >
         <Share2 className="h-4 w-4" />
       </Button>
       <ConfirmationModal
@@ -70,9 +76,9 @@ export function DetailActionBar({
         title={title}
         contactInfo={contactInfo}
         trigger={
-          <Button variant="outline" className="gap-2 rounded-full" aria-label="Contact provider">
+          <Button variant="outline" className="shrink-0 gap-2 rounded-full px-3 sm:px-4" aria-label="Contact provider">
             <MessageCircle className="h-4 w-4" />
-            Contact
+            <span className="hidden sm:inline">Contact</span>
           </Button>
         }
       />
@@ -84,10 +90,10 @@ export function DetailActionBar({
         title={title}
         trigger={
           <Button
-            className="flex-1 rounded-full text-white"
+            className="min-w-0 flex-1 rounded-full text-white"
             style={{ backgroundColor: categoryConfig.color }}
           >
-            {categoryConfig.bookCtaLabel}
+            <span className="truncate">{categoryConfig.bookCtaLabel}</span>
           </Button>
         }
       />

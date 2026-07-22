@@ -40,7 +40,7 @@ export function ChatInput({ onSubmit, disabled }: ChatInputProps) {
         onChange={(e) => setValue(e.target.value)}
         placeholder="Describe what you need — subject, budget, location..."
         disabled={disabled}
-        className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
       />
       <Button
         type="submit"
