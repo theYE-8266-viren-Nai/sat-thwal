@@ -60,10 +60,10 @@ export function ServiceCardCompact({ data, profileId, initialSaved }: ServiceCar
               </span>
             );
           })}
+          <span className="text-base font-semibold text-foreground">{data.priceLabel}</span>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <span className="text-base font-semibold text-foreground">{data.priceLabel}</span>
+        <div className="shrink-0 self-start">
           <SaveButton
             profileId={profileId}
             category={data.category}

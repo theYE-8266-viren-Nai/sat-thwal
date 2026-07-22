@@ -2,7 +2,7 @@ export type SessionMode = "online" | "in_person" | "both";
 export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
-export type UserRole = "student" | "driver" | "admin";
+export type UserRole = "student" | "driver" | "admin" | "restaurant";
 export type TransportationRegistrationStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 type ProfileRow = {
@@ -75,6 +75,7 @@ type RestaurantRow = {
   opening_hours: string | null;
   student_discount_percent: number | null;
   created_at: string;
+  owner_profile_id: string | null;
 }
 
 type MealRow = {

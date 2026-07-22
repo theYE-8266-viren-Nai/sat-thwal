@@ -23,7 +23,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     redirect(driverProfile?.status === "active" ? "/driver/dashboard" : "/driver-login");
   }
 
-  if (profile?.role === "admin") {
+  if (profile?.role === "admin" || profile?.role === "restaurant") {
     redirect(getRoleLandingPath(profile.role));
   }
 

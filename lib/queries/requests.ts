@@ -155,6 +155,26 @@ export async function getRequestsForHostel(supabase: SupabaseClient<Database>, h
   return data ?? [];
 }
 
+export async function getRequestsForRestaurant(supabase: SupabaseClient<Database>, restaurantId: string) {
+  const { data: meals, error: mealsError } = await supabase
+    .from("meals")
+    .select("id")
+    .eq("restaurant_id", restaurantId);
+  if (mealsError) throw mealsError;
+
+  const mealIds = (meals ?? []).map((meal) => meal.id);
+  if (mealIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("requests")
+    .select("*")
+    .eq("service_type", "food")
+    .in("service_id", mealIds)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getUnseenResponses(supabase: SupabaseClient<Database>, profileId: string) {
   const { data, error } = await supabase
     .from("requests")

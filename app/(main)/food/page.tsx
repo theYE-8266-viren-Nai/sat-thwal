@@ -3,25 +3,46 @@
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
 import { ServiceSection } from "@/components/home/ServiceSection";
 import { getFoodItems, foodToCard, type FoodItem } from "@/lib/queries/food";
-import { formatMMK, isOpenNow } from "@/lib/utils";
+import { formatDistance, formatMMK, isOpenNow } from "@/lib/utils";
 import type { FilterFieldConfig, ServiceCardData } from "@/types/domain";
 
-function uniqueRestaurants(items: FoodItem[]): FoodItem[] {
-  const seen = new Set<string>();
-  const result: FoodItem[] = [];
+function groupByRestaurant(items: FoodItem[]): FoodItem[][] {
+  const groups = new Map<string, FoodItem[]>();
   for (const item of items) {
-    if (seen.has(item.restaurant.id)) continue;
-    seen.add(item.restaurant.id);
-    result.push(item);
+    const group = groups.get(item.restaurant.id);
+    if (group) group.push(item);
+    else groups.set(item.restaurant.id, [item]);
   }
-  return result;
+  return [...groups.values()];
 }
 
-function restaurantToCard(item: FoodItem): ServiceCardData {
+function restaurantToCard(group: FoodItem[]): ServiceCardData {
+  const { restaurant } = group[0];
+  const cheapest = group.reduce((min, i) => (i.meal.price < min.meal.price ? i : min));
+
   return {
-    ...foodToCard(item),
-    title: item.restaurant.name,
-    subtitle: item.meal.name,
+    id: cheapest.meal.id,
+    category: "food",
+    image: restaurant.image_url,
+    title: restaurant.name,
+    subtitle: restaurant.township,
+    priceLabel: `From ${formatMMK(cheapest.meal.price)}`,
+    rating: restaurant.rating,
+    verified: false,
+    meta: [
+      { icon: "map-pin", label: `${restaurant.township} · ${formatDistance(restaurant.distance_km)}` },
+      {
+        icon: "utensils",
+        label: [restaurant.delivery && "Delivery", restaurant.pickup && "Pickup"]
+          .filter(Boolean)
+          .join(" · "),
+      },
+      ...(restaurant.student_discount_percent
+        ? [{ icon: "wallet" as const, label: `${restaurant.student_discount_percent}% student discount` }]
+        : []),
+    ],
+    ctaLabel: "View menu",
+    href: `/services/food/${cheapest.meal.id}`,
   };
 }
 
@@ -74,45 +95,37 @@ export default function FoodPage() {
         if (filters.openNow && !isOpenNow(restaurant.opening_hours)) return false;
         return true;
       }}
-      emptyMessage="No meals match your filters yet. Try widening your search."
-      listHeading="All meals"
-      listVariant="compact"
-      renderSections={({ rows, profileId, savedKeys, loading }) => {
+      emptyMessage="No meal plans match your filters yet. Try widening your search."
+      hideMainList
+      renderSections={({ filteredRows, profileId, savedKeys, loading }) => {
         if (loading || !profileId) return null;
 
-        const byRating = [...rows].sort((a, b) => b.restaurant.rating - a.restaurant.rating);
-        const popularMeals = byRating.slice(0, 10).map(foodToCard);
-        const popularRestaurants = uniqueRestaurants(byRating).slice(0, 10).map(restaurantToCard);
-        const popularVegetarian = uniqueRestaurants(byRating.filter((i) => i.restaurant.vegetarian_options))
-          .slice(0, 10)
+        const restaurantGroups = groupByRestaurant(filteredRows).sort(
+          (a, b) => b[0].restaurant.rating - a[0].restaurant.rating
+        );
+        const allMealPlans = restaurantGroups.map(restaurantToCard);
+        const vegetarianMealPlans = restaurantGroups
+          .filter((g) => g[0].restaurant.vegetarian_options)
           .map(restaurantToCard);
-        const popularHalal = uniqueRestaurants(byRating.filter((i) => i.restaurant.halal))
-          .slice(0, 10)
-          .map(restaurantToCard);
+        const halalMealPlans = restaurantGroups.filter((g) => g[0].restaurant.halal).map(restaurantToCard);
 
         return (
           <>
             <ServiceSection
-              title="Popular meals"
-              items={popularMeals}
+              title="All meal plans"
+              items={allMealPlans}
               profileId={profileId}
               savedKeys={savedKeys}
             />
             <ServiceSection
-              title="Popular restaurants"
-              items={popularRestaurants}
+              title="Vegetarian meal plans"
+              items={vegetarianMealPlans}
               profileId={profileId}
               savedKeys={savedKeys}
             />
             <ServiceSection
-              title="Popular vegetarian restaurants"
-              items={popularVegetarian}
-              profileId={profileId}
-              savedKeys={savedKeys}
-            />
-            <ServiceSection
-              title="Popular halal restaurants"
-              items={popularHalal}
+              title="Halal meal plans"
+              items={halalMealPlans}
               profileId={profileId}
               savedKeys={savedKeys}
             />

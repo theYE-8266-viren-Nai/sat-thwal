@@ -42,7 +42,7 @@ export default function OnboardingPage() {
         .eq("id", user.id)
         .single();
 
-      if (profile?.role === "driver" || profile?.role === "admin") {
+      if (profile?.role === "driver" || profile?.role === "admin" || profile?.role === "restaurant") {
         router.push(getRoleLandingPath(profile.role));
         router.refresh();
         return;

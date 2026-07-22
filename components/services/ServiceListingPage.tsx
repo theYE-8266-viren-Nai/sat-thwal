@@ -27,8 +27,10 @@ interface ServiceListingPageProps<TRow> {
   emptyMessage: string;
   listHeading?: string;
   listVariant?: "grid" | "compact";
+  hideMainList?: boolean;
   renderSections?: (args: {
     rows: TRow[];
+    filteredRows: TRow[];
     profileId: string | null;
     savedKeys: Set<string>;
     loading: boolean;
@@ -48,6 +50,7 @@ export function ServiceListingPage<TRow>({
   emptyMessage,
   listHeading,
   listVariant = "grid",
+  hideMainList = false,
   renderSections,
 }: ServiceListingPageProps<TRow>) {
   const [rows, setRows] = useState<TRow[]>([]);
@@ -83,13 +86,14 @@ export function ServiceListingPage<TRow>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredCards = useMemo(() => {
+  const filteredRows = useMemo(() => {
     return rows
       .filter((row) => matchesSearch(row, query))
-      .filter((row) => applyFilters(row, filters))
-      .map(toCard);
+      .filter((row) => applyFilters(row, filters));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, query, filters]);
+
+  const filteredCards = useMemo(() => filteredRows.map(toCard), [filteredRows, toCard]);
 
   return (
     <div>
@@ -105,53 +109,57 @@ export function ServiceListingPage<TRow>({
         />
       </div>
 
-      {renderSections?.({ rows, profileId, savedKeys, loading })}
+      {renderSections?.({ rows, filteredRows, profileId, savedKeys, loading })}
 
-      {listHeading && (
-        <h2 className="mb-3 mt-7 px-5 text-lg font-bold text-foreground md:px-8">{listHeading}</h2>
-      )}
-      {listVariant === "compact" ? (
-        <div className="flex flex-col gap-3 px-5 md:px-8">
-          {loading &&
-            Array.from({ length: 6 }).map((_, i) => <ServiceCardCompactSkeleton key={i} />)}
+      {!hideMainList && (
+        <>
+          {listHeading && (
+            <h2 className="mb-3 mt-7 px-5 text-lg font-bold text-foreground md:px-8">{listHeading}</h2>
+          )}
+          {listVariant === "compact" ? (
+            <div className="flex flex-col gap-3 px-5 md:px-8">
+              {loading &&
+                Array.from({ length: 6 }).map((_, i) => <ServiceCardCompactSkeleton key={i} />)}
 
-          {!loading &&
-            profileId &&
-            filteredCards.map((card) => (
-              <div key={card.id}>
-                {renderCard ? (
-                  renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
-                ) : (
-                  <ServiceCardCompact
-                    data={card}
-                    profileId={profileId}
-                    initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-                  />
-                )}
-              </div>
-            ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
-          {loading &&
-            Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
+              {!loading &&
+                profileId &&
+                filteredCards.map((card) => (
+                  <div key={card.id}>
+                    {renderCard ? (
+                      renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
+                    ) : (
+                      <ServiceCardCompact
+                        data={card}
+                        profileId={profileId}
+                        initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+                      />
+                    )}
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
+              {loading &&
+                Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
 
-          {!loading &&
-            profileId &&
-            filteredCards.map((card) => (
-              <div key={card.id}>
-                {renderCard ? (
-                  renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
-                ) : (
-                  <ServiceCard
-                    data={card}
-                    profileId={profileId}
-                    initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-                  />
-                )}
-              </div>
-            ))}
-        </div>
+              {!loading &&
+                profileId &&
+                filteredCards.map((card) => (
+                  <div key={card.id}>
+                    {renderCard ? (
+                      renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
+                    ) : (
+                      <ServiceCard
+                        data={card}
+                        profileId={profileId}
+                        initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+                      />
+                    )}
+                  </div>
+                ))}
+            </div>
+          )}
+        </>
       )}
 
       {!loading && filteredCards.length === 0 && <EmptyState message={emptyMessage} />}

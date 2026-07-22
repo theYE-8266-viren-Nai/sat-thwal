@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "./env";
-import { getRoleLandingPath, isAdminRole, isDriverRole } from "@/lib/auth/roles";
+import { getRoleLandingPath, isAdminRole, isDriverRole, isRestaurantRole } from "@/lib/auth/roles";
 
 const PUBLIC_ROUTES = ["/login", "/signup", "/driver-login", "/driver-signup"];
 const DRIVER_AUTH_ROUTES = ["/driver-login", "/driver-signup"];
@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
   const isDriverAuthRoute = DRIVER_AUTH_ROUTES.includes(pathname);
   const isDriverRoute = pathname.startsWith("/driver");
   const isAdminRoute = pathname.startsWith("/admin");
+  const isRestaurantRoute = pathname.startsWith("/restaurant");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -57,6 +58,7 @@ export async function updateSession(request: NextRequest) {
     const role = profile?.role;
     const isDriver = isDriverRole(role);
     const isAdmin = isAdminRole(role);
+    const isRestaurant = isRestaurantRole(role);
     const landingPath = getRoleLandingPath(role);
     const { data: driverProfile } = isDriver
       ? await supabase
@@ -100,6 +102,12 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    if (isRestaurant && !isRestaurantRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/restaurant/dashboard";
+      return NextResponse.redirect(url);
+    }
+
     if (!isActiveDriver && isDriverRoute) {
       const url = request.nextUrl.clone();
       url.pathname = landingPath;
@@ -112,7 +120,20 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (profile && !isDriver && !isAdmin && pathname !== "/onboarding" && !profile.onboarding_completed) {
+    if (!isRestaurant && isRestaurantRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = landingPath;
+      return NextResponse.redirect(url);
+    }
+
+    if (
+      profile &&
+      !isDriver &&
+      !isAdmin &&
+      !isRestaurant &&
+      pathname !== "/onboarding" &&
+      !profile.onboarding_completed
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
       return NextResponse.redirect(url);

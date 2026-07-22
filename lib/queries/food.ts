@@ -26,6 +26,16 @@ export async function getFoodItems(supabase: SupabaseClient<Database>): Promise<
     .map((row) => ({ meal: row, restaurant: row.restaurant as RestaurantRow }));
 }
 
+export async function getRestaurantByOwner(supabase: SupabaseClient<Database>, profileId: string) {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("*")
+    .eq("owner_profile_id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function getFoodItemById(
   supabase: SupabaseClient<Database>,
   id: string,
