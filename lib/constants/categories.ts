@@ -35,7 +35,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
   },
   food: {
     category: "food",
-    label: "Find Food",
+    label: "Find Food Service",
     singularLabel: "Restaurant",
     href: "/food",
     icon: Utensils,

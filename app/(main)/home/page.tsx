@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/queries/profiles";
 import { getTutors, tutorToCard, getTutorByOwner } from "@/lib/queries/tutors";
 import { getHostels, hostelToCard, getHostelByOwner } from "@/lib/queries/hostels";
-import { getFoodItems, foodToCard } from "@/lib/queries/food";
+import { getFoodItems, groupFoodItemsByRestaurant, restaurantToCard } from "@/lib/queries/food";
 import { getRoutes, routeToCard } from "@/lib/queries/transportation";
 import { getSavedItems } from "@/lib/queries/savedItems";
 import { getRequests } from "@/lib/queries/requests";
@@ -35,18 +35,25 @@ export default async function HomePage() {
     ]);
 
   const savedKeys = new Set(savedItems.map((s) => `${s.service_type}:${s.service_id}`));
+  const restaurantGroups = groupFoodItemsByRestaurant(foodItems);
 
   const recommended: ServiceCardData[] = [
     ...tutors.slice(0, 2).map(tutorToCard),
     ...hostels.slice(0, 2).map(hostelToCard),
-    ...[...foodItems].sort((a, b) => b.restaurant.rating - a.restaurant.rating).slice(0, 2).map(foodToCard),
+    ...[...restaurantGroups]
+      .sort((a, b) => b[0].restaurant.rating - a[0].restaurant.rating)
+      .slice(0, 2)
+      .map(restaurantToCard),
     ...routes.slice(0, 2).map(routeToCard),
   ].slice(0, 6);
 
   const nearby: ServiceCardData[] = [
     ...tutors.filter((t) => t.township === profile?.township).slice(0, 2).map(tutorToCard),
     ...hostels.filter((h) => h.township === profile?.township).slice(0, 2).map(hostelToCard),
-    ...foodItems.filter((f) => f.restaurant.township === profile?.township).slice(0, 2).map(foodToCard),
+    ...restaurantGroups
+      .filter((g) => g[0].restaurant.township === profile?.township)
+      .slice(0, 2)
+      .map(restaurantToCard),
     ...routes.filter((r) => r.pickup_township === profile?.township).slice(0, 2).map(routeToCard),
   ].slice(0, 6);
 
@@ -55,20 +62,20 @@ export default async function HomePage() {
       .sort((a, b) => b.rating - a.rating || b.review_count - a.review_count)
       .slice(0, 3)
       .map(tutorToCard),
-    ...[...foodItems]
-      .sort((a, b) => b.restaurant.rating - a.restaurant.rating)
+    ...[...restaurantGroups]
+      .sort((a, b) => b[0].restaurant.rating - a[0].restaurant.rating)
       .slice(0, 3)
-      .map(foodToCard),
+      .map(restaurantToCard),
   ].slice(0, 6);
 
   const byNewest = (a: string, b: string) => new Date(b).getTime() - new Date(a).getTime();
   const newListings: ServiceCardData[] = [
     ...[...tutors].sort((a, b) => byNewest(a.created_at, b.created_at)).slice(0, 2).map(tutorToCard),
     ...[...hostels].sort((a, b) => byNewest(a.created_at, b.created_at)).slice(0, 2).map(hostelToCard),
-    ...[...foodItems]
-      .sort((a, b) => byNewest(a.meal.created_at, b.meal.created_at))
+    ...[...restaurantGroups]
+      .sort((a, b) => byNewest(a[0].restaurant.created_at, b[0].restaurant.created_at))
       .slice(0, 2)
-      .map(foodToCard),
+      .map(restaurantToCard),
     ...[...routes].sort((a, b) => byNewest(a.created_at, b.created_at)).slice(0, 2).map(routeToCard),
   ].slice(0, 6);
 
@@ -91,7 +98,10 @@ export default async function HomePage() {
   const cardByKey = new Map<string, ServiceCardData>();
   tutors.forEach((t) => cardByKey.set(`tutor:${t.id}`, tutorToCard(t)));
   hostels.forEach((h) => cardByKey.set(`hostel:${h.id}`, hostelToCard(h)));
-  foodItems.forEach((f) => cardByKey.set(`food:${f.meal.id}`, foodToCard(f)));
+  restaurantGroups.forEach((group) => {
+    const card = restaurantToCard(group);
+    group.forEach((item) => cardByKey.set(`food:${item.meal.id}`, card));
+  });
   routes.forEach((r) => cardByKey.set(`transportation:${r.id}`, routeToCard(r)));
 
   const activeRequests: ActiveRequestItem[] = requests

@@ -94,6 +94,46 @@ export function foodToCard({ meal, restaurant }: FoodItem): ServiceCardData {
   };
 }
 
+export function groupFoodItemsByRestaurant(items: FoodItem[]): FoodItem[][] {
+  const groups = new Map<string, FoodItem[]>();
+  for (const item of items) {
+    const group = groups.get(item.restaurant.id);
+    if (group) group.push(item);
+    else groups.set(item.restaurant.id, [item]);
+  }
+  return [...groups.values()];
+}
+
+export function restaurantToCard(group: FoodItem[]): ServiceCardData {
+  const { restaurant } = group[0];
+  const cheapest = group.reduce((min, i) => (i.meal.price < min.meal.price ? i : min));
+
+  return {
+    id: cheapest.meal.id,
+    category: "food",
+    image: restaurant.image_url,
+    title: restaurant.name,
+    subtitle: restaurant.township,
+    priceLabel: `From ${formatMMK(cheapest.meal.price)}`,
+    rating: restaurant.rating,
+    verified: false,
+    meta: [
+      { icon: "map-pin", label: `${restaurant.township} · ${formatDistance(restaurant.distance_km)}` },
+      {
+        icon: "utensils",
+        label: [restaurant.delivery && "Delivery", restaurant.pickup && "Pickup"]
+          .filter(Boolean)
+          .join(" · "),
+      },
+      ...(restaurant.student_discount_percent
+        ? [{ icon: "wallet" as const, label: `${restaurant.student_discount_percent}% student discount` }]
+        : []),
+    ],
+    ctaLabel: "View menu",
+    href: `/services/food/${cheapest.meal.id}`,
+  };
+}
+
 export function foodToDetail({ meal, restaurant }: FoodItem): ServiceDetailData {
   const fulfillment = [restaurant.delivery && "Delivery", restaurant.pickup && "Pickup"]
     .filter(Boolean)
