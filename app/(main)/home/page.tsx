@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/queries/profiles";
 import { getTutors, tutorToCard, getTutorByOwner } from "@/lib/queries/tutors";
-import { getHostels, hostelToCard } from "@/lib/queries/hostels";
+import { getHostels, hostelToCard, getHostelByOwner } from "@/lib/queries/hostels";
 import { getFoodItems, foodToCard } from "@/lib/queries/food";
 import { getRoutes, routeToCard } from "@/lib/queries/transportation";
 import { getSavedItems } from "@/lib/queries/savedItems";
 import { STUDENT_OFFERS } from "@/lib/constants/offers";
 import { GreetingHeader } from "@/components/home/GreetingHeader";
 import { TutorCtaButtons } from "@/components/home/TutorCtaButtons";
+import { HostelCtaButtons } from "@/components/home/HostelCtaButtons";
 import { SmartMatchSearchBox } from "@/components/home/SmartMatchSearchBox";
 import { CategoryCardGrid } from "@/components/home/CategoryCardGrid";
 import { ServiceSection } from "@/components/home/ServiceSection";
@@ -22,7 +23,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profile, tutors, hostels, foodItems, routes, savedItems, ownedTutor] = await Promise.all([
+  const [profile, tutors, hostels, foodItems, routes, savedItems, ownedTutor, ownedHostel] = await Promise.all([
     getProfile(supabase, user.id),
     getTutors(supabase),
     getHostels(supabase),
@@ -30,6 +31,7 @@ export default async function HomePage() {
     getRoutes(supabase),
     getSavedItems(supabase, user.id),
     getTutorByOwner(supabase, user.id),
+    getHostelByOwner(supabase, user.id),
   ]);
 
   const savedKeys = new Set(savedItems.map((s) => `${s.service_type}:${s.service_id}`));
@@ -56,8 +58,10 @@ export default async function HomePage() {
         name={firstName}
         university={profile?.university ?? null}
         township={profile?.township ?? null}
+        profileId={user.id}
       />
       <TutorCtaButtons existingTutorId={ownedTutor?.id ?? null} />
+      <HostelCtaButtons existingHostelId={ownedHostel?.id ?? null} />
       <SmartMatchSearchBox />
       <CategoryCardGrid />
 

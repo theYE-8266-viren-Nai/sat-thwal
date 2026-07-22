@@ -154,7 +154,7 @@ export default function SavedPage() {
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="pending">Pending bookings</TabsTrigger>
-            <TabsTrigger value="confirmed">Confirmed</TabsTrigger>
+            <TabsTrigger value="confirmed">Accepted</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           <TabsContent value="saved" className="pt-4">
@@ -164,7 +164,7 @@ export default function SavedPage() {
             {renderRequestGrid("pending", "No pending bookings right now.")}
           </TabsContent>
           <TabsContent value="confirmed" className="pt-4">
-            {renderRequestGrid("confirmed", "No confirmed requests yet.")}
+            {renderRequestGrid("confirmed", "No accepted requests yet.")}
           </TabsContent>
           <TabsContent value="completed" className="pt-4">
             {renderRequestGrid("completed", "No completed requests yet.")}
