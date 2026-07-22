@@ -45,14 +45,19 @@ export function RequestCard({
   const [submitting, setSubmitting] = useState(false);
   const canComplete =
     status === "confirmed" &&
-    (data.category === "tutor" || data.category === "hostel") &&
+    (data.category === "tutor" || data.category === "hostel" || data.category === "transportation") &&
     !requesterCompletedAt;
   const waitingForProvider = status === "confirmed" && requesterCompletedAt && !ownerCompletedAt;
   const providerCompletedFirst = status === "confirmed" && ownerCompletedAt && !requesterCompletedAt;
   const completedDateLabel = completedAt
     ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(completedAt))
     : null;
-  const providerLabel = data.category === "tutor" ? "Tutor completed" : "Provider completed";
+  const providerLabel =
+    data.category === "tutor"
+      ? "Tutor completed"
+      : data.category === "transportation"
+        ? "Driver completed"
+        : "Provider completed";
 
   async function handleComplete() {
     setSubmitting(true);
