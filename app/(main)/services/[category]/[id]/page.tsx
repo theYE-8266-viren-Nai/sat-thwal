@@ -5,6 +5,7 @@ import { getTutorById, tutorToDetail } from "@/lib/queries/tutors";
 import { getHostelById, hostelToDetail } from "@/lib/queries/hostels";
 import { getFoodItemById, foodToDetail } from "@/lib/queries/food";
 import { getRouteById, routeToDetail } from "@/lib/queries/transportation";
+import { getExistingActiveRequest } from "@/lib/queries/requests";
 import { isSaved } from "@/lib/queries/savedItems";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ServiceDetailHeader } from "@/components/detail/ServiceDetailHeader";
@@ -61,7 +62,10 @@ export default async function ServiceDetailPage({
   if (!detail) notFound();
 
   const isOwner = detail.ownerProfileId === user.id;
-  const saved = await isSaved(supabase, user.id, typedCategory, id);
+  const [saved, existingRequest] = await Promise.all([
+    isSaved(supabase, user.id, typedCategory, id),
+    getExistingActiveRequest(supabase, user.id, typedCategory, id),
+  ]);
 
   return (
     <div className="pb-4">
@@ -101,6 +105,7 @@ export default async function ServiceDetailPage({
         initialSaved={saved}
         isOwner={isOwner}
         routeStops={detail.routeStops}
+        existingRequestStatus={existingRequest?.status ?? null}
       />
     </div>
   );

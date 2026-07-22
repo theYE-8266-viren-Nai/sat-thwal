@@ -12,6 +12,27 @@ export async function getRequests(supabase: SupabaseClient<Database>, profileId:
   return data ?? [];
 }
 
+export async function getExistingActiveRequest(
+  supabase: SupabaseClient<Database>,
+  profileId: string,
+  category: ServiceCategory,
+  serviceId: string,
+) {
+  if (category !== "tutor" && category !== "hostel") return null;
+
+  const { data, error } = await supabase
+    .from("requests")
+    .select("*")
+    .eq("profile_id", profileId)
+    .eq("service_type", category)
+    .eq("service_id", serviceId)
+    .in("status", ["pending", "confirmed", "completed"])
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function createRequest(
   supabase: SupabaseClient<Database>,
   profileId: string,
@@ -19,12 +40,22 @@ export async function createRequest(
   serviceId: string,
   note?: string,
 ) {
+  const existing = await getExistingActiveRequest(supabase, profileId, category, serviceId);
+  if (existing) {
+    throw new Error("You've already requested this listing. Track it from Saved & Bookings.");
+  }
+
   const { data, error } = await supabase
     .from("requests")
     .insert({ profile_id: profileId, service_type: category, service_id: serviceId, note })
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("You've already requested this listing. Track it from Saved & Bookings.");
+    }
+    throw error;
+  }
   return data;
 }
 

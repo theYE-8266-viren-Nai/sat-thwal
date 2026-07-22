@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Share2, MessageCircle, Pencil, Inbox } from "lucide-react";
+import { Share2, MessageCircle, Pencil, Inbox, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/services/SaveButton";
 import { ConfirmationModal } from "@/components/detail/ConfirmationModal";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { REQUEST_STATUS_LABEL } from "@/lib/constants/requestStatus";
+import type { RequestStatus } from "@/types/database.types";
 import type { RouteStop, ServiceCategory } from "@/types/domain";
 
 const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat"> = {
@@ -35,6 +37,7 @@ interface DetailActionBarProps {
   initialSaved: boolean;
   isOwner?: boolean;
   routeStops?: RouteStop[];
+  existingRequestStatus?: RequestStatus | null;
 }
 
 export function DetailActionBar({
@@ -46,8 +49,11 @@ export function DetailActionBar({
   initialSaved,
   isOwner = false,
   routeStops,
+  existingRequestStatus = null,
 }: DetailActionBarProps) {
   const categoryConfig = CATEGORIES[category];
+  const requestAlreadyExists =
+    (category === "tutor" || category === "hostel") && existingRequestStatus !== null;
 
   async function handleShare() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -137,23 +143,37 @@ export function DetailActionBar({
           </Button>
         }
       />
-      <ConfirmationModal
-        action={PRIMARY_ACTION[category]}
-        category={category}
-        serviceId={serviceId}
-        profileId={profileId}
-        title={title}
-        routeStops={routeStops}
-        trigger={
-          <Button
-            size="touch"
-            className="min-w-0 flex-1 rounded-full text-white"
-            style={{ backgroundColor: categoryConfig.color }}
-          >
-            <span className="truncate">{categoryConfig.bookCtaLabel}</span>
-          </Button>
-        }
-      />
+      {requestAlreadyExists ? (
+        <Button
+          size="touch"
+          className="min-w-0 flex-1 rounded-full"
+          variant="secondary"
+          disabled
+        >
+          <CheckCircle2 className="h-4 w-4" />
+          <span className="truncate">
+            {existingRequestStatus ? REQUEST_STATUS_LABEL[existingRequestStatus] : "Requested"}
+          </span>
+        </Button>
+      ) : (
+        <ConfirmationModal
+          action={PRIMARY_ACTION[category]}
+          category={category}
+          serviceId={serviceId}
+          profileId={profileId}
+          title={title}
+          routeStops={routeStops}
+          trigger={
+            <Button
+              size="touch"
+              className="min-w-0 flex-1 rounded-full text-white"
+              style={{ backgroundColor: categoryConfig.color }}
+            >
+              <span className="truncate">{categoryConfig.bookCtaLabel}</span>
+            </Button>
+          }
+        />
+      )}
     </div>
   );
 }
