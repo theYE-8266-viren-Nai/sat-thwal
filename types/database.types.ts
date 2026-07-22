@@ -55,6 +55,7 @@ type HostelRow = {
   description: string | null;
   verified: boolean;
   created_at: string;
+  owner_profile_id: string | null;
 }
 
 type RestaurantRow = {
@@ -114,6 +115,7 @@ type RequestRow = {
   service_id: string;
   status: RequestStatus;
   note: string | null;
+  seen_by_student: boolean;
   created_at: string;
   updated_at: string;
 }

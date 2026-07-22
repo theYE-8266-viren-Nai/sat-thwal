@@ -28,6 +28,60 @@ export async function getHostelsByIds(supabase: SupabaseClient<Database>, ids: s
   return data ?? [];
 }
 
+export async function getHostelByOwner(supabase: SupabaseClient<Database>, profileId: string) {
+  const { data, error } = await supabase
+    .from("hostels")
+    .select("*")
+    .eq("owner_profile_id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export interface HostelListingPayload {
+  name: string;
+  image_url: string | null;
+  university: string;
+  township: string;
+  distance_km: number;
+  monthly_rent: number;
+  gender_policy: HostelRow["gender_policy"];
+  room_type: string;
+  facilities: string[];
+  available_rooms: number;
+  meals_included: boolean;
+  description: string | null;
+  owner_profile_id: string;
+}
+
+export async function insertHostelListing(
+  supabase: SupabaseClient<Database>,
+  payload: HostelListingPayload,
+) {
+  const { data, error } = await supabase
+    .from("hostels")
+    .insert({ ...payload, verified: false })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateHostelListing(
+  supabase: SupabaseClient<Database>,
+  hostelId: string,
+  updates: Database["public"]["Tables"]["hostels"]["Update"],
+) {
+  const { data, error } = await supabase
+    .from("hostels")
+    .update(updates)
+    .eq("id", hostelId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 const GENDER_LABEL: Record<HostelRow["gender_policy"], string> = {
   male: "Male only",
   female: "Female only",
@@ -73,5 +127,6 @@ export function hostelToDetail(hostel: HostelRow): ServiceDetailData {
     amenities: hostel.meals_included ? [...hostel.facilities, "Meals included"] : hostel.facilities,
     ctaLabel: "Request Room",
     contactInfo: "Message via Sat Thwal to get this hostel owner's contact details.",
+    ownerProfileId: hostel.owner_profile_id,
   };
 }

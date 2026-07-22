@@ -7,9 +7,10 @@ interface GreetingHeaderProps {
   name: string;
   university: string | null;
   township: string | null;
+  profileId: string;
 }
 
-export function GreetingHeader({ name, university, township }: GreetingHeaderProps) {
+export function GreetingHeader({ name, university, township, profileId }: GreetingHeaderProps) {
   const shortUniversity = university ? UNIVERSITY_SHORT_NAMES[university as University] ?? university : null;
 
   return (
@@ -26,7 +27,7 @@ export function GreetingHeader({ name, university, township }: GreetingHeaderPro
           </Badge>
         )}
       </div>
-      <NotificationBell />
+      <NotificationBell profileId={profileId} />
     </div>
   );
 }

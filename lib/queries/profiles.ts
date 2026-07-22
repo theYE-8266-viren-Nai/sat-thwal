@@ -14,6 +14,13 @@ export async function getProfile(supabase: SupabaseClient<Database>, userId: str
   return data;
 }
 
+export async function getProfilesByIds(supabase: SupabaseClient<Database>, ids: string[]) {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from("profiles").select("*").in("id", ids);
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function updateProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
