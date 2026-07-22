@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Search } from "lucide-react";
+import { Home, Inbox, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HostelCtaButtonsProps {
@@ -15,6 +15,14 @@ export function HostelCtaButtons({ existingHostelId }: HostelCtaButtonsProps) {
           Find Hostel
         </Link>
       </Button>
+      {existingHostelId && (
+        <Button asChild size="touch" variant="outline" className="flex-1 rounded-xl">
+          <Link href="/hostels/requests">
+            <Inbox className="h-4 w-4" />
+            Requests
+          </Link>
+        </Button>
+      )}
       <Button
         asChild
         size="touch"

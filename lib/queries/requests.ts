@@ -56,6 +56,17 @@ export async function getRequestsForTutor(supabase: SupabaseClient<Database>, tu
   return data ?? [];
 }
 
+export async function getRequestsForHostel(supabase: SupabaseClient<Database>, hostelId: string) {
+  const { data, error } = await supabase
+    .from("requests")
+    .select("*")
+    .eq("service_type", "hostel")
+    .eq("service_id", hostelId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getUnseenResponses(supabase: SupabaseClient<Database>, profileId: string) {
   const { data, error } = await supabase
     .from("requests")

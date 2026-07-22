@@ -1,32 +1,32 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getTutorByOwner } from "@/lib/queries/tutors";
-import { getRequestsForTutor } from "@/lib/queries/requests";
+import { getHostelByOwner } from "@/lib/queries/hostels";
 import { getProfilesByIds } from "@/lib/queries/profiles";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { getRequestsForHostel } from "@/lib/queries/requests";
 import { EmptyState } from "@/components/services/EmptyState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { IncomingRequestsList } from "@/components/requests/IncomingRequestsList";
 
-export default async function TutorRequestsPage() {
+export default async function HostelRequestsPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const tutor = await getTutorByOwner(supabase, user.id);
-  if (!tutor) redirect("/tutors/apply");
+  const hostel = await getHostelByOwner(supabase, user.id);
+  if (!hostel) redirect("/hostels/list");
 
-  const requests = await getRequestsForTutor(supabase, tutor.id);
+  const requests = await getRequestsForHostel(supabase, hostel.id);
   const requesters = await getProfilesByIds(supabase, [...new Set(requests.map((r) => r.profile_id))]);
   const requesterMap = new Map(requesters.map((p) => [p.id, p]));
 
   return (
     <div className="pb-6">
-      <PageHeader title="Tutor Requests" subtitle="Review new requests and track accepted sessions." />
+      <PageHeader title="Room Requests" subtitle="Students who requested your room listing." />
       {requests.length === 0 ? (
         <div className="px-5 md:px-8">
-          <EmptyState message="No one has requested a session with you yet." />
+          <EmptyState message="No one has requested your room yet." />
         </div>
       ) : (
         <IncomingRequestsList

@@ -8,7 +8,7 @@ import { updateRequestStatus } from "@/lib/queries/requests";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { REQUEST_STATUS_STYLES, REQUEST_STATUS_LABEL } from "@/lib/constants/requestStatus";
+import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 import type { Database } from "@/types/database.types";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
@@ -40,44 +40,44 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
 
   function renderRequestCard(request: RequestRow) {
     return (
-        <div
-          key={request.id}
-          className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-medium text-foreground">{requesterNames[request.id]}</p>
-              {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
-            </div>
-            <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
-              {REQUEST_STATUS_LABEL[request.status]}
-            </Badge>
+      <div
+        key={request.id}
+        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">{requesterNames[request.id]}</p>
+            {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
           </div>
-
-          {request.status === "pending" && (
-            <div className="flex gap-2">
-              <Button
-                size="touch"
-                className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-                disabled={pendingId === request.id}
-                onClick={() => respond(request.id, "confirmed")}
-              >
-                <Check className="h-4 w-4" />
-                Accept
-              </Button>
-              <Button
-                variant="outline"
-                size="touch"
-                className="flex-1 rounded-xl"
-                disabled={pendingId === request.id}
-                onClick={() => respond(request.id, "cancelled")}
-              >
-                <X className="h-4 w-4" />
-                Decline
-              </Button>
-            </div>
-          )}
+          <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
+            {REQUEST_STATUS_LABEL[request.status]}
+          </Badge>
         </div>
+
+        {request.status === "pending" && (
+          <div className="flex gap-2">
+            <Button
+              size="touch"
+              className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+              disabled={pendingId === request.id}
+              onClick={() => respond(request.id, "confirmed")}
+            >
+              <Check className="h-4 w-4" />
+              Accept
+            </Button>
+            <Button
+              variant="outline"
+              size="touch"
+              className="flex-1 rounded-xl"
+              disabled={pendingId === request.id}
+              onClick={() => respond(request.id, "cancelled")}
+            >
+              <X className="h-4 w-4" />
+              Decline
+            </Button>
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -98,17 +98,17 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
         </div>
         {pendingRequests.length > 0
           ? pendingRequests.map((request) => renderRequestCard(request))
-          : renderEmpty("No pending tutor requests right now.")}
+          : renderEmpty("No pending requests right now.")}
       </section>
 
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">Accepted requests</h2>
-          <p className="text-sm text-muted-foreground">Students you have accepted for a session.</p>
+          <p className="text-sm text-muted-foreground">Students you have already accepted.</p>
         </div>
         {acceptedRequests.length > 0
           ? acceptedRequests.map((request) => renderRequestCard(request))
-          : renderEmpty("No accepted tutor requests yet.")}
+          : renderEmpty("No accepted requests yet.")}
       </section>
     </div>
   );

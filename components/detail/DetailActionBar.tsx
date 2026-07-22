@@ -21,6 +21,11 @@ const OWNER_EDIT_HREF: Partial<Record<ServiceCategory, string>> = {
   hostel: "/hostels/edit",
 };
 
+const OWNER_REQUESTS_HREF: Partial<Record<ServiceCategory, string>> = {
+  tutor: "/tutors/requests",
+  hostel: "/hostels/requests",
+};
+
 interface DetailActionBarProps {
   category: ServiceCategory;
   serviceId: string;
@@ -72,9 +77,9 @@ export function DetailActionBar({
         >
           <Share2 className="h-4 w-4" />
         </Button>
-        {category === "tutor" && (
+        {OWNER_REQUESTS_HREF[category] && (
           <Button asChild variant="outline" size="touch" className="shrink-0 rounded-full px-3 sm:px-4">
-            <Link href="/tutors/requests">
+            <Link href={OWNER_REQUESTS_HREF[category]}>
               <Inbox className="h-4 w-4" />
               <span className="hidden sm:inline">Requests</span>
             </Link>
