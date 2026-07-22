@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "./env";
 import { getRoleLandingPath, isAdminRole, isDriverRole, isRestaurantRole } from "@/lib/auth/roles";
 
-const PUBLIC_ROUTES = ["/login", "/signup", "/driver-login", "/driver-signup"];
-const DRIVER_AUTH_ROUTES = ["/driver-login", "/driver-signup"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/driver-login"];
+const DRIVER_AUTH_ROUTES = ["/driver-login"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

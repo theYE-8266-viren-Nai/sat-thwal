@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { getRoleLandingPath } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export default function DriverLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -81,7 +83,7 @@ export default function DriverLoginPage() {
   return (
     <Card className="border-none shadow-lg">
       <CardHeader>
-        <CardTitle>Driver login</CardTitle>
+        <CardTitle>Driver Portal</CardTitle>
         <CardDescription>
           Transportation providers sign in here to manage route registrations.
         </CardDescription>
@@ -102,14 +104,37 @@ export default function DriverLoginPage() {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="driverPassword">Password</Label>
-            <Input
-              id="driverPassword"
-              type="password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
-            />
+            <div className="relative">
+              <Input
+                id="driverPassword"
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Password"
+                className="pr-11"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <p className="text-muted-foreground">Driver accounts are created by the transportation administrator.</p>
+            <a
+              href="mailto:?subject=Driver%20password%20reset%20request"
+              className="shrink-0 font-medium text-brand-indigo hover:underline"
+            >
+              Forgot Password
+            </a>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -120,16 +145,10 @@ export default function DriverLoginPage() {
             disabled={loading}
             className="mt-2 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
           >
-            {loading ? "Logging in..." : "Open driver dashboard"}
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Need a driver account?{" "}
-          <Link href="/driver-signup" className="font-medium text-brand-indigo hover:underline">
-            Create one
-          </Link>
-        </p>
         <p className="mt-3 text-center text-sm text-muted-foreground">
           Student account?{" "}
           <Link href="/login" className="font-medium text-brand-indigo hover:underline">
