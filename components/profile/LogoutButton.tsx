@@ -6,7 +6,11 @@ import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  redirectTo?: string;
+}
+
+export function LogoutButton({ redirectTo = "/login" }: LogoutButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +18,7 @@ export function LogoutButton() {
     setLoading(true);
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push(redirectTo);
     router.refresh();
   }
 

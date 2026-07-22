@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "./env";
+import { getRoleLandingPath, isAdminRole, isDriverRole } from "@/lib/auth/roles";
 
-const PUBLIC_ROUTES = ["/login", "/signup"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/driver-login", "/driver-signup"];
+const DRIVER_AUTH_ROUTES = ["/driver-login", "/driver-signup"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,7 +37,9 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isDriverAuthRoute = DRIVER_AUTH_ROUTES.includes(pathname);
   const isDriverRoute = pathname.startsWith("/driver");
+  const isAdminRoute = pathname.startsWith("/admin");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -50,27 +54,65 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
 
-    const isDriver = profile?.role === "driver" || profile?.role === "admin";
+    const role = profile?.role;
+    const isDriver = isDriverRole(role);
+    const isAdmin = isAdminRole(role);
+    const landingPath = getRoleLandingPath(role);
+    const { data: driverProfile } = isDriver
+      ? await supabase
+          .from("driver_profiles")
+          .select("status")
+          .eq("id", user.id)
+          .maybeSingle()
+      : { data: null };
+    const isActiveDriver = isDriver && driverProfile?.status === "active";
+
+    if (isDriverAuthRoute) {
+      if (isActiveDriver || isAdmin) {
+        const url = request.nextUrl.clone();
+        url.pathname = landingPath;
+        return NextResponse.redirect(url);
+      }
+      return response;
+    }
 
     if (isPublicRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = isDriver ? "/driver/dashboard" : "/home";
+      url.pathname = isDriver && !isActiveDriver ? "/driver-login" : landingPath;
       return NextResponse.redirect(url);
     }
 
-    if (isDriver && !isDriverRoute) {
+    if (isDriver && !isActiveDriver && !isDriverAuthRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/driver-login";
+      return NextResponse.redirect(url);
+    }
+
+    if (isActiveDriver && !isDriverRoute) {
       const url = request.nextUrl.clone();
       url.pathname = "/driver/dashboard";
       return NextResponse.redirect(url);
     }
 
-    if (!isDriver && isDriverRoute) {
+    if (isAdmin && !isAdminRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = "/home";
+      url.pathname = "/admin/dashboard";
       return NextResponse.redirect(url);
     }
 
-    if (profile && !isDriver && pathname !== "/onboarding" && !profile.onboarding_completed) {
+    if (!isActiveDriver && isDriverRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = landingPath;
+      return NextResponse.redirect(url);
+    }
+
+    if (!isAdmin && isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = landingPath;
+      return NextResponse.redirect(url);
+    }
+
+    if (profile && !isDriver && !isAdmin && pathname !== "/onboarding" && !profile.onboarding_completed) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
       return NextResponse.redirect(url);

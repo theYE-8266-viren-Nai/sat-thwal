@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
+import { getRoleLandingPath } from "@/lib/auth/roles";
+import { throwSupabaseError } from "@/lib/supabase/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
 
 export type DriverProfile = Database["public"]["Tables"]["profiles"]["Row"];
+export type DriverProviderProfile = Database["public"]["Tables"]["driver_profiles"]["Row"];
 
 export async function requireDriverProfile() {
   const supabase = await createClient();
@@ -18,10 +21,21 @@ export async function requireDriverProfile() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!profile || (profile.role !== "driver" && profile.role !== "admin")) {
-    redirect("/home");
+  if (error) throwSupabaseError(error, "Could not load profile.");
+  if (!profile || profile.role !== "driver") {
+    redirect(getRoleLandingPath(profile?.role));
   }
 
-  return { supabase, user, profile };
+  const { data: driverProfile, error: driverProfileError } = await supabase
+    .from("driver_profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (driverProfileError) throwSupabaseError(driverProfileError, "Could not load driver profile.");
+  if (!driverProfile || driverProfile.status !== "active") {
+    redirect("/driver-login");
+  }
+
+  return { supabase, user, profile, driverProfile };
 }

@@ -3,6 +3,7 @@ import { Bell, Bus, ClipboardList, Eye, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DriverDashboardError } from "@/components/driver/DriverDashboardError";
 import { DriverRouteCard } from "@/components/driver/DriverRouteCard";
 import { RegistrationStatusActions } from "@/components/driver/RegistrationStatusActions";
 import { requireDriverProfile } from "@/lib/driver/auth";
@@ -14,11 +15,19 @@ import {
 
 export default async function DriverDashboardPage() {
   const { supabase, profile } = await requireDriverProfile();
-  const [routes, registrations, notifications] = await Promise.all([
-    getDriverRoutes(supabase, profile.id),
-    getDriverRegistrations(supabase, profile.id),
-    getDriverNotifications(supabase, profile.id),
-  ]);
+  let routes: Awaited<ReturnType<typeof getDriverRoutes>> = [];
+  let registrations: Awaited<ReturnType<typeof getDriverRegistrations>> = [];
+  let notifications: Awaited<ReturnType<typeof getDriverNotifications>> = [];
+
+  try {
+    [routes, registrations, notifications] = await Promise.all([
+      getDriverRoutes(supabase, profile.id),
+      getDriverRegistrations(supabase, profile.id),
+      getDriverNotifications(supabase, profile.id),
+    ]);
+  } catch (error) {
+    return <DriverDashboardError error={error} />;
+  }
 
   const pendingCount = registrations.filter((item) => item.status === "pending").length;
   const approvedCount = registrations.filter((item) => item.status === "approved").length;

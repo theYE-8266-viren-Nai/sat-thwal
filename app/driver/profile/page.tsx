@@ -1,15 +1,22 @@
-import { Mail, MapPin, Phone, UserRound } from "lucide-react";
+import { Bus, FileText, Mail, MapPin, Phone, UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { requireDriverProfile } from "@/lib/driver/auth";
 
 export default async function DriverProfilePage() {
-  const { profile, user } = await requireDriverProfile();
+  const { driverProfile, profile, user } = await requireDriverProfile();
 
   const rows = [
-    { label: "Name", value: profile.full_name ?? "Not added", icon: UserRound },
+    { label: "Name", value: driverProfile?.provider_name ?? profile.full_name ?? "Not added", icon: UserRound },
     { label: "Email", value: user.email ?? "Not added", icon: Mail },
-    { label: "Phone", value: profile.phone ?? "Not added", icon: Phone },
-    { label: "Township", value: profile.township ?? "Not added", icon: MapPin },
+    { label: "Phone", value: driverProfile?.service_phone ?? profile.phone ?? "Not added", icon: Phone },
+    { label: "Township", value: driverProfile?.township ?? profile.township ?? "Not added", icon: MapPin },
+    {
+      label: "Vehicle type",
+      value: driverProfile?.vehicle_types.length ? driverProfile.vehicle_types.join(", ") : "Not added",
+      icon: Bus,
+    },
+    { label: "Vehicle number", value: driverProfile?.vehicle_number ?? "Not added", icon: Bus },
+    { label: "License number", value: driverProfile?.license_number ?? "Not added", icon: FileText },
   ];
 
   return (

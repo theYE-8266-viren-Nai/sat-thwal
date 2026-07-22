@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getRoleLandingPath } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,25 @@ export default function LoginPage() {
       setError(error.message);
       return;
     }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from("profiles").select("id, role").eq("id", user.id).single()
+      : { data: null };
+
+    if (profile?.role === "admin") {
+      router.push(getRoleLandingPath(profile.role));
+      router.refresh();
+      return;
+    }
+
+    if (profile?.role === "driver") {
+      await supabase.auth.signOut();
+      setError("Drivers must use the separate driver login.");
+      return;
+    }
+
     router.push("/home");
     router.refresh();
   }
@@ -75,6 +95,12 @@ export default function LoginPage() {
           New to Sat Thwal?{" "}
           <Link href="/signup" className="font-medium text-brand-indigo hover:underline">
             Create an account
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-sm text-muted-foreground">
+          Transportation provider?{" "}
+          <Link href="/driver-login" className="font-medium text-brand-indigo hover:underline">
+            Use driver login
           </Link>
         </p>
       </CardContent>

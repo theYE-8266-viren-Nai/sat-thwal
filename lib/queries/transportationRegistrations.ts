@@ -5,6 +5,7 @@ import type {
 } from "@/types/database.types";
 import type { ServiceCardData } from "@/types/domain";
 import { routeToCard, type TransportationRow } from "@/lib/queries/transportation";
+import { throwSupabaseError } from "@/lib/supabase/errors";
 
 export type TransportationRegistrationRow =
   Database["public"]["Tables"]["transportation_registrations"]["Row"];
@@ -38,7 +39,7 @@ export async function createTransportationRegistration(
     .select("*")
     .eq("id", routeId)
     .maybeSingle();
-  if (routeError) throw routeError;
+  if (routeError) throwSupabaseError(routeError, "Could not load transportation route.");
   if (!route) {
     throw new Error("Transportation route not found.");
   }
@@ -66,7 +67,7 @@ export async function createTransportationRegistration(
     })
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not create transportation registration.");
 
   await supabase.from("notifications").insert({
     recipient_id: route.driver_id,
@@ -87,7 +88,7 @@ export async function getDriverRoutes(supabase: SupabaseClient<Database>, driver
     .select("*")
     .eq("driver_id", driverId)
     .order("departure_time", { ascending: true });
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not load driver routes.");
   return data ?? [];
 }
 
@@ -97,10 +98,12 @@ export async function getDriverRegistrations(
 ) {
   const { data, error } = await supabase
     .from("transportation_registrations")
-    .select("*, route:transportation_routes(*), student:profiles(id, full_name, avatar_url, phone)")
+    .select(
+      "*, route:transportation_routes(*), student:profiles!transportation_registrations_student_id_fkey(id, full_name, avatar_url, phone)",
+    )
     .eq("driver_id", driverId)
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not load driver registrations.");
   return (data ?? []) as unknown as TransportationRegistrationWithDetails[];
 }
 
@@ -113,7 +116,7 @@ export async function getDriverNotifications(
     .select("*")
     .eq("recipient_id", driverId)
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not load driver notifications.");
   return data ?? [];
 }
 
@@ -128,7 +131,7 @@ export async function updateTransportationRegistrationStatus(
     .select("*, route:transportation_routes(*)")
     .eq("id", registrationId)
     .maybeSingle();
-  if (registrationError) throw registrationError;
+  if (registrationError) throwSupabaseError(registrationError, "Could not load registration.");
   const registration = registrationData as unknown as TransportationRegistrationWithRoute | null;
   if (!registration) throw new Error("Registration not found.");
   if (registration.status === "approved" && status === "approved") {
@@ -154,17 +157,18 @@ export async function updateTransportationRegistrationStatus(
     .eq("id", registrationId)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not update registration status.");
 
   if (status === "approved") {
-    await supabase
+    const { error: routeUpdateError } = await supabase
       .from("transportation_routes")
       .update({ available_seats: Math.max((registration.route?.available_seats ?? 1) - 1, 0) })
       .eq("id", registration.route_id);
+    if (routeUpdateError) throwSupabaseError(routeUpdateError, "Could not update available seats.");
   }
 
   const routeName = registration.route?.route_name ?? "your transportation route";
-  await supabase.from("notifications").insert({
+  const { error: notificationError } = await supabase.from("notifications").insert({
     recipient_id: registration.student_id,
     sender_id: registration.driver_id,
     route_id: registration.route_id,
@@ -176,6 +180,7 @@ export async function updateTransportationRegistrationStatus(
         ? `Your seat request for ${routeName} was approved.`
         : `Your seat request for ${routeName} was rejected.`,
   });
+  if (notificationError) throwSupabaseError(notificationError, "Could not create notification.");
 
   return updated;
 }
@@ -188,7 +193,7 @@ export async function markNotificationRead(
     .from("notifications")
     .update({ is_read: true })
     .eq("id", notificationId);
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not mark notification as read.");
 }
 
 export async function markAllNotificationsRead(
@@ -200,7 +205,7 @@ export async function markAllNotificationsRead(
     .update({ is_read: true })
     .eq("recipient_id", driverId)
     .eq("is_read", false);
-  if (error) throw error;
+  if (error) throwSupabaseError(error, "Could not mark notifications as read.");
 }
 
 export function registrationsToCards(registrations: TransportationRegistrationWithDetails[]) {

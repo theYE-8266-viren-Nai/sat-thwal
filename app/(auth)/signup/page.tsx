@@ -116,6 +116,12 @@ export default function SignupPage() {
             Log in
           </Link>
         </p>
+        <p className="mt-3 text-center text-sm text-muted-foreground">
+          Signing up as a transportation provider?{" "}
+          <Link href="/driver-login" className="font-medium text-brand-indigo hover:underline">
+            Use driver login
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

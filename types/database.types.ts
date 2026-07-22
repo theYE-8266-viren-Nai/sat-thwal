@@ -136,6 +136,20 @@ type NotificationRow = {
   created_at: string;
 }
 
+type DriverProfileRow = {
+  id: string;
+  provider_name: string;
+  service_phone: string | null;
+  township: string | null;
+  vehicle_types: string[];
+  license_number: string | null;
+  vehicle_number: string | null;
+  notes: string | null;
+  status: "pending" | "active" | "suspended";
+  created_at: string;
+  updated_at: string;
+}
+
 type SavedItemRow = {
   id: string;
   profile_id: string;
@@ -219,6 +233,15 @@ export type Database = {
           message: string;
         };
         Update: Partial<NotificationRow>;
+        Relationships: [];
+      };
+      driver_profiles: {
+        Row: DriverProfileRow;
+        Insert: Partial<DriverProfileRow> & {
+          id: string;
+          provider_name: string;
+        };
+        Update: Partial<DriverProfileRow>;
         Relationships: [];
       };
       saved_items: {

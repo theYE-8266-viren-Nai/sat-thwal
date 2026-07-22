@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { DriverMobileNav, DriverNav } from "@/components/driver/DriverNav";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/profile/LogoutButton";
 import { getDriverNotifications } from "@/lib/queries/transportationRegistrations";
 import { requireDriverProfile } from "@/lib/driver/auth";
 
@@ -10,8 +10,6 @@ export default async function DriverLayout({ children }: { children: React.React
   const { supabase, profile } = await requireDriverProfile();
   const notifications = await getDriverNotifications(supabase, profile.id);
   const unreadCount = notifications.filter((notification) => !notification.is_read).length;
-
-  if (profile.role !== "driver" && profile.role !== "admin") redirect("/home");
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -42,9 +40,9 @@ export default async function DriverLayout({ children }: { children: React.React
                   )}
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="rounded-full">
-                <Link href="/home">Student app</Link>
-              </Button>
+              <div className="hidden sm:block">
+                <LogoutButton redirectTo="/driver-login" />
+              </div>
             </div>
           </div>
         </header>

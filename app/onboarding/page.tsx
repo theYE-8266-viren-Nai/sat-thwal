@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getRoleLandingPath } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfile } from "@/lib/queries/profiles";
 import { UNIVERSITIES } from "@/lib/constants/universities";
@@ -34,6 +35,18 @@ export default function OnboardingPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Your session expired — please log in again.");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role === "driver" || profile?.role === "admin") {
+        router.push(getRoleLandingPath(profile.role));
+        router.refresh();
+        return;
+      }
 
       await updateProfile(supabase, user.id, {
         university,
