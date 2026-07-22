@@ -106,7 +106,7 @@ export function DriverNav({ unreadCount, driverName, providerName, vehicleNumber
         })}
       </nav>
       <div className="mt-6 border-t border-border pt-4">
-        <LogoutButton redirectTo="/driver-login" />
+        <LogoutButton redirectTo="/login" />
       </div>
     </aside>
   );
@@ -208,7 +208,7 @@ export function DriverMobileDrawer({
             })}
           </nav>
           <div className="mt-5 border-t border-border pt-4">
-            <LogoutButton redirectTo="/driver-login" />
+            <LogoutButton redirectTo="/login" />
           </div>
         </div>
       </SheetContent>

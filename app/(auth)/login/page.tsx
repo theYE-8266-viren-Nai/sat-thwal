@@ -35,19 +35,27 @@ export default function LoginPage() {
       ? await supabase.from("profiles").select("id, role").eq("id", user.id).single()
       : { data: null };
 
-    if (profile?.role === "admin") {
-      router.push(getRoleLandingPath(profile.role));
-      router.refresh();
-      return;
-    }
-
     if (profile?.role === "driver") {
-      await supabase.auth.signOut();
-      setError("Drivers must use the separate driver login.");
-      return;
+      const { data: driverProfile, error: driverProfileError } = await supabase
+        .from("driver_profiles")
+        .select("id, status")
+        .eq("id", profile.id)
+        .single();
+
+      if (driverProfileError || !driverProfile) {
+        await supabase.auth.signOut();
+        setError("This driver account is missing its driver profile.");
+        return;
+      }
+
+      if (driverProfile.status !== "active") {
+        await supabase.auth.signOut();
+        setError("This driver account is not active yet.");
+        return;
+      }
     }
 
-    router.push("/home");
+    router.push(getRoleLandingPath(profile?.role));
     router.refresh();
   }
 
@@ -95,12 +103,6 @@ export default function LoginPage() {
           New to Sat Thwal?{" "}
           <Link href="/signup" className="font-medium text-brand-indigo hover:underline">
             Create an account
-          </Link>
-        </p>
-        <p className="mt-3 text-center text-sm text-muted-foreground">
-          Transportation provider?{" "}
-          <Link href="/driver-login" className="font-medium text-brand-indigo hover:underline">
-            Use driver login
           </Link>
         </p>
       </CardContent>

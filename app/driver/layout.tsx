@@ -99,7 +99,7 @@ export default async function DriverLayout({ children }: { children: React.React
                     Driver Profile
                   </Link>
                   <div className="mt-1 border-t border-border pt-2">
-                    <LogoutButton redirectTo="/driver-login" />
+                    <LogoutButton redirectTo="/login" />
                   </div>
                 </div>
               </details>

@@ -3,8 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "./env";
 import { getRoleLandingPath, isAdminRole, isDriverRole, isRestaurantRole } from "@/lib/auth/roles";
 
-const PUBLIC_ROUTES = ["/login", "/signup", "/driver-login"];
-const DRIVER_AUTH_ROUTES = ["/driver-login"];
+const PUBLIC_ROUTES = ["/login", "/signup"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,7 +36,6 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
-  const isDriverAuthRoute = DRIVER_AUTH_ROUTES.includes(pathname);
   const isDriverRoute = pathname.startsWith("/driver");
   const isAdminRoute = pathname.startsWith("/admin");
   const isRestaurantRoute = pathname.startsWith("/restaurant");
@@ -69,24 +67,18 @@ export async function updateSession(request: NextRequest) {
       : { data: null };
     const isActiveDriver = isDriver && driverProfile?.status === "active";
 
-    if (isDriverAuthRoute) {
-      if (isActiveDriver || isAdmin) {
-        const url = request.nextUrl.clone();
-        url.pathname = landingPath;
-        return NextResponse.redirect(url);
-      }
-      return response;
-    }
-
     if (isPublicRoute) {
+      if (isDriver && !isActiveDriver) {
+        return response;
+      }
       const url = request.nextUrl.clone();
-      url.pathname = isDriver && !isActiveDriver ? "/driver-login" : landingPath;
+      url.pathname = landingPath;
       return NextResponse.redirect(url);
     }
 
-    if (isDriver && !isActiveDriver && !isDriverAuthRoute) {
+    if (isDriver && !isActiveDriver) {
       const url = request.nextUrl.clone();
-      url.pathname = "/driver-login";
+      url.pathname = "/login";
       return NextResponse.redirect(url);
     }
 

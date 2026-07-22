@@ -34,7 +34,7 @@ export async function requireDriverProfile() {
 
   if (driverProfileError) throwSupabaseError(driverProfileError, "Could not load driver profile.");
   if (!driverProfile || driverProfile.status !== "active") {
-    redirect("/driver-login");
+    redirect("/login");
   }
 
   return { supabase, user, profile, driverProfile };
