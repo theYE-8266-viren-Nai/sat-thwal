@@ -24,6 +24,7 @@ export function SmartMatchClient() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ServiceCardData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -56,6 +57,7 @@ export function SmartMatchClient() {
     setQuery(text);
     setStatus("loading");
     setError(null);
+    setUsingFallback(false);
     addRecentSearch(text);
     setRecentSearches(getRecentSearches());
 
@@ -71,10 +73,12 @@ export function SmartMatchClient() {
       }
 
       const matches = (await response.json()) as ServiceCardData[];
+      setUsingFallback(response.headers.get("X-SmartMatch-Source") === "fallback");
       setResults(Array.isArray(matches) ? matches : []);
       setStatus("results");
     } catch {
       setResults([]);
+      setUsingFallback(false);
       setError("SmartMatch couldn't analyze that request right now. Please try again.");
       setStatus("error");
     }
@@ -97,7 +101,14 @@ export function SmartMatchClient() {
       {status === "loading" && <LoadingIndicator />}
 
       {status === "results" && profileId && (
-        <RecommendationResults query={query} results={results} profileId={profileId} savedKeys={savedKeys} />
+        <>
+          {usingFallback && (
+            <div className="rounded-2xl border border-brand-orange/20 bg-brand-orange/10 p-4 text-sm text-orange-700">
+              AI matching is unavailable right now, so these are basic tutor and hostel matches.
+            </div>
+          )}
+          <RecommendationResults query={query} results={results} profileId={profileId} savedKeys={savedKeys} />
+        </>
       )}
 
       {status === "error" && error && (

@@ -48,10 +48,13 @@ export async function POST(request: Request) {
 
   const aiMatches = await getOpenRouterMatches(query, catalog, profile);
   const aiCards = aiMatches ? rankedMatchesToCards(aiMatches, catalog) : [];
+  const useAiResults = aiCards.length > 0;
 
-  return NextResponse.json(
-    aiCards.length > 0 ? aiCards : fallbackSmartMatch(query, catalog, profile),
-  );
+  return NextResponse.json(useAiResults ? aiCards : fallbackSmartMatch(query, catalog, profile), {
+    headers: {
+      "X-SmartMatch-Source": useAiResults ? "openrouter" : "fallback",
+    },
+  });
 }
 
 async function getOpenRouterMatches(
@@ -124,7 +127,13 @@ async function getOpenRouterMatches(
       }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.warn("OpenRouter SmartMatch request failed", {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return null;
+    }
 
     const data = await response.json();
     const content = getMessageContent(data);
