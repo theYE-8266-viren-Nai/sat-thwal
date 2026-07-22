@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ဆက်သွယ် Myanmar",
+  title: "ဆက်သွယ် ",
   description:
     "One student request. Four personalized solutions — tutors, hostels, food, and transportation for Myanmar university students.",
 };

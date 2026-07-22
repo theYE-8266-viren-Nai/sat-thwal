@@ -7,8 +7,6 @@ import { getRoutes, routeToCard } from "@/lib/queries/transportation";
 import { getSavedItems } from "@/lib/queries/savedItems";
 import { STUDENT_OFFERS } from "@/lib/constants/offers";
 import { GreetingHeader } from "@/components/home/GreetingHeader";
-import { TutorCtaButtons } from "@/components/home/TutorCtaButtons";
-import { HostelCtaButtons } from "@/components/home/HostelCtaButtons";
 import { SmartMatchSearchBox } from "@/components/home/SmartMatchSearchBox";
 import { CategoryCardGrid } from "@/components/home/CategoryCardGrid";
 import { ServiceSection } from "@/components/home/ServiceSection";
@@ -60,10 +58,11 @@ export default async function HomePage() {
         township={profile?.township ?? null}
         profileId={user.id}
       />
-      <TutorCtaButtons existingTutorId={ownedTutor?.id ?? null} />
-      <HostelCtaButtons existingHostelId={ownedHostel?.id ?? null} />
       <SmartMatchSearchBox />
-      <CategoryCardGrid />
+      <CategoryCardGrid
+        existingTutorId={ownedTutor?.id ?? null}
+        existingHostelId={ownedHostel?.id ?? null}
+      />
 
       <ServiceSection
         title="Recommended for you"
