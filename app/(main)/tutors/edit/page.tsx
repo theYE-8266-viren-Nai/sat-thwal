@@ -18,6 +18,7 @@ export default async function TutorEditPage() {
     <div className="pb-6">
       <PageHeader title="Edit Tutor Profile" subtitle="Update how students see your listing." />
       <TutorEditForm
+        userId={user.id}
         defaultName={tutor.name}
         defaultPhotoUrl={tutor.photo_url ?? ""}
         defaultSubjects={tutor.subjects}

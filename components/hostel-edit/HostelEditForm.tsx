@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { FacilitiesMultiSelect } from "@/components/shared/FacilitiesMultiSelect";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
@@ -18,6 +19,7 @@ import type { GenderPolicy } from "@/types/database.types";
 import { editHostelRoom } from "@/lib/actions/hostels";
 
 interface HostelEditFormProps {
+  userId: string;
   defaultName: string;
   defaultImageUrl: string;
   defaultUniversity: string;
@@ -39,6 +41,7 @@ const GENDER_POLICY_OPTIONS = [
 ] as const;
 
 export function HostelEditForm({
+  userId,
   defaultName,
   defaultImageUrl,
   defaultUniversity,
@@ -115,15 +118,7 @@ export function HostelEditForm({
           <Input id="hostel-name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="hostel-photo">Photo URL (optional)</Label>
-          <Input
-            id="hostel-photo"
-            placeholder="https://..."
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-        </div>
+        <ImageUpload bucket="hostel-images" userId={userId} label="Photo" value={imageUrl} onChange={setImageUrl} />
 
         <LabeledSelect
           id="hostel-university"

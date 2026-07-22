@@ -21,6 +21,7 @@ export default async function TutorApplyPage() {
     <div className="pb-6">
       <PageHeader title="Become a Tutor" subtitle="Upload your grades to check eligibility." />
       <TutorApplyForm
+        userId={user.id}
         defaultName={profile?.full_name ?? ""}
         defaultUniversity={profile?.university ?? ""}
         defaultTownship={profile?.township ?? ""}

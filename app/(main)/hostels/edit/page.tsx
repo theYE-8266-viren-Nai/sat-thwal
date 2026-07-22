@@ -18,6 +18,7 @@ export default async function HostelEditPage() {
     <div className="pb-6">
       <PageHeader title="Edit Room Listing" subtitle="Update how students see your listing." />
       <HostelEditForm
+        userId={user.id}
         defaultName={hostel.name}
         defaultImageUrl={hostel.image_url ?? ""}
         defaultUniversity={hostel.university}

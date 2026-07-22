@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { FacilitiesMultiSelect } from "@/components/shared/FacilitiesMultiSelect";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
@@ -18,6 +19,7 @@ import type { GenderPolicy } from "@/types/database.types";
 import { listHostelRoom } from "@/lib/actions/hostels";
 
 interface ListRoomFormProps {
+  userId: string;
   defaultUniversity: string;
   defaultTownship: string;
 }
@@ -28,7 +30,7 @@ const GENDER_POLICY_OPTIONS = [
   { value: "mixed", label: "Mixed" },
 ] as const;
 
-export function ListRoomForm({ defaultUniversity, defaultTownship }: ListRoomFormProps) {
+export function ListRoomForm({ userId, defaultUniversity, defaultTownship }: ListRoomFormProps) {
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -97,15 +99,7 @@ export function ListRoomForm({ defaultUniversity, defaultTownship }: ListRoomFor
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="hostel-photo">Photo URL (optional)</Label>
-          <Input
-            id="hostel-photo"
-            placeholder="https://..."
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-        </div>
+        <ImageUpload bucket="hostel-images" userId={userId} label="Photo" value={imageUrl} onChange={setImageUrl} />
 
         <LabeledSelect
           id="hostel-university"

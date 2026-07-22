@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
@@ -16,6 +17,7 @@ import type { SessionMode } from "@/types/database.types";
 import { editTutorProfile } from "@/lib/actions/tutors";
 
 interface TutorEditFormProps {
+  userId: string;
   defaultName: string;
   defaultPhotoUrl: string;
   defaultSubjects: string[];
@@ -34,6 +36,7 @@ const SESSION_MODE_OPTIONS = [
 ] as const;
 
 export function TutorEditForm({
+  userId,
   defaultName,
   defaultPhotoUrl,
   defaultSubjects,
@@ -93,15 +96,7 @@ export function TutorEditForm({
           <Input id="tutor-name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tutor-photo">Photo URL (optional)</Label>
-          <Input
-            id="tutor-photo"
-            placeholder="https://..."
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-          />
-        </div>
+        <ImageUpload bucket="tutor-photos" userId={userId} label="Photo" value={photoUrl} onChange={setPhotoUrl} />
 
         <SubjectMultiSelect value={subjects} onChange={setSubjects} />
 

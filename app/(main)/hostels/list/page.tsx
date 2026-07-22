@@ -21,6 +21,7 @@ export default async function ListRoomPage() {
     <div className="pb-6">
       <PageHeader title="List Your Room" subtitle="Let other students know your spare room is available." />
       <ListRoomForm
+        userId={user.id}
         defaultUniversity={profile?.university ?? ""}
         defaultTownship={profile?.township ?? ""}
       />
