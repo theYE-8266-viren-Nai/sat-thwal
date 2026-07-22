@@ -4,7 +4,6 @@ import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-re
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
-import { RatingStars } from "@/components/services/RatingStars";
 import { SaveButton } from "@/components/services/SaveButton";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
@@ -56,12 +55,7 @@ export function ServiceCard({ data, profileId, initialSaved, hideSaveButton = fa
         </div>
 
         <div className="flex flex-1 flex-col gap-2 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="line-clamp-1 font-semibold text-foreground">{data.title}</h3>
-            {typeof data.rating === "number" && (
-              <RatingStars rating={data.rating} reviewCount={data.reviewCount} />
-            )}
-          </div>
+          <h3 className="line-clamp-1 font-semibold text-foreground">{data.title}</h3>
           <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
 
           <div className="flex flex-col gap-1">
