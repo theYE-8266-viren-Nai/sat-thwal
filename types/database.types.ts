@@ -36,6 +36,7 @@ type TutorRow = {
   availability_note: string | null;
   verified: boolean;
   created_at: string;
+  owner_profile_id: string | null;
 }
 
 type HostelRow = {

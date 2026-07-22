@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database.types";
+import type { Database, SessionMode } from "@/types/database.types";
 import type { ServiceCardData } from "@/types/domain";
 import type { ServiceDetailData } from "@/types/detail";
 import { formatMMK } from "@/lib/utils";
@@ -26,6 +26,47 @@ export async function getTutorsByIds(supabase: SupabaseClient<Database>, ids: st
   const { data, error } = await supabase.from("tutors").select("*").in("id", ids);
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getTutorByOwner(supabase: SupabaseClient<Database>, profileId: string) {
+  const { data, error } = await supabase
+    .from("tutors")
+    .select("*")
+    .eq("owner_profile_id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export interface TutorApplicationPayload {
+  name: string;
+  photo_url: string | null;
+  subjects: string[];
+  university: string;
+  township: string;
+  bio: string | null;
+  price_per_session: number;
+  session_mode: SessionMode;
+  availability_note: string | null;
+  owner_profile_id: string;
+}
+
+export async function insertTutorProfile(
+  supabase: SupabaseClient<Database>,
+  payload: TutorApplicationPayload,
+) {
+  const { data, error } = await supabase
+    .from("tutors")
+    .insert({
+      ...payload,
+      verified: true,
+      rating: 0,
+      review_count: 0,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 export function tutorToCard(tutor: TutorRow): ServiceCardData {

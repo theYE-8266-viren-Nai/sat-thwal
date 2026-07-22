@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/queries/profiles";
-import { getTutors, tutorToCard } from "@/lib/queries/tutors";
+import { getTutors, tutorToCard, getTutorByOwner } from "@/lib/queries/tutors";
 import { getHostels, hostelToCard } from "@/lib/queries/hostels";
 import { getFoodItems, foodToCard } from "@/lib/queries/food";
 import { getRoutes, routeToCard } from "@/lib/queries/transportation";
 import { getSavedItems } from "@/lib/queries/savedItems";
 import { STUDENT_OFFERS } from "@/lib/constants/offers";
 import { GreetingHeader } from "@/components/home/GreetingHeader";
+import { TutorCtaButtons } from "@/components/home/TutorCtaButtons";
 import { SmartMatchSearchBox } from "@/components/home/SmartMatchSearchBox";
 import { CategoryCardGrid } from "@/components/home/CategoryCardGrid";
 import { ServiceSection } from "@/components/home/ServiceSection";
@@ -21,13 +22,14 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profile, tutors, hostels, foodItems, routes, savedItems] = await Promise.all([
+  const [profile, tutors, hostels, foodItems, routes, savedItems, ownedTutor] = await Promise.all([
     getProfile(supabase, user.id),
     getTutors(supabase),
     getHostels(supabase),
     getFoodItems(supabase),
     getRoutes(supabase),
     getSavedItems(supabase, user.id),
+    getTutorByOwner(supabase, user.id),
   ]);
 
   const savedKeys = new Set(savedItems.map((s) => `${s.service_type}:${s.service_id}`));
@@ -55,6 +57,7 @@ export default async function HomePage() {
         university={profile?.university ?? null}
         township={profile?.township ?? null}
       />
+      <TutorCtaButtons existingTutorId={ownedTutor?.id ?? null} />
       <SmartMatchSearchBox />
       <CategoryCardGrid />
 
