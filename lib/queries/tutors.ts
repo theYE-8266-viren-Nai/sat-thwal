@@ -1,0 +1,85 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database.types";
+import type { ServiceCardData } from "@/types/domain";
+import type { ServiceDetailData } from "@/types/detail";
+import { formatMMK } from "@/lib/utils";
+
+export type TutorRow = Database["public"]["Tables"]["tutors"]["Row"];
+
+export async function getTutors(supabase: SupabaseClient<Database>) {
+  const { data, error } = await supabase
+    .from("tutors")
+    .select("*")
+    .order("rating", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getTutorById(supabase: SupabaseClient<Database>, id: string) {
+  const { data, error } = await supabase.from("tutors").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function getTutorsByIds(supabase: SupabaseClient<Database>, ids: string[]) {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from("tutors").select("*").in("id", ids);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export function tutorToCard(tutor: TutorRow): ServiceCardData {
+  const modeLabel =
+    tutor.session_mode === "both"
+      ? "Online or in-person"
+      : tutor.session_mode === "online"
+        ? "Online"
+        : "In-person";
+
+  return {
+    id: tutor.id,
+    category: "tutor",
+    image: tutor.photo_url,
+    title: tutor.name,
+    subtitle: tutor.subjects.join(", "),
+    priceLabel: `${formatMMK(tutor.price_per_session)} / session`,
+    rating: tutor.rating,
+    reviewCount: tutor.review_count,
+    verified: tutor.verified,
+    meta: [
+      { icon: "book-open", label: tutor.university },
+      { icon: "map-pin", label: tutor.township },
+      { icon: "clock", label: modeLabel },
+    ],
+    ctaLabel: "View Profile",
+    href: `/services/tutor/${tutor.id}`,
+  };
+}
+
+export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
+  const modeLabel =
+    tutor.session_mode === "both"
+      ? "Online or in-person"
+      : tutor.session_mode === "online"
+        ? "Online only"
+        : "In-person only";
+
+  return {
+    id: tutor.id,
+    category: "tutor",
+    image: tutor.photo_url,
+    title: tutor.name,
+    providerName: tutor.name,
+    providerAvatar: tutor.photo_url,
+    verified: tutor.verified,
+    rating: tutor.rating,
+    reviewCount: tutor.review_count,
+    priceLabel: `${formatMMK(tutor.price_per_session)} / session`,
+    availabilityLines: [tutor.availability_note ?? "Contact tutor for availability", modeLabel],
+    locationLabel: `${tutor.township}, near ${tutor.university}`,
+    description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")} at ${tutor.university}.`,
+    amenities: tutor.subjects,
+    ctaLabel: "Request Session",
+    contactInfo: "Message via Sat Thwal to get this tutor's contact details.",
+  };
+}

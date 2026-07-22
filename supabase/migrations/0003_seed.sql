@@ -1,0 +1,52 @@
+-- UniMate Myanmar — realistic mock catalog data
+
+insert into tutors (name, photo_url, subjects, university, township, bio, rating, review_count, price_per_session, session_mode, availability_note, verified) values
+('Aung Kyaw Zin', 'https://i.pravatar.cc/150?img=12', array['Data Structures', 'Programming Fundamentals'], 'University of Information Technology', 'Hlaing', 'Final-year CS student at UIT, 3 years of peer-tutoring experience in C++ and Python.', 4.8, 42, 8000, 'both', 'Weekday evenings, weekend mornings', true),
+('Su Su Hlaing', 'https://i.pravatar.cc/150?img=32', array['Calculus', 'Discrete Mathematics'], 'University of Yangon', 'Kamayut', 'Maths tutor with 5 years experience preparing students for university entrance and core-year exams.', 4.9, 65, 7000, 'online', 'Flexible, usually replies within an hour', true),
+('Zaw Min Htet', 'https://i.pravatar.cc/150?img=14', array['Database Systems', 'SQL'], 'University of Computer Studies, Yangon', 'Hlaing', 'UCSY graduate now working as a backend developer, tutors part-time on weekends.', 4.6, 21, 9000, 'in_person', 'Saturday and Sunday only', true),
+('Nay Chi Win', 'https://i.pravatar.cc/150?img=45', array['English for Academic Purposes', 'IELTS Prep'], 'Yangon University of Economics', 'Kamayut', 'English lecturer offering conversational and academic writing support for university students.', 4.7, 38, 6500, 'both', 'Weekday afternoons', false),
+('Thura Aung', 'https://i.pravatar.cc/150?img=51', array['Data Structures', 'Algorithms'], 'University of Information Technology', 'Insein', 'Competitive programmer, 2nd place in Myanmar ICPC regionals, tutors algorithms and interview prep.', 4.9, 57, 10000, 'online', 'Evenings after 6pm', true),
+('Ei Ei Phyo', 'https://i.pravatar.cc/150?img=25', array['Physics', 'Engineering Mathematics'], 'Yangon Technological University', 'Insein', 'YTU mechanical engineering student, tutors first and second year physics and maths.', 4.5, 19, 6000, 'in_person', 'Weekday evenings', false),
+('Kaung Myat Thu', 'https://i.pravatar.cc/150?img=60', array['Web Development', 'JavaScript'], 'University of Information Technology', 'Hledan', 'Freelance web developer, teaches practical full-stack projects alongside coursework.', 4.7, 33, 8500, 'both', 'Flexible scheduling', true),
+('Hnin Wai Yan', 'https://i.pravatar.cc/150?img=47', array['Accounting', 'Microeconomics'], 'Yangon University of Economics', 'Tamwe', 'YUE honours student, tutors first and second year economics and accounting courses.', 4.6, 27, 6000, 'online', 'Weekend mornings', false),
+('Phyo Pyae Sone', 'https://i.pravatar.cc/150?img=8', array['Data Structures', 'Operating Systems'], 'University of Computer Studies, Yangon', 'Hlaing', 'UCSY teaching assistant, specializes in operating systems and systems programming.', 4.8, 44, 9500, 'in_person', 'Tuesday, Thursday, Saturday', true),
+('Moe Moe Zaw', 'https://i.pravatar.cc/150?img=36', array['Statistics', 'Data Structures'], 'University of Information Technology', 'North Okkalapa', 'Data science graduate student, tutors statistics and intro programming for beginners.', 4.4, 15, 7000, 'online', 'Weekday mornings', false);
+
+insert into hostels (name, image_url, university, township, distance_km, monthly_rent, gender_policy, room_type, facilities, available_rooms, meals_included, description, verified) values
+('Hledan Golden Hostel', 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600', 'University of Information Technology', 'Hledan', 0.8, 130000, 'female', 'Shared (4-bed)', array['Wi-Fi', 'Laundry', 'Study Room', 'Security Guard'], 3, false, 'Female-only hostel two blocks from Hledan junction, popular with UIT and UY students.', true),
+('Kamayut Student Inn', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600', 'University of Yangon', 'Kamayut', 1.2, 145000, 'mixed', 'Shared (2-bed)', array['Wi-Fi', 'Air Conditioning', 'Kitchen Access'], 5, false, 'Mixed hostel with a mix of local and returning students, quiet study-friendly environment.', true),
+('Hlaing Campus Residence', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600', 'University of Information Technology', 'Hlaing', 0.5, 150000, 'male', 'Single', array['Wi-Fi', 'Laundry', 'Hot Water', 'CCTV'], 2, true, 'Male hostel with breakfast and dinner included, five-minute walk to UIT main gate.', true),
+('Insein Riverside Hostel', 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600', 'Yangon Technological University', 'Insein', 2.0, 110000, 'mixed', 'Shared (4-bed)', array['Wi-Fi', 'Parking', 'Common Room'], 6, false, 'Budget-friendly hostel near YTU, popular with first and second year students.', false),
+('Tamwe Sunshine Hostel', 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600', 'Yangon University of Economics', 'Tamwe', 1.5, 125000, 'female', 'Shared (2-bed)', array['Wi-Fi', 'Study Room', 'Laundry'], 4, false, 'Female hostel run by a retired teacher, strict curfew, quiet and safe.', true),
+('South Okkalapa Comfort Stay', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600', 'University of Computer Studies, Yangon', 'South Okkalapa', 3.2, 100000, 'mixed', 'Shared (4-bed)', array['Wi-Fi', 'Kitchen Access', 'Parking'], 8, false, 'Affordable hostel option a short shuttle ride from UCSY, spacious shared kitchen.', false),
+('North Okkalapa Green House', 'https://images.unsplash.com/photo-1445991842772-097fea258e7b?w=600', 'University of Information Technology', 'North Okkalapa', 4.0, 95000, 'male', 'Shared (4-bed)', array['Wi-Fi', 'Garden', 'Security Guard'], 5, true, 'Budget hostel with home-style meals included, best for students on a tight budget.', false),
+('Hledan Central Suites', 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=600', 'University of Yangon', 'Hledan', 0.6, 155000, 'mixed', 'Single', array['Wi-Fi', 'Air Conditioning', 'Hot Water', 'CCTV'], 1, false, 'Premium single rooms right by Hledan junction with easy access to buses and food stalls.', true);
+
+insert into restaurants (name, image_url, township, distance_km, rating, delivery, pickup, vegetarian_options, halal, opening_hours, student_discount_percent) values
+('Shwe Sarpay Myay', 'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=600', 'Hledan', 0.4, 4.6, true, true, true, false, '6:00 AM - 9:00 PM', 10),
+('Feel Myanmar Food', 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600', 'Kamayut', 1.0, 4.7, false, true, true, false, '10:00 AM - 8:00 PM', 0),
+('Lucky Seven Tea Shop', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600', 'Hlaing', 0.3, 4.4, true, true, false, false, '5:00 AM - 10:00 PM', 15),
+('Aung Thukha', 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600', 'Insein', 1.8, 4.5, false, true, true, false, '9:00 AM - 7:00 PM', 0),
+('Danho Halal Kitchen', 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600', 'Tamwe', 1.3, 4.6, true, true, true, true, '10:00 AM - 9:00 PM', 10),
+('Campus Corner Cafe', 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600', 'North Okkalapa', 0.7, 4.3, true, true, true, false, '7:00 AM - 8:00 PM', 20);
+
+insert into meals (restaurant_id, name, price, image_url, is_student_package) values
+((select id from restaurants where name = 'Shwe Sarpay Myay'), 'Mohinga Set', 2500, 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400', true),
+((select id from restaurants where name = 'Shwe Sarpay Myay'), 'Shan Noodle', 3000, 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400', false),
+((select id from restaurants where name = 'Feel Myanmar Food'), 'Myanmar Curry Set (Chicken)', 4500, 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400', false),
+((select id from restaurants where name = 'Feel Myanmar Food'), 'Vegetable Curry Set', 3500, 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400', true),
+((select id from restaurants where name = 'Lucky Seven Tea Shop'), 'Milk Tea + Samosa', 1500, 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400', true),
+((select id from restaurants where name = 'Lucky Seven Tea Shop'), 'Nan Pyar Thoke', 2000, 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400', false),
+((select id from restaurants where name = 'Aung Thukha'), 'Traditional Myanmar Set', 5000, 'https://images.unsplash.com/photo-1567337710282-00832b415979?w=400', false),
+((select id from restaurants where name = 'Danho Halal Kitchen'), 'Chicken Biryani', 4000, 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400', true),
+((select id from restaurants where name = 'Danho Halal Kitchen'), 'Mutton Curry Set', 5500, 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400', false),
+((select id from restaurants where name = 'Campus Corner Cafe'), 'Fried Rice Student Combo', 2800, 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', true),
+((select id from restaurants where name = 'Campus Corner Cafe'), 'Iced Coffee + Toast', 2000, 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', false);
+
+insert into transportation_routes (driver_name, route_name, pickup_township, university, departure_time, return_time, monthly_price, total_seats, available_seats, vehicle_type, verified) values
+('Ko Zaw Lin', 'Hledan - UIT Shuttle', 'Hledan', 'University of Information Technology', '07:15', '16:30', 35000, 12, 3, 'Van', true),
+('Ko Htun Htun', 'Kamayut - University of Yangon Line', 'Kamayut', 'University of Yangon', '07:00', '16:00', 30000, 15, 5, 'Van', true),
+('Daw Khin Mar Oo', 'Insein - YTU Ferry', 'Insein', 'Yangon Technological University', '06:45', '17:00', 40000, 10, 2, 'Ferry + Van', true),
+('Ko Aung Naing', 'Hlaing - UIT Express', 'Hlaing', 'University of Information Technology', '07:30', '16:15', 28000, 14, 6, 'Van', false),
+('Ko Min Thu', 'Tamwe - YUE Shuttle', 'Tamwe', 'Yangon University of Economics', '07:10', '16:45', 32000, 12, 4, 'Van', true),
+('Daw Nilar Win', 'South Okkalapa - UCSY Line', 'South Okkalapa', 'University of Computer Studies, Yangon', '06:50', '17:15', 38000, 16, 7, 'Bus', true);
