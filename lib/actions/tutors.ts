@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getTutorByOwner, insertTutorProfile, updateTutorProfile } from "@/lib/queries/tutors";
 import { parseGradesCsv } from "@/lib/tutorEligibility";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 
 export interface ApplyAsTutorInput {
@@ -11,7 +10,6 @@ export interface ApplyAsTutorInput {
   name: string;
   photoUrl: string;
   subjects: string[];
-  university: string;
   township: string;
   bio: string;
   pricePerSession: string;
@@ -36,15 +34,11 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
   if (!gradesCheck.eligible) return { ok: false, error: gradesCheck.reason ?? "You don't meet the grade requirement yet." };
 
   const name = input.name.trim();
-  const university = input.university.trim();
   const township = input.township.trim();
   const price = Number.parseInt(input.pricePerSession, 10);
 
   if (!name) return { ok: false, error: "Name is required." };
   if (input.subjects.length === 0) return { ok: false, error: "Select at least one subject you can teach." };
-  if (!UNIVERSITIES.includes(university as (typeof UNIVERSITIES)[number])) {
-    return { ok: false, error: "Select a valid university." };
-  }
   if (!TOWNSHIPS.includes(township as (typeof TOWNSHIPS)[number])) {
     return { ok: false, error: "Select a valid township." };
   }
@@ -60,7 +54,6 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
       name,
       photo_url: input.photoUrl.trim() || null,
       subjects: input.subjects,
-      university,
       township,
       bio: input.bio.trim() || null,
       price_per_session: price,
@@ -78,7 +71,6 @@ export interface EditTutorProfileInput {
   name: string;
   photoUrl: string;
   subjects: string[];
-  university: string;
   township: string;
   bio: string;
   pricePerSession: string;
@@ -99,15 +91,11 @@ export async function editTutorProfile(input: EditTutorProfileInput): Promise<Ed
   if (!existing) return { ok: false, error: "You don't have a tutor profile yet." };
 
   const name = input.name.trim();
-  const university = input.university.trim();
   const township = input.township.trim();
   const price = Number.parseInt(input.pricePerSession, 10);
 
   if (!name) return { ok: false, error: "Name is required." };
   if (input.subjects.length === 0) return { ok: false, error: "Select at least one subject you can teach." };
-  if (!UNIVERSITIES.includes(university as (typeof UNIVERSITIES)[number])) {
-    return { ok: false, error: "Select a valid university." };
-  }
   if (!TOWNSHIPS.includes(township as (typeof TOWNSHIPS)[number])) {
     return { ok: false, error: "Select a valid township." };
   }
@@ -123,7 +111,6 @@ export async function editTutorProfile(input: EditTutorProfileInput): Promise<Ed
       name,
       photo_url: input.photoUrl.trim() || null,
       subjects: input.subjects,
-      university,
       township,
       bio: input.bio.trim() || null,
       price_per_session: price,

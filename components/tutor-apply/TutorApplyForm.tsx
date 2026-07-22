@@ -12,7 +12,6 @@ import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { GradesCsvUpload } from "@/components/tutor-apply/GradesCsvUpload";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import type { EligibilityResult } from "@/lib/tutorEligibility";
 import { applyAsTutor } from "@/lib/actions/tutors";
@@ -20,7 +19,6 @@ import { applyAsTutor } from "@/lib/actions/tutors";
 interface TutorApplyFormProps {
   userId: string;
   defaultName: string;
-  defaultUniversity: string;
   defaultTownship: string;
 }
 
@@ -30,7 +28,7 @@ const SESSION_MODE_OPTIONS = [
   { value: "both", label: "Both" },
 ] as const;
 
-export function TutorApplyForm({ userId, defaultName, defaultUniversity, defaultTownship }: TutorApplyFormProps) {
+export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorApplyFormProps) {
   const router = useRouter();
   const [csvText, setCsvText] = useState<string | null>(null);
   const [eligibility, setEligibility] = useState<EligibilityResult | null>(null);
@@ -38,7 +36,6 @@ export function TutorApplyForm({ userId, defaultName, defaultUniversity, default
   const [name, setName] = useState(defaultName);
   const [photoUrl, setPhotoUrl] = useState("");
   const [subjects, setSubjects] = useState<string[]>([]);
-  const [university, setUniversity] = useState(defaultUniversity);
   const [township, setTownship] = useState(defaultTownship);
   const [bio, setBio] = useState("");
   const [price, setPrice] = useState("");
@@ -48,7 +45,7 @@ export function TutorApplyForm({ userId, defaultName, defaultUniversity, default
 
   const step2Unlocked = !!eligibility?.ok && eligibility.eligible;
   const canSubmit =
-    step2Unlocked && !!name && subjects.length > 0 && !!university && !!township && !!price && !submitting;
+    step2Unlocked && !!name && subjects.length > 0 && !!township && !!price && !submitting;
 
   async function handleSubmit() {
     if (!csvText) return;
@@ -59,7 +56,6 @@ export function TutorApplyForm({ userId, defaultName, defaultUniversity, default
         name,
         photoUrl,
         subjects,
-        university,
         township,
         bio,
         pricePerSession: price,
@@ -97,15 +93,6 @@ export function TutorApplyForm({ userId, defaultName, defaultUniversity, default
           <ImageUpload bucket="tutor-photos" userId={userId} label="Photo" value={photoUrl} onChange={setPhotoUrl} />
 
           <SubjectMultiSelect value={subjects} onChange={setSubjects} />
-
-          <LabeledSelect
-            id="tutor-university"
-            label="University"
-            placeholder="Select university"
-            value={university}
-            onChange={setUniversity}
-            options={UNIVERSITIES}
-          />
 
           <LabeledSelect
             id="tutor-township"

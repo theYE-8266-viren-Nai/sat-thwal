@@ -2,14 +2,12 @@
 
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
 import { getHostels, hostelToCard, type HostelRow } from "@/lib/queries/hostels";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_FACILITIES, HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
 import { formatMMK } from "@/lib/utils";
 import type { FilterFieldConfig } from "@/types/domain";
 
 const FILTER_FIELDS: FilterFieldConfig[] = [
-  { key: "university", label: "University", type: "select", options: UNIVERSITIES.map((u) => ({ label: u, value: u })) },
   { key: "budget", label: "Monthly budget (MMK)", type: "range", min: 0, max: 200000, step: 5000 },
   { key: "distance", label: "Distance from university (km)", type: "range", min: 0, max: 5, step: 0.5 },
   {
@@ -41,14 +39,9 @@ export default function HostelsPage() {
       matchesSearch={(row, query) => {
         if (!query.trim()) return true;
         const q = query.toLowerCase();
-        return (
-          row.name.toLowerCase().includes(q) ||
-          row.university.toLowerCase().includes(q) ||
-          row.township.toLowerCase().includes(q)
-        );
+        return row.name.toLowerCase().includes(q) || row.township.toLowerCase().includes(q);
       }}
       applyFilters={(row, filters) => {
-        if (filters.university && row.university !== filters.university) return false;
         if (filters.budget) {
           const [lo, hi] = filters.budget as [number, number];
           if (row.monthly_rent < lo || row.monthly_rent > hi) return false;

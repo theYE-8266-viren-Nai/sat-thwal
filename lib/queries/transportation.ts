@@ -6,7 +6,6 @@ import { formatMMK } from "@/lib/utils";
 
 export type TransportationRow = Database["public"]["Tables"]["transportation_routes"]["Row"];
 
-const UIT_UNIVERSITY = "University of Information Technology";
 const SAMPLE_CREATED_AT = "2026-07-22T00:00:00.000Z";
 
 type SampleTransportationRoute = Omit<TransportationRow, "driver_id" | "vehicle_number"> &
@@ -29,7 +28,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Sanchaung",
     route_stops: ["Sanchaung", "Hledan", "Hlaing", "UIT"],
     route_pickup_times: ["07:00", "07:15", "07:25", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "07:00",
     return_time: "16:15",
     monthly_price: 28000,
@@ -48,7 +46,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "South Okkalapa",
     route_stops: ["South Okkalapa", "North Dagon", "Hlaing", "UIT"],
     route_pickup_times: ["06:30", "06:50", "07:20", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:30",
     return_time: "17:10",
     monthly_price: 45000,
@@ -67,7 +64,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Tamwe",
     route_stops: ["Tamwe", "Bahan", "Hledan", "UIT"],
     route_pickup_times: ["06:45", "07:00", "07:18", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:45",
     return_time: "16:45",
     monthly_price: 34000,
@@ -86,7 +82,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Insein",
     route_stops: ["Insein", "Bayint Naung", "Hlaing", "UIT"],
     route_pickup_times: ["06:50", "07:05", "07:25", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:50",
     return_time: "17:00",
     monthly_price: 40000,
@@ -105,7 +100,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Thingangyun",
     route_stops: ["Thingangyun", "Tamwe", "Hledan", "UIT"],
     route_pickup_times: ["06:40", "06:55", "07:25", "07:50"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:40",
     return_time: "17:15",
     monthly_price: 38000,
@@ -124,7 +118,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Yankin",
     route_stops: ["Yankin", "Bahan", "Kamayut", "UIT"],
     route_pickup_times: ["06:35", "06:50", "07:10", "07:40"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:35",
     return_time: "16:40",
     monthly_price: 36000,
@@ -143,7 +136,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "North Dagon",
     route_stops: ["North Dagon", "South Okkalapa", "Thingangyun", "UIT"],
     route_pickup_times: ["06:25", "06:45", "07:05", "07:50"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:25",
     return_time: "17:05",
     monthly_price: 43000,
@@ -162,7 +154,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Mayangone",
     route_stops: ["Mayangone", "8 Mile", "Hlaing", "UIT"],
     route_pickup_times: ["07:05", "07:15", "07:30", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "07:05",
     return_time: "16:20",
     monthly_price: 30000,
@@ -181,7 +172,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Ahlone",
     route_stops: ["Ahlone", "Sanchaung", "Hledan", "UIT"],
     route_pickup_times: ["06:55", "07:10", "07:25", "07:50"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:55",
     return_time: "16:35",
     monthly_price: 35000,
@@ -200,7 +190,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Dagon Seikkan",
     route_stops: ["Dagon Seikkan", "Thaketa", "Tamwe", "Hledan", "UIT"],
     route_pickup_times: ["06:10", "06:30", "06:55", "07:25", "07:55"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:10",
     return_time: "17:20",
     monthly_price: 48000,
@@ -219,7 +208,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Mingaladon",
     route_stops: ["Mingaladon", "North Okkalapa", "Mayangone", "UIT"],
     route_pickup_times: ["06:20", "06:45", "07:10", "07:50"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:20",
     return_time: "17:00",
     monthly_price: 46000,
@@ -238,7 +226,6 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
     pickup_township: "Kyimyindaing",
     route_stops: ["Kyimyindaing", "Sanchaung", "Kamayut", "UIT"],
     route_pickup_times: ["06:50", "07:05", "07:20", "07:45"],
-    university: UIT_UNIVERSITY,
     departure_time: "06:50",
     return_time: "16:30",
     monthly_price: 33000,
@@ -264,7 +251,6 @@ export async function getRoutes(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from("transportation_routes")
     .select("*")
-    .eq("university", UIT_UNIVERSITY)
     .order("departure_time", { ascending: true });
   if (error) throw error;
   return mergeSampleRoutes(data ?? []);
@@ -278,7 +264,6 @@ export async function getRouteById(supabase: SupabaseClient<Database>, id: strin
     .from("transportation_routes")
     .select("*")
     .eq("id", id)
-    .eq("university", UIT_UNIVERSITY)
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -289,8 +274,7 @@ export async function getRoutesByIds(supabase: SupabaseClient<Database>, ids: st
   const { data, error } = await supabase
     .from("transportation_routes")
     .select("*")
-    .in("id", ids)
-    .eq("university", UIT_UNIVERSITY);
+    .in("id", ids);
   if (error) throw error;
   const selectedSamples = SAMPLE_UIT_ROUTES.filter((route) => ids.includes(route.id));
   return mergeSampleRoutes([...(data ?? []), ...selectedSamples]).filter((route) =>

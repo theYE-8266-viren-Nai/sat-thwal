@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { FacilitiesMultiSelect } from "@/components/shared/FacilitiesMultiSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
 import type { GenderPolicy } from "@/types/database.types";
@@ -22,7 +21,6 @@ interface HostelEditFormProps {
   userId: string;
   defaultName: string;
   defaultImageUrl: string;
-  defaultUniversity: string;
   defaultTownship: string;
   defaultDistanceKm: string;
   defaultMonthlyRent: string;
@@ -44,7 +42,6 @@ export function HostelEditForm({
   userId,
   defaultName,
   defaultImageUrl,
-  defaultUniversity,
   defaultTownship,
   defaultDistanceKm,
   defaultMonthlyRent,
@@ -59,7 +56,6 @@ export function HostelEditForm({
 
   const [name, setName] = useState(defaultName);
   const [imageUrl, setImageUrl] = useState(defaultImageUrl);
-  const [university, setUniversity] = useState(defaultUniversity);
   const [township, setTownship] = useState(defaultTownship);
   const [distanceKm, setDistanceKm] = useState(defaultDistanceKm);
   const [monthlyRent, setMonthlyRent] = useState(defaultMonthlyRent);
@@ -73,7 +69,6 @@ export function HostelEditForm({
 
   const canSubmit =
     !!name &&
-    !!university &&
     !!township &&
     !!distanceKm &&
     !!monthlyRent &&
@@ -87,7 +82,6 @@ export function HostelEditForm({
       const result = await editHostelRoom({
         name,
         imageUrl,
-        university,
         township,
         distanceKm,
         monthlyRent,
@@ -119,15 +113,6 @@ export function HostelEditForm({
         </div>
 
         <ImageUpload bucket="hostel-images" userId={userId} label="Photo" value={imageUrl} onChange={setImageUrl} />
-
-        <LabeledSelect
-          id="hostel-university"
-          label="University"
-          placeholder="Select university"
-          value={university}
-          onChange={setUniversity}
-          options={UNIVERSITIES}
-        />
 
         <LabeledSelect
           id="hostel-township"

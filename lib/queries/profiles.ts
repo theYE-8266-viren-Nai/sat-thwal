@@ -42,7 +42,6 @@ export function profileToStudentProfile(row: ProfileRow): StudentProfile {
     fullName: row.full_name,
     avatarUrl: row.avatar_url,
     phone: row.phone,
-    university: row.university,
     academicYear: row.academic_year,
     township: row.township,
     budgetMin: row.budget_min,

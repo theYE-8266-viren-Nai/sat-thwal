@@ -4,12 +4,11 @@ import { initials } from "@/lib/utils";
 
 interface ProfileHeaderProps {
   name: string;
-  university: string | null;
   academicYear: string | null;
   avatarUrl: string | null;
 }
 
-export function ProfileHeader({ name, university, academicYear, avatarUrl }: ProfileHeaderProps) {
+export function ProfileHeader({ name, academicYear, avatarUrl }: ProfileHeaderProps) {
   return (
     <div className="flex items-center gap-4 px-5 pt-6 md:px-8">
       <Avatar className="h-16 w-16">
@@ -20,9 +19,7 @@ export function ProfileHeader({ name, university, academicYear, avatarUrl }: Pro
       </Avatar>
       <div>
         <h1 className="text-xl font-bold text-foreground">{name}</h1>
-        <p className="text-sm text-muted-foreground">
-          {[university, academicYear].filter(Boolean).join(" · ") || "Complete your profile"}
-        </p>
+        <p className="text-sm text-muted-foreground">{academicYear || "Complete your profile"}</p>
       </div>
     </div>
   );

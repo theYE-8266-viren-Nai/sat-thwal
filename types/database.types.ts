@@ -10,7 +10,6 @@ type ProfileRow = {
   full_name: string | null;
   avatar_url: string | null;
   phone: string | null;
-  university: string | null;
   academic_year: string | null;
   township: string | null;
   budget_min: number | null;
@@ -29,7 +28,6 @@ type TutorRow = {
   name: string;
   photo_url: string | null;
   subjects: string[];
-  university: string;
   township: string;
   bio: string | null;
   rating: number;
@@ -46,7 +44,6 @@ type HostelRow = {
   id: string;
   name: string;
   image_url: string | null;
-  university: string;
   township: string;
   distance_km: number;
   monthly_rent: number;
@@ -95,7 +92,6 @@ type TransportationRow = {
   pickup_township: string;
   route_stops: string[];
   route_pickup_times: string[];
-  university: string;
   departure_time: string;
   return_time: string;
   monthly_price: number;

@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { FacilitiesMultiSelect } from "@/components/shared/FacilitiesMultiSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
 import type { GenderPolicy } from "@/types/database.types";
@@ -20,7 +19,6 @@ import { listHostelRoom } from "@/lib/actions/hostels";
 
 interface ListRoomFormProps {
   userId: string;
-  defaultUniversity: string;
   defaultTownship: string;
 }
 
@@ -30,12 +28,11 @@ const GENDER_POLICY_OPTIONS = [
   { value: "mixed", label: "Mixed" },
 ] as const;
 
-export function ListRoomForm({ userId, defaultUniversity, defaultTownship }: ListRoomFormProps) {
+export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
   const router = useRouter();
 
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [university, setUniversity] = useState(defaultUniversity);
   const [township, setTownship] = useState(defaultTownship);
   const [distanceKm, setDistanceKm] = useState("");
   const [monthlyRent, setMonthlyRent] = useState("");
@@ -49,7 +46,6 @@ export function ListRoomForm({ userId, defaultUniversity, defaultTownship }: Lis
 
   const canSubmit =
     !!name &&
-    !!university &&
     !!township &&
     !!distanceKm &&
     !!monthlyRent &&
@@ -63,7 +59,6 @@ export function ListRoomForm({ userId, defaultUniversity, defaultTownship }: Lis
       const result = await listHostelRoom({
         name,
         imageUrl,
-        university,
         township,
         distanceKm,
         monthlyRent,
@@ -100,15 +95,6 @@ export function ListRoomForm({ userId, defaultUniversity, defaultTownship }: Lis
         </div>
 
         <ImageUpload bucket="hostel-images" userId={userId} label="Photo" value={imageUrl} onChange={setImageUrl} />
-
-        <LabeledSelect
-          id="hostel-university"
-          label="University"
-          placeholder="Select university"
-          value={university}
-          onChange={setUniversity}
-          options={UNIVERSITIES}
-        />
 
         <LabeledSelect
           id="hostel-township"

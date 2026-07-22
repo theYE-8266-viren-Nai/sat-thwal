@@ -168,7 +168,6 @@ function safeProfile(profile: StudentProfile | null) {
   if (!profile) return null;
 
   return {
-    university: profile.university,
     academicYear: profile.academicYear,
     township: profile.township,
     budgetMin: profile.budgetMin,
@@ -184,7 +183,6 @@ function safeTutor(tutor: TutorRow) {
     type: "tutor",
     name: tutor.name,
     subjects: tutor.subjects,
-    university: tutor.university,
     township: tutor.township,
     bio: tutor.bio,
     rating: tutor.rating,
@@ -201,7 +199,6 @@ function safeHostel(hostel: HostelRow) {
     id: hostel.id,
     type: "hostel",
     name: hostel.name,
-    university: hostel.university,
     township: hostel.township,
     distanceKm: hostel.distance_km,
     monthlyRent: hostel.monthly_rent,

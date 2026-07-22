@@ -42,7 +42,6 @@ export interface TutorApplicationPayload {
   name: string;
   photo_url: string | null;
   subjects: string[];
-  university: string;
   township: string;
   bio: string | null;
   price_per_session: number;
@@ -103,7 +102,6 @@ export function tutorToCard(tutor: TutorRow): ServiceCardData {
     reviewCount: tutor.review_count,
     verified: tutor.verified,
     meta: [
-      { icon: "book-open", label: tutor.university },
       { icon: "map-pin", label: tutor.township },
       { icon: "clock", label: modeLabel },
     ],
@@ -132,8 +130,8 @@ export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
     reviewCount: tutor.review_count,
     priceLabel: `${formatMMK(tutor.price_per_session)} / session`,
     availabilityLines: [tutor.availability_note ?? "Contact tutor for availability", modeLabel],
-    locationLabel: `${tutor.township}, near ${tutor.university}`,
-    description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")} at ${tutor.university}.`,
+    locationLabel: tutor.township,
+    description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")}.`,
     amenities: tutor.subjects,
     ctaLabel: "Request Session",
     contactInfo: "Message via Sat Thwal to get this tutor's contact details.",

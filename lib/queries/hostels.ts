@@ -41,7 +41,6 @@ export async function getHostelByOwner(supabase: SupabaseClient<Database>, profi
 export interface HostelListingPayload {
   name: string;
   image_url: string | null;
-  university: string;
   township: string;
   distance_km: number;
   monthly_rent: number;
@@ -121,7 +120,7 @@ export function hostelToDetail(hostel: HostelRow): ServiceDetailData {
       `${hostel.available_rooms} room${hostel.available_rooms === 1 ? "" : "s"} available`,
       `${GENDER_LABEL[hostel.gender_policy]} · ${hostel.room_type}`,
     ],
-    locationLabel: `${hostel.township}, ${formatDistance(hostel.distance_km)} from ${hostel.university}`,
+    locationLabel: `${hostel.township}, ${formatDistance(hostel.distance_km)} from UIT`,
     description:
       hostel.description ?? `${hostel.name} is a ${GENDER_LABEL[hostel.gender_policy].toLowerCase()} hostel in ${hostel.township}.`,
     amenities: hostel.meals_included ? [...hostel.facilities, "Meals included"] : hostel.facilities,

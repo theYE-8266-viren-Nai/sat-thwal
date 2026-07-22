@@ -2,14 +2,12 @@
 
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
 import { getTutors, tutorToCard, type TutorRow } from "@/lib/queries/tutors";
-import { UNIVERSITIES } from "@/lib/constants/universities";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { SUBJECTS } from "@/lib/constants/subjects";
 import { formatMMK } from "@/lib/utils";
 import type { FilterFieldConfig } from "@/types/domain";
 
 const FILTER_FIELDS: FilterFieldConfig[] = [
-  { key: "university", label: "University", type: "select", options: UNIVERSITIES.map((u) => ({ label: u, value: u })) },
   { key: "subject", label: "Subject", type: "select", options: SUBJECTS.map((s) => ({ label: s, value: s })) },
   {
     key: "sessionMode",
@@ -47,7 +45,7 @@ export default function TutorsPage() {
   return (
     <ServiceListingPage<TutorRow>
       title="Find a Tutor"
-      searchPlaceholder="Search tutors, subjects, universities..."
+      searchPlaceholder="Search tutors, subjects..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={formatMMK}
       fetchRows={getTutors}
@@ -57,12 +55,10 @@ export default function TutorsPage() {
         const q = query.toLowerCase();
         return (
           row.name.toLowerCase().includes(q) ||
-          row.university.toLowerCase().includes(q) ||
           row.subjects.some((s) => s.toLowerCase().includes(q))
         );
       }}
       applyFilters={(row, filters) => {
-        if (filters.university && row.university !== filters.university) return false;
         if (filters.subject && !row.subjects.includes(filters.subject as string)) return false;
         if (filters.sessionMode) {
           const fv = filters.sessionMode as string;
