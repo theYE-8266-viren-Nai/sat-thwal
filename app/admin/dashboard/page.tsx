@@ -1,5 +1,6 @@
 import { requireAdminProfile } from "@/lib/admin/auth";
 import { getMonetizationReport } from "@/lib/admin/monetization";
+import { LogoutButton } from "@/components/profile/LogoutButton";
 import { formatMMK } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
@@ -9,15 +10,22 @@ export default async function AdminDashboardPage() {
   return (
     <main className="min-h-screen bg-background px-5 py-8 md:px-8">
       <section className="mx-auto max-w-5xl rounded-xl border border-border bg-card p-6 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Admin Dashboard
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Welcome, {profile.full_name ?? "admin"}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Admin users are routed here instead of the student or driver dashboards.
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Admin Dashboard
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-foreground">
+              Welcome, {profile.full_name ?? "admin"}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Admin users are routed here instead of the student or driver dashboards.
+            </p>
+          </div>
+          <div className="sm:w-36">
+            <LogoutButton />
+          </div>
+        </div>
       </section>
 
       <section className="mx-auto mt-6 max-w-5xl">
