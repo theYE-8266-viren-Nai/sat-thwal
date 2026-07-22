@@ -7,7 +7,7 @@ export function Logo({ className }: { className?: string }) {
         S
       </div>
       <span className="text-lg font-bold text-foreground">
-        Sat Thwal <span className="font-normal text-muted-foreground">| UniMate</span>
+        Sat Thwal <span className="font-normal text-muted-foreground">| ဆက်သွယ်</span>
       </span>
     </div>
   );

@@ -1,4 +1,4 @@
--- UniMate Myanmar — realistic mock catalog data
+-- ဆက်သွယ် Myanmar — realistic mock catalog data
 
 insert into tutors (name, photo_url, subjects, university, township, bio, rating, review_count, price_per_session, session_mode, availability_note, verified) values
 ('Aung Kyaw Zin', 'https://i.pravatar.cc/150?img=12', array['Data Structures', 'Programming Fundamentals'], 'University of Information Technology', 'Hlaing', 'Final-year CS student at UIT, 3 years of peer-tutoring experience in C++ and Python.', 4.8, 42, 8000, 'both', 'Weekday evenings, weekend mornings', true),

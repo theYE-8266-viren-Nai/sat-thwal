@@ -1,4 +1,4 @@
--- UniMate Myanmar — core schema
+-- ဆက်သွယ် Myanmar — core schema
 
 create extension if not exists "pgcrypto";
 

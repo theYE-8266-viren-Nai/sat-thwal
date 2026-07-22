@@ -1,4 +1,4 @@
--- UniMate Myanmar — row level security
+-- ဆက်သွယ် Myanmar — row level security
 
 alter table profiles enable row level security;
 alter table tutors enable row level security;
