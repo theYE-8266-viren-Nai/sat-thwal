@@ -23,9 +23,10 @@ interface ServiceCardProps {
   data: ServiceCardData;
   profileId: string;
   initialSaved: boolean;
+  hideSaveButton?: boolean;
 }
 
-export function ServiceCard({ data, profileId, initialSaved }: ServiceCardProps) {
+export function ServiceCard({ data, profileId, initialSaved, hideSaveButton = false }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
 
   return (
@@ -42,13 +43,15 @@ export function ServiceCard({ data, profileId, initialSaved }: ServiceCardProps)
               <category.icon className="h-10 w-10" style={{ color: category.color }} />
             </div>
           )}
-          <SaveButton
-            profileId={profileId}
-            category={data.category}
-            serviceId={data.id}
-            initialSaved={initialSaved}
-            className="absolute right-2 top-2"
-          />
+          {!hideSaveButton && (
+            <SaveButton
+              profileId={profileId}
+              category={data.category}
+              serviceId={data.id}
+              initialSaved={initialSaved}
+              className="absolute right-2 top-2"
+            />
+          )}
           {data.verified && <VerifiedBadge className="absolute left-2 top-2 bg-white/90" />}
         </div>
 

@@ -21,6 +21,8 @@ interface IncomingRequestsListProps {
 export function IncomingRequestsList({ requests, requesterNames }: IncomingRequestsListProps) {
   const [rows, setRows] = useState(requests);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const pendingRequests = rows.filter((request) => request.status === "pending");
+  const acceptedRequests = rows.filter((request) => request.status === "confirmed");
 
   async function respond(requestId: string, status: "confirmed" | "cancelled") {
     setPendingId(requestId);
@@ -36,9 +38,8 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
     }
   }
 
-  return (
-    <div className="flex flex-col gap-3 px-5 md:px-8">
-      {rows.map((request) => (
+  function renderRequestCard(request: RequestRow) {
+    return (
         <div
           key={request.id}
           className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
@@ -77,7 +78,38 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
             </div>
           )}
         </div>
-      ))}
+    );
+  }
+
+  function renderEmpty(message: string) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+        {message}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 px-5 md:px-8">
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">Incoming requests</h2>
+          <p className="text-sm text-muted-foreground">Pending students waiting for your response.</p>
+        </div>
+        {pendingRequests.length > 0
+          ? pendingRequests.map((request) => renderRequestCard(request))
+          : renderEmpty("No pending tutor requests right now.")}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">Accepted requests</h2>
+          <p className="text-sm text-muted-foreground">Students you have accepted for a session.</p>
+        </div>
+        {acceptedRequests.length > 0
+          ? acceptedRequests.map((request) => renderRequestCard(request))
+          : renderEmpty("No accepted tutor requests yet.")}
+      </section>
     </div>
   );
 }

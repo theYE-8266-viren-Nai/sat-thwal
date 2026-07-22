@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getSavedItems } from "@/lib/queries/savedItems";
 import { getRequests } from "@/lib/queries/requests";
 import { getTutorsByIds, tutorToCard } from "@/lib/queries/tutors";
 import { getHostelsByIds, hostelToCard } from "@/lib/queries/hostels";
 import { getFoodItemsByIds, foodToCard } from "@/lib/queries/food";
 import { getRoutesByIds, routeToCard } from "@/lib/queries/transportation";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { ServiceCard } from "@/components/services/ServiceCard";
 import { ServiceCardSkeleton } from "@/components/services/ServiceCardSkeleton";
 import { RequestCard } from "@/components/saved/RequestCard";
 import { EmptyState } from "@/components/services/EmptyState";
@@ -21,8 +19,6 @@ type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 export default function SavedPage() {
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [savedCards, setSavedCards] = useState<ServiceCardData[]>([]);
-  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
   const [requests, setRequests] = useState<{ request: RequestRow; card: ServiceCardData }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,10 +32,7 @@ export default function SavedPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [saved, requestRows] = await Promise.all([
-        getSavedItems(supabase, user.id),
-        getRequests(supabase, user.id),
-      ]);
+      const requestRows = await getRequests(supabase, user.id);
 
       const idsByCategory: Record<string, Set<string>> = {
         tutor: new Set(),
@@ -47,7 +40,6 @@ export default function SavedPage() {
         food: new Set(),
         transportation: new Set(),
       };
-      saved.forEach((s) => idsByCategory[s.service_type].add(s.service_id));
       requestRows.forEach((r) => idsByCategory[r.service_type].add(r.service_id));
 
       const [tutors, hostels, foodItems, routes] = await Promise.all([
@@ -65,12 +57,6 @@ export default function SavedPage() {
 
       if (cancelled) return;
 
-      setSavedCards(
-        saved
-          .map((s) => cardMap.get(`${s.service_type}:${s.service_id}`))
-          .filter((c): c is ServiceCardData => Boolean(c)),
-      );
-      setSavedKeys(new Set(saved.map((s) => `${s.service_type}:${s.service_id}`)));
       setRequests(
         requestRows
           .map((r) => {
@@ -91,31 +77,6 @@ export default function SavedPage() {
 
   function requestsByStatus(status: RequestStatus) {
     return requests.filter((r) => r.request.status === status);
-  }
-
-  function renderGrid(cards: ServiceCardData[], emptyMessage: string) {
-    if (loading) {
-      return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <ServiceCardSkeleton key={i} />
-          ))}
-        </div>
-      );
-    }
-    if (cards.length === 0 || !profileId) return <EmptyState message={emptyMessage} />;
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <ServiceCard
-            key={`${card.category}-${card.id}`}
-            data={card}
-            profileId={profileId}
-            initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-          />
-        ))}
-      </div>
-    );
   }
 
   function renderRequestGrid(status: RequestStatus, emptyMessage: string) {
@@ -139,7 +100,8 @@ export default function SavedPage() {
             status={request.status}
             note={request.note}
             profileId={profileId}
-            initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
+            initialSaved={false}
+            hideSaveButton
           />
         ))}
       </div>
@@ -150,16 +112,12 @@ export default function SavedPage() {
     <div>
       <PageHeader title="Saved & Bookings" />
       <div className="px-5 md:px-8">
-        <Tabs defaultValue="saved">
+        <Tabs defaultValue="pending">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="pending">Pending bookings</TabsTrigger>
             <TabsTrigger value="confirmed">Accepted</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
-          <TabsContent value="saved" className="pt-4">
-            {renderGrid(savedCards, "You haven't saved any tutors, hostels, food, or UIT rides yet.")}
-          </TabsContent>
           <TabsContent value="pending" className="pt-4">
             {renderRequestGrid("pending", "No pending bookings right now.")}
           </TabsContent>

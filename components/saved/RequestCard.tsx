@@ -11,9 +11,17 @@ interface RequestCardProps {
   note?: string | null;
   profileId: string;
   initialSaved: boolean;
+  hideSaveButton?: boolean;
 }
 
-export function RequestCard({ data, status, note, profileId, initialSaved }: RequestCardProps) {
+export function RequestCard({
+  data,
+  status,
+  note,
+  profileId,
+  initialSaved,
+  hideSaveButton = false,
+}: RequestCardProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
@@ -24,7 +32,12 @@ export function RequestCard({ data, status, note, profileId, initialSaved }: Req
           <span className="text-xs text-muted-foreground">{note}</span>
         )}
       </div>
-      <ServiceCard data={data} profileId={profileId} initialSaved={initialSaved} />
+      <ServiceCard
+        data={data}
+        profileId={profileId}
+        initialSaved={initialSaved}
+        hideSaveButton={hideSaveButton}
+      />
     </div>
   );
 }

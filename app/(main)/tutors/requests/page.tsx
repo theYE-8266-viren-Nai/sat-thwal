@@ -23,7 +23,7 @@ export default async function TutorRequestsPage() {
 
   return (
     <div className="pb-6">
-      <PageHeader title="Incoming Requests" subtitle="Students who requested a session with you." />
+      <PageHeader title="Tutor Requests" subtitle="Review new requests and track accepted sessions." />
       {requests.length === 0 ? (
         <div className="px-5 md:px-8">
           <EmptyState message="No one has requested a session with you yet." />
