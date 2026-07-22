@@ -102,7 +102,7 @@ export function hostelToCard(hostel: HostelRow): ServiceCardData {
       { icon: "users", label: `${hostel.available_rooms} rooms available` },
       ...(hostel.meals_included ? [{ icon: "utensils" as const, label: "Meals included" }] : []),
     ],
-    ctaLabel: "View Details",
+    ctaLabel: "Book Hostel",
     href: `/services/hostel/${hostel.id}`,
   };
 }

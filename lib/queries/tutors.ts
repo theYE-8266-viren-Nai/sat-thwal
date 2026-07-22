@@ -107,7 +107,7 @@ export function tutorToCard(tutor: TutorRow): ServiceCardData {
       { icon: "map-pin", label: tutor.township },
       { icon: "clock", label: modeLabel },
     ],
-    ctaLabel: "View Profile",
+    ctaLabel: "Book Session",
     href: `/services/tutor/${tutor.id}`,
   };
 }

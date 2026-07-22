@@ -20,7 +20,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
     href: "/tutors",
     icon: BookOpen,
     color: "var(--category-tutor)",
-    detailCtaLabel: "View Profile",
+    detailCtaLabel: "Book Session",
     bookCtaLabel: "Request Session",
   },
   hostel: {
@@ -30,7 +30,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
     href: "/hostels",
     icon: Building2,
     color: "var(--category-hostel)",
-    detailCtaLabel: "View Details",
+    detailCtaLabel: "Book Hostel",
     bookCtaLabel: "Request Room",
   },
   food: {
