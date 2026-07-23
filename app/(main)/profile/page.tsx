@@ -49,7 +49,6 @@ export default async function ProfilePage() {
       <NotificationLanguageSettings
         profileId={profile.id}
         notificationOptIn={profile.notificationOptIn}
-        languagePreference={profile.languagePreference}
       />
 
       <div className="mt-6 px-5 md:px-8">
