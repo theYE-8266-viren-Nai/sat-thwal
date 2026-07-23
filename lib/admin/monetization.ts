@@ -11,6 +11,7 @@ export interface MonetizationLineItem {
   count: number;
   feeMmk: number;
   commissionCount: number;
+  commissionLabel: string;
   commissionMmk: number;
   totalMmk: number;
 }
@@ -28,6 +29,7 @@ const PROVIDER_TYPES: ProviderType[] = [
 ];
 
 const TRANSPORTATION_COMMISSION_RATE = 0.15;
+const FOOD_COMMISSION_RATE = 0.15;
 
 export async function getMonetizationReport(
   supabase: SupabaseClient<Database>,
@@ -100,18 +102,65 @@ export async function getMonetizationReport(
     0,
   );
 
+  const { data: foodRequests, error: foodError } = await supabase
+    .from("requests")
+    .select("service_id")
+    .eq("service_type", "food")
+    .in("status", ["confirmed", "completed"]);
+  if (foodError) throw foodError;
+
+  const foodPackageIds = [
+    ...new Set((foodRequests ?? []).map((request) => request.service_id)),
+  ];
+  const foodPackages = foodPackageIds.length
+    ? await supabase
+        .from("food_packages")
+        .select("id, monthly_price")
+        .in("id", foodPackageIds)
+    : { data: [], error: null };
+  if (foodPackages.error) throw foodPackages.error;
+
+  const foodPackagePrice = new Map(
+    (foodPackages.data ?? []).map((foodPackage) => [
+      foodPackage.id,
+      foodPackage.monthly_price,
+    ]),
+  );
+  const foodCommissionMmk = (foodRequests ?? []).reduce((sum, request) => {
+    const monthlyPrice = foodPackagePrice.get(request.service_id) ?? 0;
+    return sum + Math.round(monthlyPrice * FOOD_COMMISSION_RATE);
+  }, 0);
+
   const lineItems = PROVIDER_TYPES.map((providerType) => ({
     key: providerType,
     label: `${PROVIDER_TYPE_LABELS[providerType]} registrations`,
     count: counts.get(providerType) ?? 0,
     feeMmk: PROVIDER_REGISTRATION_FEES_MMK[providerType],
     commissionCount:
-      providerType === "transportation" ? (transportationRequests ?? []).length : 0,
+      providerType === "transportation"
+        ? (transportationRequests ?? []).length
+        : providerType === "restaurant"
+          ? (foodRequests ?? []).length
+          : 0,
+    commissionLabel:
+      providerType === "transportation"
+        ? "accepted seat"
+        : providerType === "restaurant"
+          ? "food subscription"
+          : "commission",
     commissionMmk:
-      providerType === "transportation" ? transportationCommissionMmk : 0,
+      providerType === "transportation"
+        ? transportationCommissionMmk
+        : providerType === "restaurant"
+          ? foodCommissionMmk
+          : 0,
     totalMmk:
       (totals.get(providerType) ?? 0) +
-      (providerType === "transportation" ? transportationCommissionMmk : 0),
+      (providerType === "transportation"
+        ? transportationCommissionMmk
+        : providerType === "restaurant"
+          ? foodCommissionMmk
+          : 0),
   }));
 
   return {
