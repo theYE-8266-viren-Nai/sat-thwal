@@ -32,6 +32,32 @@ function getRequestInsertErrorMessage(error: { code?: string; message?: string }
   return error.message ?? "Couldn't send your request. Try again.";
 }
 
+async function ensureApprovedRequestTarget(
+  supabase: SupabaseClient<Database>,
+  category: ServiceCategory,
+  serviceId: string,
+) {
+  if (category === "tutor") {
+    const { data, error } = await supabase
+      .from("tutors")
+      .select("verified")
+      .eq("id", serviceId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data?.verified) throw new Error("This tutor is still awaiting admin approval.");
+  }
+
+  if (category === "hostel") {
+    const { data, error } = await supabase
+      .from("hostels")
+      .select("verified")
+      .eq("id", serviceId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data?.verified) throw new Error("This hostel listing is still awaiting admin approval.");
+  }
+}
+
 export async function getRequests(supabase: SupabaseClient<Database>, profileId: string) {
   const { data, error } = await supabase
     .from("requests")
@@ -136,6 +162,8 @@ export async function createRequest(
   if (existing) {
     throw new Error("You've already requested this listing. Track it from Saved & Bookings.");
   }
+
+  await ensureApprovedRequestTarget(supabase, category, serviceId);
 
   const { data, error } = await supabase
     .from("requests")

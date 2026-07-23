@@ -10,6 +10,7 @@ export async function getTutors(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from("tutors")
     .select("*")
+    .eq("verified", true)
     .order("rating", { ascending: false });
   if (error) throw error;
   return data ?? [];
@@ -23,7 +24,11 @@ export async function getTutorById(supabase: SupabaseClient<Database>, id: strin
 
 export async function getTutorsByIds(supabase: SupabaseClient<Database>, ids: string[]) {
   if (ids.length === 0) return [];
-  const { data, error } = await supabase.from("tutors").select("*").in("id", ids);
+  const { data, error } = await supabase
+    .from("tutors")
+    .select("*")
+    .in("id", ids)
+    .eq("verified", true);
   if (error) throw error;
   return data ?? [];
 }

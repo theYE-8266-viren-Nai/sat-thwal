@@ -10,6 +10,7 @@ export async function getHostels(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from("hostels")
     .select("*")
+    .eq("verified", true)
     .order("distance_km", { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -23,7 +24,11 @@ export async function getHostelById(supabase: SupabaseClient<Database>, id: stri
 
 export async function getHostelsByIds(supabase: SupabaseClient<Database>, ids: string[]) {
   if (ids.length === 0) return [];
-  const { data, error } = await supabase.from("hostels").select("*").in("id", ids);
+  const { data, error } = await supabase
+    .from("hostels")
+    .select("*")
+    .in("id", ids)
+    .eq("verified", true);
   if (error) throw error;
   return data ?? [];
 }

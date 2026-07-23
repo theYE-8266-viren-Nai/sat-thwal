@@ -46,13 +46,23 @@ export default async function ServiceDetailPage({
   if (!user) return null;
 
   let detail: ServiceDetailData | null = null;
+  let listingOwnerId: string | null = null;
+  let listingVerified = true;
 
   if (typedCategory === "tutor") {
     const row = await getTutorById(supabase, id);
-    detail = row ? tutorToDetail(row) : null;
+    if (row) {
+      listingOwnerId = row.owner_profile_id;
+      listingVerified = row.verified;
+      detail = tutorToDetail(row);
+    }
   } else if (typedCategory === "hostel") {
     const row = await getHostelById(supabase, id);
-    detail = row ? hostelToDetail(row) : null;
+    if (row) {
+      listingOwnerId = row.owner_profile_id;
+      listingVerified = row.verified;
+      detail = hostelToDetail(row);
+    }
   } else if (typedCategory === "food") {
     const row = await getFoodItemById(supabase, id);
     detail = row ? foodToDetail(row) : null;
@@ -63,7 +73,18 @@ export default async function ServiceDetailPage({
 
   if (!detail) notFound();
 
-  const isOwner = detail.ownerProfileId === user.id;
+  const isOwner = (listingOwnerId ?? detail.ownerProfileId) === user.id;
+  const needsProviderApproval =
+    (typedCategory === "tutor" || typedCategory === "hostel") && !listingVerified;
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profileError) throw profileError;
+  const isAdmin = profile?.role === "admin";
+  if (needsProviderApproval && !isOwner && !isAdmin) notFound();
+
   const ownerProviderType: ProviderType | null =
     typedCategory === "tutor"
       ? "tutor"
