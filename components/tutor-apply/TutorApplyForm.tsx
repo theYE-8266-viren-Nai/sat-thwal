@@ -14,7 +14,7 @@ import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { GradesCsvUpload } from "@/components/tutor-apply/GradesCsvUpload";
 import { ProviderPaymentFields } from "@/components/provider/ProviderPaymentFields";
 import { TOWNSHIPS } from "@/lib/constants/townships";
-import { PROVIDER_REGISTRATION_FEES_MMK } from "@/lib/providerRegistration";
+import { calculateRatioProviderRegistrationFee } from "@/lib/providerRegistration";
 import type { EligibilityResult } from "@/lib/tutorEligibility";
 import { applyAsTutor } from "@/lib/actions/tutors";
 import type { ProviderPaymentMethod } from "@/types/database.types";
@@ -46,7 +46,6 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
   const [availabilityNote, setAvailabilityNote] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<ProviderPaymentMethod>("kbzpay");
-  const [transactionReference, setTransactionReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const step2Unlocked = !!eligibility?.ok && eligibility.eligible;
@@ -56,8 +55,8 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
     subjects.length > 0 &&
     !!township &&
     !!price &&
-    !!transactionReference.trim() &&
     !submitting;
+  const registrationFeeMmk = calculateRatioProviderRegistrationFee(price);
 
   async function handleSubmit() {
     if (!csvText) return;
@@ -74,7 +73,6 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
         sessionMode,
         availabilityNote,
         paymentMethod,
-        transactionReference,
       });
       if (result.ok) {
         toast.success("Application submitted. Your payment is under review.");
@@ -172,11 +170,9 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
 
           <ProviderPaymentFields
             idPrefix="tutor-application"
-            feeMmk={PROVIDER_REGISTRATION_FEES_MMK.tutor}
+            feeMmk={registrationFeeMmk}
             paymentMethod={paymentMethod}
-            transactionReference={transactionReference}
             onPaymentMethodChange={setPaymentMethod}
-            onTransactionReferenceChange={setTransactionReference}
           />
 
           <Button

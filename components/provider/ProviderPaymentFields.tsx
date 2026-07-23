@@ -1,7 +1,6 @@
 "use client";
 
 import { CreditCard } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import {
   PROVIDER_PAYMENT_METHOD_LABELS,
+  formatProviderRegistrationFeeRate,
 } from "@/lib/providerRegistration";
 import { formatMMK } from "@/lib/utils";
 import type { ProviderPaymentMethod } from "@/types/database.types";
@@ -20,18 +20,14 @@ interface ProviderPaymentFieldsProps {
   idPrefix: string;
   feeMmk: number;
   paymentMethod: ProviderPaymentMethod;
-  transactionReference: string;
   onPaymentMethodChange: (method: ProviderPaymentMethod) => void;
-  onTransactionReferenceChange: (reference: string) => void;
 }
 
 export function ProviderPaymentFields({
   idPrefix,
   feeMmk,
   paymentMethod,
-  transactionReference,
   onPaymentMethodChange,
-  onTransactionReferenceChange,
 }: ProviderPaymentFieldsProps) {
   return (
     <section className="flex flex-col gap-4 border-t border-border pt-5">
@@ -44,8 +40,8 @@ export function ProviderPaymentFields({
             Provider registration fee
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Submit the reference for your one-time {formatMMK(feeMmk)} payment.
-            An administrator will verify it before publishing your service.
+            Pay {formatProviderRegistrationFeeRate()} of your listing amount.
+            That comes to {formatMMK(feeMmk)} for this submission.
           </p>
         </div>
       </div>
@@ -74,20 +70,6 @@ export function ProviderPaymentFields({
           </Select>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor={`${idPrefix}-transaction-reference`}>
-            Transaction reference
-          </Label>
-          <Input
-            id={`${idPrefix}-transaction-reference`}
-            value={transactionReference}
-            onChange={(event) =>
-              onTransactionReferenceChange(event.target.value)
-            }
-            placeholder="Enter the payment reference"
-            autoComplete="off"
-          />
-        </div>
       </div>
     </section>
   );

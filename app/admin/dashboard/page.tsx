@@ -209,7 +209,7 @@ export default async function AdminDashboardPage() {
                 <div>
                   <h3 className="font-semibold text-foreground">{item.label}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {item.count} x {formatMMK(item.feeMmk)}
+                    {item.count} paid registration{item.count === 1 ? "" : "s"}
                   </p>
                 </div>
                 <p className="shrink-0 text-base font-semibold text-foreground">

@@ -184,6 +184,7 @@ export async function createTransportationRequest(
   pickupStopName: string | undefined,
   pickupTime: string | undefined,
   pickupAddress: string,
+  phone: string,
 ) {
   const { data: route, error: routeError } = await supabase
     .from("transportation_routes")
@@ -201,6 +202,12 @@ export async function createTransportationRequest(
   if (existing) {
     throw new Error("You've already requested this route. Track it from Saved & Bookings.");
   }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ phone, updated_at: new Date().toISOString() })
+    .eq("id", studentId);
+  if (profileError) throw profileError;
 
   const { data, error } = await supabase
     .from("requests")

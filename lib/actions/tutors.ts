@@ -20,7 +20,6 @@ export interface ApplyAsTutorInput {
   sessionMode: "online" | "in_person" | "both";
   availabilityNote: string;
   paymentMethod: ProviderPaymentMethod;
-  transactionReference: string;
 }
 
 export type ApplyAsTutorResult =
@@ -59,9 +58,6 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
   if (!isProviderPaymentMethod(input.paymentMethod)) {
     return { ok: false, error: "Select a valid payment method." };
   }
-  if (!input.transactionReference.trim()) {
-    return { ok: false, error: "Enter the payment transaction reference." };
-  }
 
   let createdTutorId: string | undefined;
   try {
@@ -86,7 +82,7 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
       {
         p_registration_id: registration.id,
         p_payment_method: input.paymentMethod,
-        p_transaction_reference: input.transactionReference.trim(),
+        p_transaction_reference: `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`.toUpperCase(),
       },
     );
     if (paymentError) throw paymentError;
@@ -96,7 +92,7 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
     return {
       ok: false,
       error: createdTutorId
-        ? `Your tutor profile was saved, but the payment reference needs to be submitted again. ${toErrorMessage(error)}`
+        ? `Your tutor profile was saved, but the payment could not be submitted. ${toErrorMessage(error)}`
         : "Couldn't save your tutor profile. Try again.",
       tutorId: createdTutorId,
     };

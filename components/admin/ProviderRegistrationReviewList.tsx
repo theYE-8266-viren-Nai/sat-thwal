@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { reviewProviderRegistrationPayment } from "@/lib/actions/providerRegistrations";
 import {
   PROVIDER_PAYMENT_METHOD_LABELS,
+  formatProviderRegistrationFeeRate,
   PROVIDER_TYPE_LABELS,
 } from "@/lib/providerRegistration";
 import type { ProviderRegistrationReview } from "@/lib/queries/providerRegistrations";
@@ -65,7 +66,7 @@ export function ProviderRegistrationReviewList({
       toast.success(
         decision === "approve"
           ? "Provider payment approved and account activated."
-          : "Payment rejected. The provider can submit another reference.",
+          : "Payment rejected. The provider can submit again.",
       );
       setSelected(null);
       router.refresh();
@@ -80,7 +81,7 @@ export function ProviderRegistrationReviewList({
         <Clock3 className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
         <h2 className="mt-3 font-semibold text-foreground">No payments awaiting review</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          New provider payment references will appear here.
+          New provider payments will appear here.
         </p>
       </Card>
     );
@@ -112,15 +113,15 @@ export function ProviderRegistrationReviewList({
 
             <dl className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-muted-foreground">Method</dt>
+                <dt className="text-muted-foreground">Fee</dt>
                 <dd className="mt-1 font-medium text-foreground">
-                  {PROVIDER_PAYMENT_METHOD_LABELS[review.payment.payment_method]}
+                  {formatProviderRegistrationFeeRate()} of listing amount
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Reference</dt>
+                <dt className="text-muted-foreground">Method</dt>
                 <dd className="mt-1 break-all font-medium text-foreground">
-                  {review.payment.transaction_reference}
+                  {PROVIDER_PAYMENT_METHOD_LABELS[review.payment.payment_method]}
                 </dd>
               </div>
               <div>
@@ -160,7 +161,7 @@ export function ProviderRegistrationReviewList({
             <DialogDescription>
               {decision === "approve"
                 ? "This records received revenue and immediately activates the provider."
-                : "The provider will return to payment required and can submit another reference."}
+                : "The provider will return to payment required and can submit again."}
             </DialogDescription>
           </DialogHeader>
 
@@ -173,7 +174,7 @@ export function ProviderRegistrationReviewList({
                 id="provider-payment-rejection-reason"
                 value={rejectionReason}
                 onChange={(event) => setRejectionReason(event.target.value)}
-                placeholder="For example, the reference could not be verified"
+                placeholder="For example, the payment could not be verified"
                 rows={3}
               />
             </div>

@@ -27,7 +27,7 @@ export default async function ProviderRegistrationsPage() {
             Registration review
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Confirm payment references before provider services are published.
+            Confirm provider payments before provider services are published.
           </p>
         </section>
 

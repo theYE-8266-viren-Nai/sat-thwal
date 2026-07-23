@@ -13,16 +13,12 @@ export type ProviderPaymentActionResult =
 export async function submitProviderRegistrationPayment(input: {
   registrationId: string;
   paymentMethod: string;
-  transactionReference: string;
 }): Promise<ProviderPaymentActionResult> {
   if (!isProviderPaymentMethod(input.paymentMethod)) {
     return { ok: false, error: "Select a valid payment method." };
   }
 
-  const transactionReference = input.transactionReference.trim();
-  if (!transactionReference) {
-    return { ok: false, error: "Enter the transaction reference." };
-  }
+  const transactionReference = `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`.toUpperCase();
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("submit_provider_registration_payment", {

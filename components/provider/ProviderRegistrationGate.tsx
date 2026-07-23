@@ -11,6 +11,7 @@ import { ProviderPaymentFields } from "@/components/provider/ProviderPaymentFiel
 import { submitProviderRegistrationPayment } from "@/lib/actions/providerRegistrations";
 import {
   PROVIDER_PAYMENT_METHOD_LABELS,
+  formatProviderRegistrationFeeRate,
   PROVIDER_TYPE_LABELS,
 } from "@/lib/providerRegistration";
 import type {
@@ -38,7 +39,6 @@ export function ProviderRegistrationGate({
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] =
     useState<ProviderPaymentMethod>("kbzpay");
-  const [transactionReference, setTransactionReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   if (!registration) {
@@ -87,15 +87,15 @@ export function ProviderRegistrationGate({
         {payment && (
           <dl className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-muted-foreground">Method</dt>
+              <dt className="text-muted-foreground">Fee</dt>
               <dd className="mt-1 font-medium text-foreground">
-                {PROVIDER_PAYMENT_METHOD_LABELS[payment.payment_method]}
+                {formatProviderRegistrationFeeRate()} of listing amount
               </dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Reference</dt>
+              <dt className="text-muted-foreground">Method</dt>
               <dd className="mt-1 break-all font-medium text-foreground">
-                {payment.transaction_reference}
+                {PROVIDER_PAYMENT_METHOD_LABELS[payment.payment_method]}
               </dd>
             </div>
           </dl>
@@ -124,7 +124,6 @@ export function ProviderRegistrationGate({
       const result = await submitProviderRegistrationPayment({
         registrationId,
         paymentMethod,
-        transactionReference,
       });
 
       if (!result.ok) {
@@ -132,8 +131,7 @@ export function ProviderRegistrationGate({
         return;
       }
 
-      toast.success("Payment reference submitted for review.");
-      setTransactionReference("");
+      toast.success("Payment submitted for review.");
       router.refresh();
     } finally {
       setSubmitting(false);
@@ -159,7 +157,7 @@ export function ProviderRegistrationGate({
         <div className="rounded-lg border border-destructive/25 bg-destructive/5 p-3 text-sm">
           <p className="font-medium text-destructive">Previous payment rejected</p>
           <p className="mt-1 text-muted-foreground">
-            {payment.rejection_reason || "Check the reference and submit it again."}
+            {payment.rejection_reason || "Check the payment details and submit it again."}
           </p>
         </div>
       )}
@@ -168,18 +166,16 @@ export function ProviderRegistrationGate({
         idPrefix={`${providerType}-registration`}
         feeMmk={registration.fee_amount_mmk}
         paymentMethod={paymentMethod}
-        transactionReference={transactionReference}
         onPaymentMethodChange={setPaymentMethod}
-        onTransactionReferenceChange={setTransactionReference}
       />
 
       <Button
         type="button"
-        disabled={!transactionReference.trim() || submitting}
+        disabled={submitting}
         onClick={handleSubmit}
         className="self-end bg-brand-indigo hover:bg-brand-indigo-dark"
       >
-        {submitting ? "Submitting..." : "Submit payment reference"}
+        {submitting ? "Submitting..." : "Submit payment"}
       </Button>
     </Card>
   );

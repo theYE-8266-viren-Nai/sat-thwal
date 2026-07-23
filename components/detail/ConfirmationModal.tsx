@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { createRequest } from "@/lib/queries/requests";
 import { createTransportationRegistration } from "@/lib/queries/transportationRegistrations";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -80,6 +81,7 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
+  const [phone, setPhone] = useState("");
   const [pickupStopId, setPickupStopId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -101,6 +103,11 @@ export function ConfirmationModal({
       return;
     }
 
+    if (action === "requestSeat" && !phone.trim()) {
+      toast.error("Please add your phone number.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const supabase = createClient();
@@ -115,6 +122,7 @@ export function ConfirmationModal({
           pickupStop?.name ?? "Pickup stop",
           pickupStop?.pickupTime,
           note.trim(),
+          phone.trim(),
         );
       } else {
         await createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
@@ -133,6 +141,7 @@ export function ConfirmationModal({
     setOpen(next);
     if (!next) {
       setNote("");
+      setPhone("");
       setPickupStopId("");
       setDone(false);
     }
@@ -190,6 +199,15 @@ export function ConfirmationModal({
                         ))}
                       </SelectContent>
                     </Select>
+                  )}
+                  {action === "requestSeat" && (
+                    <Input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone number for the driver"
+                      className="h-10"
+                    />
                   )}
                   <Textarea
                     value={note}

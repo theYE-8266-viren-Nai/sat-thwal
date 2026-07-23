@@ -25,7 +25,6 @@ export interface HostelRoomInput {
   mealsIncluded: boolean;
   description: string;
   paymentMethod?: ProviderPaymentMethod;
-  transactionReference?: string;
 }
 
 function validateHostelRoomInput(input: HostelRoomInput) {
@@ -76,9 +75,6 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
   if (!input.paymentMethod || !isProviderPaymentMethod(input.paymentMethod)) {
     return { ok: false, error: "Select a valid payment method." };
   }
-  if (!input.transactionReference?.trim()) {
-    return { ok: false, error: "Enter the payment transaction reference." };
-  }
 
   const validated = validateHostelRoomInput(input);
   if (!validated.ok) return validated;
@@ -110,7 +106,7 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
       {
         p_registration_id: registration.id,
         p_payment_method: input.paymentMethod,
-        p_transaction_reference: input.transactionReference.trim(),
+        p_transaction_reference: `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`.toUpperCase(),
       },
     );
     if (paymentError) throw paymentError;
@@ -120,7 +116,7 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
     return {
       ok: false,
       error: createdHostelId
-        ? `Your room was saved, but the payment reference needs to be submitted again. ${toErrorMessage(error)}`
+        ? `Your room was saved, but the payment could not be submitted. ${toErrorMessage(error)}`
         : "Couldn't save your listing. Try again.",
       hostelId: createdHostelId,
     };

@@ -30,6 +30,7 @@ export async function createTransportationRegistration(
   pickupStopName: string,
   pickupTime: string | undefined,
   pickupAddress: string,
+  phone: string,
 ) {
   const { request, driverId, routeName } = await insertTransportationRequest(
     supabase,
@@ -39,6 +40,7 @@ export async function createTransportationRegistration(
     pickupStopName,
     pickupTime,
     pickupAddress,
+    phone,
   );
 
   const { data: student } = await supabase

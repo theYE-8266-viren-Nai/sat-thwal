@@ -15,11 +15,8 @@ import { ImageUpload } from "@/components/shared/ImageUpload";
 import { ProviderPaymentFields } from "@/components/provider/ProviderPaymentFields";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
-import { PROVIDER_REGISTRATION_FEES_MMK } from "@/lib/providerRegistration";
-import type {
-  GenderPolicy,
-  ProviderPaymentMethod,
-} from "@/types/database.types";
+import { calculateRatioProviderRegistrationFee } from "@/lib/providerRegistration";
+import type { GenderPolicy, ProviderPaymentMethod } from "@/types/database.types";
 import { listHostelRoom } from "@/lib/actions/hostels";
 
 interface ListRoomFormProps {
@@ -49,7 +46,6 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
   const [description, setDescription] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<ProviderPaymentMethod>("kbzpay");
-  const [transactionReference, setTransactionReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const canSubmit =
@@ -59,8 +55,8 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
     !!monthlyRent &&
     !!roomType &&
     !!availableRooms &&
-    !!transactionReference.trim() &&
     !submitting;
+  const registrationFeeMmk = calculateRatioProviderRegistrationFee(monthlyRent);
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -78,7 +74,6 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
         mealsIncluded,
         description,
         paymentMethod,
-        transactionReference,
       });
       if (result.ok) {
         toast.success("Listing submitted. Your payment is under review.");
@@ -200,11 +195,9 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
 
         <ProviderPaymentFields
           idPrefix="hostel-listing"
-          feeMmk={PROVIDER_REGISTRATION_FEES_MMK.hostel}
+          feeMmk={registrationFeeMmk}
           paymentMethod={paymentMethod}
-          transactionReference={transactionReference}
           onPaymentMethodChange={setPaymentMethod}
-          onTransactionReferenceChange={setTransactionReference}
         />
 
         <Button
