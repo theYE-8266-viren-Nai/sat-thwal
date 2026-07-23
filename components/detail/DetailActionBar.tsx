@@ -32,7 +32,6 @@ interface DetailActionBarProps {
   profileId: string;
   title: string;
   contactInfo: string;
-  initialSaved: boolean;
   isOwner?: boolean;
   routeStops?: RouteStop[];
   existingRequestStatus?: RequestStatus | null;

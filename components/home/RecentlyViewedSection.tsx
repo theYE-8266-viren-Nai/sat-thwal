@@ -10,13 +10,7 @@ import { getRoutesByIds, routeToCard } from "@/lib/queries/transportation";
 import { ServiceSection } from "@/components/home/ServiceSection";
 import type { ServiceCardData } from "@/types/domain";
 
-export function RecentlyViewedSection({
-  profileId,
-  savedKeys,
-}: {
-  profileId: string;
-  savedKeys: Set<string>;
-}) {
+export function RecentlyViewedSection() {
   const [items, setItems] = useState<ServiceCardData[]>([]);
   const [ready, setReady] = useState(false);
 
@@ -65,7 +59,5 @@ export function RecentlyViewedSection({
 
   if (!ready || items.length === 0) return null;
 
-  return (
-    <ServiceSection title="Recently viewed" items={items} profileId={profileId} savedKeys={savedKeys} />
-  );
+  return <ServiceSection title="Recently viewed" items={items} />;
 }

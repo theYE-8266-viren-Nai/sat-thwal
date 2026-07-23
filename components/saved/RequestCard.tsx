@@ -20,9 +20,6 @@ interface RequestCardProps {
   data: ServiceCardData;
   status: RequestStatus;
   note?: string | null;
-  profileId: string;
-  initialSaved: boolean;
-  hideSaveButton?: boolean;
   requesterCompletedAt?: string | null;
   ownerCompletedAt?: string | null;
   completedAt?: string | null;
@@ -34,9 +31,6 @@ export function RequestCard({
   data,
   status,
   note,
-  profileId,
-  initialSaved,
-  hideSaveButton = false,
   requesterCompletedAt = null,
   ownerCompletedAt = null,
   completedAt = null,
@@ -95,12 +89,7 @@ export function RequestCard({
           )}
         </div>
       )}
-      <ServiceCard
-        data={data}
-        profileId={profileId}
-        initialSaved={initialSaved}
-        hideSaveButton={hideSaveButton}
-      />
+      <ServiceCard data={data} />
       {status === "confirmed" && (canComplete || waitingForProvider || providerCompletedFirst) && (
         <div className="rounded-xl border border-border bg-card p-3">
           {waitingForProvider ? (

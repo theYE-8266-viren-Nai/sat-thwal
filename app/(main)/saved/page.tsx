@@ -117,9 +117,6 @@ export default function SavedPage() {
             data={card}
             status={getDisplayStatus(request)}
             note={request.note}
-            profileId={profileId}
-            initialSaved={false}
-            hideSaveButton
             requesterCompletedAt={request.requester_completed_at}
             ownerCompletedAt={request.owner_completed_at}
             completedAt={request.completed_at}

@@ -58,7 +58,7 @@ export default function FoodPage() {
       }}
       emptyMessage="No monthly packages match your filters yet. Try widening your search."
       hideMainList
-      renderSections={({ filteredRows, profileId, savedKeys, loading }) => {
+      renderSections={({ filteredRows, profileId, loading }) => {
         if (loading || !profileId) return null;
 
         const restaurantGroups = groupFoodItemsByRestaurant(filteredRows).sort(
@@ -72,24 +72,9 @@ export default function FoodPage() {
 
         return (
           <>
-            <ServiceSection
-              title="All monthly packages"
-              items={allPackages}
-              profileId={profileId}
-              savedKeys={savedKeys}
-            />
-            <ServiceSection
-              title="Vegetarian-friendly packages"
-              items={vegetarianPackages}
-              profileId={profileId}
-              savedKeys={savedKeys}
-            />
-            <ServiceSection
-              title="Halal-friendly packages"
-              items={halalPackages}
-              profileId={profileId}
-              savedKeys={savedKeys}
-            />
+            <ServiceSection title="All monthly packages" items={allPackages} />
+            <ServiceSection title="Vegetarian-friendly packages" items={vegetarianPackages} />
+            <ServiceSection title="Halal-friendly packages" items={halalPackages} />
           </>
         );
       }}

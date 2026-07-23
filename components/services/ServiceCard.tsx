@@ -4,7 +4,6 @@ import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-re
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
-import { SaveButton } from "@/components/services/SaveButton";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -20,12 +19,9 @@ const META_ICONS: Record<ServiceCardMeta["icon"], typeof MapPin> = {
 
 interface ServiceCardProps {
   data: ServiceCardData;
-  profileId: string;
-  initialSaved: boolean;
-  hideSaveButton?: boolean;
 }
 
-export function ServiceCard({ data, profileId, initialSaved, hideSaveButton = false }: ServiceCardProps) {
+export function ServiceCard({ data }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
 
   return (
@@ -41,15 +37,6 @@ export function ServiceCard({ data, profileId, initialSaved, hideSaveButton = fa
             >
               <category.icon className="h-10 w-10" style={{ color: category.color }} />
             </div>
-          )}
-          {!hideSaveButton && (
-            <SaveButton
-              profileId={profileId}
-              category={data.category}
-              serviceId={data.id}
-              initialSaved={initialSaved}
-              className="absolute right-2 top-2"
-            />
           )}
           {data.verified && <VerifiedBadge className="absolute left-2 top-2 bg-white/90" />}
         </div>
