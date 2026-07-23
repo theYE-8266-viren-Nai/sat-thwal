@@ -10,6 +10,8 @@ export interface MonetizationLineItem {
   label: string;
   count: number;
   feeMmk: number;
+  commissionCount: number;
+  commissionMmk: number;
   totalMmk: number;
 }
 
@@ -24,6 +26,8 @@ const PROVIDER_TYPES: ProviderType[] = [
   "transportation",
   "restaurant",
 ];
+
+const TRANSPORTATION_COMMISSION_RATE = 0.15;
 
 export async function getMonetizationReport(
   supabase: SupabaseClient<Database>,
@@ -67,12 +71,47 @@ export async function getMonetizationReport(
     );
   });
 
+  const { data: transportationRequests, error: transportationError } = await supabase
+    .from("requests")
+    .select("service_id")
+    .eq("service_type", "transportation")
+    .in("status", ["confirmed", "completed"]);
+  if (transportationError) throw transportationError;
+
+  const routeIds = [
+    ...new Set((transportationRequests ?? []).map((request) => request.service_id)),
+  ];
+  const routes = routeIds.length
+    ? await supabase
+        .from("transportation_routes")
+        .select("id, monthly_price")
+        .in("id", routeIds)
+    : { data: [], error: null };
+  if (routes.error) throw routes.error;
+
+  const routePrice = new Map(
+    (routes.data ?? []).map((route) => [route.id, route.monthly_price]),
+  );
+  const transportationCommissionMmk = (transportationRequests ?? []).reduce(
+    (sum, request) => {
+      const monthlyPrice = routePrice.get(request.service_id) ?? 0;
+      return sum + Math.round(monthlyPrice * TRANSPORTATION_COMMISSION_RATE);
+    },
+    0,
+  );
+
   const lineItems = PROVIDER_TYPES.map((providerType) => ({
     key: providerType,
     label: `${PROVIDER_TYPE_LABELS[providerType]} registrations`,
     count: counts.get(providerType) ?? 0,
     feeMmk: PROVIDER_REGISTRATION_FEES_MMK[providerType],
-    totalMmk: totals.get(providerType) ?? 0,
+    commissionCount:
+      providerType === "transportation" ? (transportationRequests ?? []).length : 0,
+    commissionMmk:
+      providerType === "transportation" ? transportationCommissionMmk : 0,
+    totalMmk:
+      (totals.get(providerType) ?? 0) +
+      (providerType === "transportation" ? transportationCommissionMmk : 0),
   }));
 
   return {

@@ -1,11 +1,10 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-indigo text-white font-bold">
-        S
-      </div>
+      <Image src="/logo.png" alt="Sat Thwal" width={40} height={40} priority />
       <span className="text-lg font-bold text-foreground">
         Sat Thwal <span className="font-normal text-muted-foreground">| ဆက်သွယ်</span>
       </span>
