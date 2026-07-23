@@ -139,7 +139,7 @@ export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
     description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")}.`,
     amenities: tutor.subjects,
     ctaLabel: "Request Session",
-    contactInfo: "Message via Sat Thwal to get this tutor's contact details.",
+    contactInfo: "Message via Set Thwal to get this tutor's contact details.",
     ownerProfileId: tutor.owner_profile_id,
   };
 }

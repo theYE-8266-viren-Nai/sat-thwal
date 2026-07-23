@@ -227,7 +227,7 @@ export function foodToDetail({ package: foodPackage, restaurant }: FoodItem): Se
       restaurant.halal && "Halal",
     ].filter((v): v is string => Boolean(v)),
     ctaLabel: "Subscribe",
-    contactInfo: "Subscribe through Sat Thwal. The restaurant will confirm availability for this monthly package.",
+    contactInfo: "Subscribe through Set Thwal. The restaurant will confirm availability for this monthly package.",
     ownerProfileId: restaurant.owner_profile_id,
   };
 }

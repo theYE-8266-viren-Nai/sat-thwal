@@ -94,7 +94,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          New to Sat Thwal?{" "}
+          New to Set Thwal?{" "}
           <Link href="/signup" className="font-medium text-brand-indigo hover:underline">
             Create an account
           </Link>

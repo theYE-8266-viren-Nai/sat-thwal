@@ -12,7 +12,7 @@ export default async function RestaurantDashboardPage() {
   const restaurant = await getRestaurantByOwner(supabase, profile.id);
   if (!restaurant) {
     return (
-      <EmptyState message="Your account isn't linked to a restaurant yet. Contact Sat Thwal support to get set up." />
+      <EmptyState message="Your account isn't linked to a restaurant yet. Contact Set Thwal support to get set up." />
     );
   }
 

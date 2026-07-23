@@ -83,7 +83,7 @@ async function getOpenRouterMatches(
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-        "X-OpenRouter-Title": "Sat Thwal SmartMatch",
+        "X-OpenRouter-Title": "Set Thwal SmartMatch",
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL,

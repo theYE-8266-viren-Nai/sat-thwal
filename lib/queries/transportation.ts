@@ -387,7 +387,7 @@ export function routeToDetail(route: TransportationRow): ServiceDetailData {
       ),
     ],
     ctaLabel: "Book Seat",
-    contactInfo: "Message via Sat Thwal to reserve your seat with this driver.",
+    contactInfo: "Message via Set Thwal to reserve your seat with this driver.",
     routeStops,
     vehicleType: route.vehicle_type,
     availableSeats: route.available_seats,

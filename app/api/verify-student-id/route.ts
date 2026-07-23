@@ -91,7 +91,7 @@ async function checkStudentId(base64Image: string, mimeType: string): Promise<Vi
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-        "X-OpenRouter-Title": "Sat Thwal Student ID Verification",
+        "X-OpenRouter-Title": "Set Thwal Student ID Verification",
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL,

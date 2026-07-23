@@ -1,4 +1,4 @@
-# Sat Thwal (ဆက်သွယ် Myanmar)
+# Set Thwal (ဆက်သွယ် Myanmar)
 
 All-in-one student life platform for Myanmar university students — tutors, hostels, food, and
 transportation in one place. This is a prototype: SmartMatch AI is simulated (naive keyword
