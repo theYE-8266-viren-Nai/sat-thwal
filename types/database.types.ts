@@ -3,6 +3,11 @@ export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type UserRole = "student" | "driver" | "admin" | "restaurant";
+export type FoodPackageType =
+  | "breakfast_lunch_dinner"
+  | "breakfast_lunch"
+  | "breakfast_dinner"
+  | "lunch_dinner";
 
 type ProfileRow = {
   id: string;
@@ -85,6 +90,18 @@ type MealRow = {
   image_url: string | null;
   is_student_package: boolean;
   created_at: string;
+}
+
+type FoodPackageRow = {
+  id: string;
+  restaurant_id: string;
+  package_type: FoodPackageType;
+  name: string;
+  monthly_price: number;
+  max_subscribers: number;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 type TransportationRow = {
@@ -194,6 +211,18 @@ export type Database = {
         Update: Partial<MealRow>;
         Relationships: [];
       };
+      food_packages: {
+        Row: FoodPackageRow;
+        Insert: Partial<FoodPackageRow> & {
+          restaurant_id: string;
+          package_type: FoodPackageType;
+          name: string;
+          monthly_price: number;
+          max_subscribers: number;
+        };
+        Update: Partial<FoodPackageRow>;
+        Relationships: [];
+      };
       transportation_routes: {
         Row: TransportationRow;
         Insert: Partial<TransportationRow>;
@@ -255,6 +284,10 @@ export type Database = {
         Returns: undefined;
       };
       confirm_transportation_request: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      confirm_food_package_request: {
         Args: { p_request_id: string };
         Returns: RequestRow;
       };

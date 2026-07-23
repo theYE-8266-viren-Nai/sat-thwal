@@ -52,7 +52,7 @@ export default function SavedPage() {
       const cardMap = new Map<string, ServiceCardData>();
       tutors.forEach((t) => cardMap.set(`tutor:${t.id}`, tutorToCard(t)));
       hostels.forEach((h) => cardMap.set(`hostel:${h.id}`, hostelToCard(h)));
-      foodItems.forEach((f) => cardMap.set(`food:${f.meal.id}`, foodToCard(f)));
+      foodItems.forEach((f) => cardMap.set(`food:${f.package.id}`, foodToCard(f)));
       routes.forEach((r) => cardMap.set(`transportation:${r.id}`, routeToCard(r)));
 
       if (cancelled) return;

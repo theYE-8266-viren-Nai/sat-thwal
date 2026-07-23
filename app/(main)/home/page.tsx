@@ -100,7 +100,7 @@ export default async function HomePage() {
   hostels.forEach((h) => cardByKey.set(`hostel:${h.id}`, hostelToCard(h)));
   restaurantGroups.forEach((group) => {
     const card = restaurantToCard(group);
-    group.forEach((item) => cardByKey.set(`food:${item.meal.id}`, card));
+    group.forEach((item) => cardByKey.set(`food:${item.package.id}`, card));
   });
   routes.forEach((r) => cardByKey.set(`transportation:${r.id}`, routeToCard(r)));
 

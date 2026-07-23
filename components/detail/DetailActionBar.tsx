@@ -9,10 +9,10 @@ import { REQUEST_STATUS_LABEL } from "@/lib/constants/requestStatus";
 import type { RequestStatus } from "@/types/database.types";
 import type { RouteStop, ServiceCategory } from "@/types/domain";
 
-const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat"> = {
+const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat" | "subscribe"> = {
   tutor: "request",
   hostel: "request",
-  food: "book",
+  food: "subscribe",
   transportation: "requestSeat",
 };
 

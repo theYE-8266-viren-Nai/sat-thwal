@@ -23,7 +23,7 @@ const VALID_CATEGORIES: ServiceCategory[] = ["tutor", "hostel", "food", "transpo
 const AMENITIES_TITLE: Record<ServiceCategory, string> = {
   tutor: "Subjects taught",
   hostel: "Facilities & amenities",
-  food: "Meal details",
+  food: "Package details",
   transportation: "Included",
 };
 
