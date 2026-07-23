@@ -98,11 +98,11 @@ export function hostelToCard(hostel: HostelRow): ServiceCardData {
     category: "hostel",
     image: hostel.image_url,
     title: hostel.name,
-    subtitle: `${hostel.room_type} · ${GENDER_LABEL[hostel.gender_policy]}`,
+    subtitle: `${hostel.room_type} - ${GENDER_LABEL[hostel.gender_policy]}`,
     priceLabel: `${formatMMK(hostel.monthly_rent)} / month`,
     verified: hostel.verified,
     meta: [
-      { icon: "map-pin", label: `${hostel.township} · ${formatDistance(hostel.distance_km)}` },
+      { icon: "map-pin", label: `${hostel.township} - ${formatDistance(hostel.distance_km)}` },
       { icon: "users", label: `${hostel.available_rooms} rooms available` },
       ...(hostel.meals_included ? [{ icon: "utensils" as const, label: "Meals included" }] : []),
     ],
@@ -123,7 +123,7 @@ export function hostelToDetail(hostel: HostelRow): ServiceDetailData {
     priceLabel: `${formatMMK(hostel.monthly_rent)} / month`,
     availabilityLines: [
       `${hostel.available_rooms} room${hostel.available_rooms === 1 ? "" : "s"} available`,
-      `${GENDER_LABEL[hostel.gender_policy]} · ${hostel.room_type}`,
+      `${GENDER_LABEL[hostel.gender_policy]} - ${hostel.room_type}`,
     ],
     locationLabel: `${hostel.township}, ${formatDistance(hostel.distance_km)} from UIT`,
     description:
