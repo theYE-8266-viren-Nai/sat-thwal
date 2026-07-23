@@ -238,11 +238,27 @@ export const SAMPLE_UIT_ROUTES: TransportationRow[] = [
   ),
 ];
 
+const SAMPLE_DRIVER_BY_ROUTE = new Map(
+  SAMPLE_UIT_ROUTES.map((route) => [route.route_name, route.driver_name]),
+);
+
+function normalizeDriverName(route: TransportationRow): TransportationRow {
+  const normalizedName = route.driver_name.trim().toLowerCase();
+  if (normalizedName !== "mamaphyp" && normalizedName !== "mamaphyo") {
+    return route;
+  }
+
+  const sampleDriverName = SAMPLE_DRIVER_BY_ROUTE.get(route.route_name);
+  if (!sampleDriverName) return route;
+
+  return { ...route, driver_name: sampleDriverName };
+}
+
 function mergeSampleRoutes(routes: TransportationRow[]) {
   const routeMap = new Map<string, TransportationRow>();
 
   SAMPLE_UIT_ROUTES.forEach((route) => routeMap.set(route.route_name, route));
-  routes.forEach((route) => routeMap.set(route.route_name, route));
+  routes.forEach((route) => routeMap.set(route.route_name, normalizeDriverName(route)));
 
   return [...routeMap.values()].sort((a, b) => a.departure_time.localeCompare(b.departure_time));
 }

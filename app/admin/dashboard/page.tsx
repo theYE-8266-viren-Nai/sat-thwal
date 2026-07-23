@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold text-foreground">Monetization Report</h2>
           <p className="text-sm text-muted-foreground">
-            Revenue received from administrator-confirmed provider registrations.
+            Revenue received from provider registrations and transportation commissions.
           </p>
         </div>
 
@@ -211,6 +211,11 @@ export default async function AdminDashboardPage() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     {item.count} paid registration{item.count === 1 ? "" : "s"}
                   </p>
+                  {item.commissionCount > 0 && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.commissionCount} accepted seat{item.commissionCount === 1 ? "" : "s"} at 15%
+                    </p>
+                  )}
                 </div>
                 <p className="shrink-0 text-base font-semibold text-foreground">
                   {formatMMK(item.totalMmk)}
