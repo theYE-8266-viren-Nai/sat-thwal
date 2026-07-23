@@ -174,7 +174,7 @@ function rankedMatchesToCards(
 ): ServiceCardData[] {
   const tutorsById = new Map(catalog.tutors.map((tutor) => [tutor.id, tutor]));
   const hostelsById = new Map(catalog.hostels.map((hostel) => [hostel.id, hostel]));
-  const foodById = new Map(catalog.food.map((item) => [item.meal.id, item]));
+  const foodById = new Map(catalog.food.map((item) => [item.package.id, item]));
   const routesById = new Map(catalog.routes.map((route) => [route.id, route]));
   const seen = new Set<string>();
 
@@ -259,11 +259,12 @@ function safeHostel(hostel: HostelRow) {
 
 function safeFoodItem(item: FoodItem) {
   return {
-    id: item.meal.id,
+    id: item.package.id,
     type: "food",
-    mealName: item.meal.name,
-    price: item.meal.price,
-    isStudentPackage: item.meal.is_student_package,
+    packageName: item.package.name,
+    packageType: item.package.package_type,
+    monthlyPrice: item.package.monthly_price,
+    maxSubscribers: item.package.max_subscribers,
     restaurantName: item.restaurant.name,
     township: item.restaurant.township,
     delivery: item.restaurant.delivery,

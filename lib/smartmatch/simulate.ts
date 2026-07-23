@@ -94,7 +94,7 @@ export function fallbackSmartMatch(
 
   const food = wantsFood
     ? catalog.food.find((f) => township && f.restaurant.township === township) ??
-      catalog.food.find((f) => budget && f.meal.price <= budget) ??
+      catalog.food.find((f) => budget && f.package.monthly_price <= budget) ??
       catalog.food[0]
     : null;
 
