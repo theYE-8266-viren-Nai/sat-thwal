@@ -99,9 +99,9 @@ export default async function AdminDashboardPage() {
               No request activity has been recorded yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="max-h-[32rem] overflow-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="border-b border-border bg-secondary/60 text-xs uppercase tracking-wide text-muted-foreground">
+                <thead className="sticky top-0 z-10 border-b border-border bg-secondary text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
                   <tr>
                     <th className="px-4 py-3 font-medium">Requester</th>
                     <th className="px-4 py-3 font-medium">Category</th>
