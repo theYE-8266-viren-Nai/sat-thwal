@@ -1,7 +1,11 @@
 import type { TutorRow } from "@/lib/queries/tutors";
 import type { HostelRow } from "@/lib/queries/hostels";
+import type { FoodItem } from "@/lib/queries/food";
+import type { TransportationRow } from "@/lib/queries/transportation";
 import { tutorToCard } from "@/lib/queries/tutors";
 import { hostelToCard } from "@/lib/queries/hostels";
+import { foodToCard } from "@/lib/queries/food";
+import { routeToCard } from "@/lib/queries/transportation";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { SUBJECTS } from "@/lib/constants/subjects";
 import type { ServiceCardData, StudentProfile } from "@/types/domain";
@@ -9,6 +13,8 @@ import type { ServiceCardData, StudentProfile } from "@/types/domain";
 export interface SmartMatchCatalog {
   tutors: TutorRow[];
   hostels: HostelRow[];
+  food: FoodItem[];
+  routes: TransportationRow[];
 }
 
 function extractBudget(query: string): number | null {
@@ -30,17 +36,37 @@ function extractSubject(query: string): string | null {
 
 const HOSTEL_ONLY_KEYWORDS = ["room", "rooms", "hostel", "hostels", "dorm", "dormitory", "housing", "accommodation"];
 const TUTOR_ONLY_KEYWORDS = ["tutor", "tutors", "tuition", "teacher", "teachers", "lesson", "lessons"];
+const FOOD_ONLY_KEYWORDS = ["food", "meal", "meals", "eat", "restaurant", "restaurants", "lunch", "dinner", "breakfast"];
+const TRANSPORT_ONLY_KEYWORDS = ["transportation", "transport", "bus", "van", "route", "commute", "seat"];
 
 // Detects when a query clearly asks for only one category, so the fallback
-// doesn't force an irrelevant tutor/hostel pick just to always return a pair.
-function extractCategoryIntent(query: string): { wantsTutor: boolean; wantsHostel: boolean } {
+// doesn't force irrelevant picks from the other categories just to always
+// return a full set.
+function extractCategoryIntent(query: string): {
+  wantsTutor: boolean;
+  wantsHostel: boolean;
+  wantsFood: boolean;
+  wantsTransportation: boolean;
+} {
   const lower = query.toLowerCase();
-  const mentionsHostel = HOSTEL_ONLY_KEYWORDS.some((word) => lower.includes(word));
-  const mentionsTutor = TUTOR_ONLY_KEYWORDS.some((word) => lower.includes(word));
+  const mentions = {
+    hostel: HOSTEL_ONLY_KEYWORDS.some((word) => lower.includes(word)),
+    tutor: TUTOR_ONLY_KEYWORDS.some((word) => lower.includes(word)),
+    food: FOOD_ONLY_KEYWORDS.some((word) => lower.includes(word)),
+    transportation: TRANSPORT_ONLY_KEYWORDS.some((word) => lower.includes(word)),
+  };
+  const mentionedCount = Object.values(mentions).filter(Boolean).length;
 
-  if (mentionsHostel && !mentionsTutor) return { wantsTutor: false, wantsHostel: true };
-  if (mentionsTutor && !mentionsHostel) return { wantsTutor: true, wantsHostel: false };
-  return { wantsTutor: true, wantsHostel: true };
+  if (mentionedCount === 1) {
+    return {
+      wantsTutor: mentions.tutor,
+      wantsHostel: mentions.hostel,
+      wantsFood: mentions.food,
+      wantsTransportation: mentions.transportation,
+    };
+  }
+
+  return { wantsTutor: true, wantsHostel: true, wantsFood: true, wantsTransportation: true };
 }
 
 // Local fallback used when OpenRouter is unavailable or returns unusable IDs.
@@ -49,7 +75,7 @@ export function fallbackSmartMatch(
   catalog: SmartMatchCatalog,
   profile?: StudentProfile | null,
 ): ServiceCardData[] {
-  const { wantsTutor, wantsHostel } = extractCategoryIntent(query);
+  const { wantsTutor, wantsHostel, wantsFood, wantsTransportation } = extractCategoryIntent(query);
   const budget = extractBudget(query) ?? profile?.budgetMax ?? null;
   const township = extractTownship(query) ?? profile?.township ?? null;
   const subject = extractSubject(query) ?? profile?.preferredSubjects?.[0] ?? null;
@@ -66,8 +92,22 @@ export function fallbackSmartMatch(
       catalog.hostels[0]
     : null;
 
+  const food = wantsFood
+    ? catalog.food.find((f) => township && f.restaurant.township === township) ??
+      catalog.food.find((f) => budget && f.meal.price <= budget) ??
+      catalog.food[0]
+    : null;
+
+  const route = wantsTransportation
+    ? catalog.routes.find((r) => township && r.pickup_township === township) ??
+      catalog.routes.find((r) => budget && r.monthly_price <= budget) ??
+      catalog.routes[0]
+    : null;
+
   return [
     tutor && tutorToCard(tutor),
     hostel && hostelToCard(hostel),
+    food && foodToCard(food),
+    route && routeToCard(route),
   ].filter((card): card is ServiceCardData => Boolean(card));
 }

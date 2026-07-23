@@ -92,7 +92,8 @@ export function SmartMatchClient() {
         <div>
           <h1 className="text-xl font-bold text-foreground">What do you need help with today?</h1>
           <p className="text-sm text-muted-foreground">
-            Tell SmartMatch AI what you&apos;re looking for across tutors and hostels.
+            Tell SmartMatch AI what you&apos;re looking for across tutors, hostels, food, and
+            transportation.
           </p>
         </div>
       </div>
@@ -105,7 +106,7 @@ export function SmartMatchClient() {
         <>
           {usingFallback && (
             <div className="rounded-2xl border border-brand-orange/20 bg-brand-orange/10 p-4 text-sm text-orange-700">
-              AI matching is unavailable right now, so these are basic tutor and hostel matches.
+              AI matching is unavailable right now, so these are basic matches.
             </div>
           )}
           <VoiceAssistantButton query={query} results={results} />

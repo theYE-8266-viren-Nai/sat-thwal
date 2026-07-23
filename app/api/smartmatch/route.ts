@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile, profileToStudentProfile } from "@/lib/queries/profiles";
 import { getTutors, tutorToCard, type TutorRow } from "@/lib/queries/tutors";
 import { getHostels, hostelToCard, type HostelRow } from "@/lib/queries/hostels";
+import { getFoodItems, foodToCard, type FoodItem } from "@/lib/queries/food";
+import { getRoutes, routeToCard, type TransportationRow } from "@/lib/queries/transportation";
 import { fallbackSmartMatch, type SmartMatchCatalog } from "@/lib/smartmatch/simulate";
 import type { ServiceCardData, StudentProfile } from "@/types/domain";
 
@@ -12,7 +14,7 @@ const MAX_RESULTS = 6;
 const MAX_CATALOG_ITEMS = 40;
 
 type RankedMatch = {
-  category: "tutor" | "hostel";
+  category: "tutor" | "hostel" | "food" | "transportation";
   id: string;
   reason: string;
 };
@@ -38,13 +40,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [profileRow, tutors, hostels] = await Promise.all([
+  const [profileRow, tutors, hostels, food, routes] = await Promise.all([
     getProfile(supabase, user.id),
     getTutors(supabase),
     getHostels(supabase),
+    getFoodItems(supabase),
+    getRoutes(supabase),
   ]);
   const profile = profileRow ? profileToStudentProfile(profileRow) : null;
-  const catalog = { tutors, hostels };
+  const catalog = { tutors, hostels, food, routes };
 
   const aiMatches = await getOpenRouterMatches(query, catalog, profile);
   const aiCards = aiMatches ? rankedMatchesToCards(aiMatches, catalog) : [];
@@ -87,7 +91,7 @@ async function getOpenRouterMatches(
           {
             role: "system",
             content:
-              "You rank student service listings for SmartMatch. Use only the provided tutor and hostel catalogs. Return only JSON that matches the schema. Never invent IDs.",
+              "You rank student service listings for SmartMatch. Use only the provided tutor, hostel, food, and transportation catalogs. Return only JSON that matches the schema. Never invent IDs.",
           },
           {
             role: "user",
@@ -96,8 +100,10 @@ async function getOpenRouterMatches(
               profile: safeProfile(profile),
               tutors: catalog.tutors.slice(0, MAX_CATALOG_ITEMS).map(safeTutor),
               hostels: catalog.hostels.slice(0, MAX_CATALOG_ITEMS).map(safeHostel),
+              food: catalog.food.slice(0, MAX_CATALOG_ITEMS).map(safeFoodItem),
+              transportation: catalog.routes.slice(0, MAX_CATALOG_ITEMS).map(safeRoute),
               instructions:
-                "Return the best tutor and/or hostel matches for the query, ranked by relevance. Include at most 6 total results. If the query clearly only asks for one category (e.g. only rooms/hostels, or only a tutor), do not include results from the other category, even if the student's profile has preferences for it.",
+                "Return the best matches across tutor, hostel, food, and transportation categories for the query, ranked by relevance. Include at most 6 total results. If the query clearly only asks for one category (e.g. only rooms/hostels, only a tutor, only food/meals, or only transportation/seats), do not include results from the other categories, even if the student's profile has preferences for them.",
             }),
           },
         ],
@@ -119,7 +125,7 @@ async function getOpenRouterMatches(
                     type: "object",
                     additionalProperties: false,
                     properties: {
-                      category: { type: "string", enum: ["tutor", "hostel"] },
+                      category: { type: "string", enum: ["tutor", "hostel", "food", "transportation"] },
                       id: { type: "string" },
                       reason: { type: "string" },
                     },
@@ -168,6 +174,8 @@ function rankedMatchesToCards(
 ): ServiceCardData[] {
   const tutorsById = new Map(catalog.tutors.map((tutor) => [tutor.id, tutor]));
   const hostelsById = new Map(catalog.hostels.map((hostel) => [hostel.id, hostel]));
+  const foodById = new Map(catalog.food.map((item) => [item.meal.id, item]));
+  const routesById = new Map(catalog.routes.map((route) => [route.id, route]));
   const seen = new Set<string>();
 
   return matches
@@ -182,9 +190,21 @@ function rankedMatchesToCards(
         return tutor ? tutorToCard(tutor) : null;
       }
 
-      const hostel = hostelsById.get(match.id);
-      if (!hostel) console.warn("OpenRouter SmartMatch: hostel id not in catalog", match.id);
-      return hostel ? hostelToCard(hostel) : null;
+      if (match.category === "hostel") {
+        const hostel = hostelsById.get(match.id);
+        if (!hostel) console.warn("OpenRouter SmartMatch: hostel id not in catalog", match.id);
+        return hostel ? hostelToCard(hostel) : null;
+      }
+
+      if (match.category === "food") {
+        const item = foodById.get(match.id);
+        if (!item) console.warn("OpenRouter SmartMatch: food id not in catalog", match.id);
+        return item ? foodToCard(item) : null;
+      }
+
+      const route = routesById.get(match.id);
+      if (!route) console.warn("OpenRouter SmartMatch: transportation id not in catalog", match.id);
+      return route ? routeToCard(route) : null;
     })
     .filter((card): card is ServiceCardData => Boolean(card));
 }
@@ -237,6 +257,39 @@ function safeHostel(hostel: HostelRow) {
   };
 }
 
+function safeFoodItem(item: FoodItem) {
+  return {
+    id: item.meal.id,
+    type: "food",
+    mealName: item.meal.name,
+    price: item.meal.price,
+    isStudentPackage: item.meal.is_student_package,
+    restaurantName: item.restaurant.name,
+    township: item.restaurant.township,
+    delivery: item.restaurant.delivery,
+    pickup: item.restaurant.pickup,
+    vegetarianOptions: item.restaurant.vegetarian_options,
+    halal: item.restaurant.halal,
+    studentDiscountPercent: item.restaurant.student_discount_percent,
+  };
+}
+
+function safeRoute(route: TransportationRow) {
+  return {
+    id: route.id,
+    type: "transportation",
+    routeName: route.route_name,
+    pickupTownship: route.pickup_township,
+    routeStops: route.route_stops,
+    monthlyPrice: route.monthly_price,
+    vehicleType: route.vehicle_type,
+    availableSeats: route.available_seats,
+    totalSeats: route.total_seats,
+    departureTime: route.departure_time,
+    returnTime: route.return_time,
+  };
+}
+
 function getMessageContent(data: unknown): string | null {
   if (!data || typeof data !== "object") return null;
   const choices = (data as { choices?: unknown }).choices;
@@ -263,7 +316,10 @@ function isRankedMatch(value: unknown): value is RankedMatch {
   if (!value || typeof value !== "object") return false;
   const match = value as Record<string, unknown>;
   return (
-    (match.category === "tutor" || match.category === "hostel") &&
+    (match.category === "tutor" ||
+      match.category === "hostel" ||
+      match.category === "food" ||
+      match.category === "transportation") &&
     typeof match.id === "string" &&
     typeof match.reason === "string"
   );
