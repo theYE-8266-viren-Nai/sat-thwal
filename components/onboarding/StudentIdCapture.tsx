@@ -21,6 +21,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<File | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -49,6 +50,22 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
   }
 
   async function openCamera() {
+    const cameraInput = cameraInputRef.current;
+    const shouldUseNativeCapture =
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      cameraInput;
+
+    if (shouldUseNativeCapture) {
+      cameraInput.click();
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraInput?.click();
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -171,6 +188,14 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
             Upload a photo
           </Button>
           <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <input
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -183,7 +208,6 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
       {stage === "camera" && (
         <div className="flex flex-col gap-3">
           <div className="overflow-hidden rounded-2xl border border-border bg-muted">
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
             <video ref={videoRef} autoPlay playsInline muted className="aspect-video w-full object-cover" />
           </div>
           <div className="flex gap-2">
