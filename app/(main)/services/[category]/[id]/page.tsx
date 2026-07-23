@@ -14,8 +14,11 @@ import { AmenitiesList } from "@/components/detail/AmenitiesList";
 import { DetailActionBar } from "@/components/detail/DetailActionBar";
 import { RecordRecentlyViewed } from "@/components/detail/RecordRecentlyViewed";
 import { RouteTimeline } from "@/components/transportation/RouteTimeline";
+import { ProviderRegistrationGate } from "@/components/provider/ProviderRegistrationGate";
+import { getProviderRegistrationWithPayment } from "@/lib/queries/providerRegistrations";
 import type { ServiceCategory } from "@/types/domain";
 import type { ServiceDetailData } from "@/types/detail";
+import type { ProviderType } from "@/types/database.types";
 
 const VALID_CATEGORIES: ServiceCategory[] = ["tutor", "hostel", "food", "transportation"];
 
@@ -61,9 +64,18 @@ export default async function ServiceDetailPage({
   if (!detail) notFound();
 
   const isOwner = detail.ownerProfileId === user.id;
-  const [existingRequest, requestBlockReason] = await Promise.all([
+  const ownerProviderType: ProviderType | null =
+    typedCategory === "tutor"
+      ? "tutor"
+      : typedCategory === "hostel"
+        ? "hostel"
+        : null;
+  const [existingRequest, requestBlockReason, registrationState] = await Promise.all([
     getExistingActiveRequest(supabase, user.id, typedCategory, id),
     getPeerRequestBlockReason(supabase, user.id, typedCategory),
+    isOwner && ownerProviderType
+      ? getProviderRegistrationWithPayment(supabase, user.id, ownerProviderType)
+      : Promise.resolve(null),
   ]);
 
   return (
@@ -72,6 +84,15 @@ export default async function ServiceDetailPage({
       <PageHeader title={detail.title} />
       <ServiceDetailHeader data={detail} />
       <ProviderInfo data={detail} />
+
+      {isOwner && ownerProviderType && registrationState && (
+        <ProviderRegistrationGate
+          providerType={ownerProviderType}
+          registration={registrationState.registration}
+          payment={registrationState.payment}
+          compact
+        />
+      )}
 
       <div className="px-5 md:px-8">
         <DetailInfoSection icon={Wallet} title="Pricing" lines={[detail.priceLabel]} />

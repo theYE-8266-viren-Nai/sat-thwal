@@ -1,10 +1,16 @@
 import { requireRestaurantProfile } from "@/lib/restaurant/auth";
 import { getRestaurantByOwner } from "@/lib/queries/food";
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { ProviderRegistrationGate } from "@/components/provider/ProviderRegistrationGate";
+import { getProviderRegistrationWithPayment } from "@/lib/queries/providerRegistrations";
 
 export default async function RestaurantLayout({ children }: { children: React.ReactNode }) {
   const { supabase, profile } = await requireRestaurantProfile();
-  const restaurant = await getRestaurantByOwner(supabase, profile.id);
+  const [restaurant, registrationState] = await Promise.all([
+    getRestaurantByOwner(supabase, profile.id),
+    getProviderRegistrationWithPayment(supabase, profile.id, "restaurant"),
+  ]);
+  const isActive = registrationState.registration?.status === "active";
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,7 +29,17 @@ export default async function RestaurantLayout({ children }: { children: React.R
           </div>
         </div>
       </header>
-      <main className="px-5 py-6 md:px-8">{children}</main>
+      <main className="px-5 py-6 md:px-8">
+        {isActive ? (
+          children
+        ) : (
+          <ProviderRegistrationGate
+            providerType="restaurant"
+            registration={registrationState.registration}
+            payment={registrationState.payment}
+          />
+        )}
+      </main>
     </div>
   );
 }

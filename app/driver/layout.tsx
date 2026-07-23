@@ -1,9 +1,17 @@
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { ProviderRegistrationGate } from "@/components/provider/ProviderRegistrationGate";
 import { requireDriverProfile } from "@/lib/driver/auth";
+import { getProviderRegistrationWithPayment } from "@/lib/queries/providerRegistrations";
 
 export default async function DriverLayout({ children }: { children: React.ReactNode }) {
-  const { profile, driverProfile } = await requireDriverProfile();
+  const { supabase, profile, driverProfile } = await requireDriverProfile();
+  const registrationState = await getProviderRegistrationWithPayment(
+    supabase,
+    profile.id,
+    "transportation",
+  );
   const displayName = driverProfile.provider_name || profile.full_name || "Transportation provider";
+  const isActive = registrationState.registration?.status === "active";
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,7 +30,17 @@ export default async function DriverLayout({ children }: { children: React.React
           </div>
         </div>
       </header>
-      <main className="px-5 py-6 md:px-8">{children}</main>
+      <main className="px-5 py-6 md:px-8">
+        {isActive ? (
+          children
+        ) : (
+          <ProviderRegistrationGate
+            providerType="transportation"
+            registration={registrationState.registration}
+            payment={registrationState.payment}
+          />
+        )}
+      </main>
     </div>
   );
 }

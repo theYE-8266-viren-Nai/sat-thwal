@@ -38,19 +38,13 @@ export default function LoginPage() {
     if (profile?.role === "driver") {
       const { data: driverProfile, error: driverProfileError } = await supabase
         .from("driver_profiles")
-        .select("id, status")
+        .select("id")
         .eq("id", profile.id)
         .single();
 
       if (driverProfileError || !driverProfile) {
         await supabase.auth.signOut();
         setError("This driver account is missing its driver profile.");
-        return;
-      }
-
-      if (driverProfile.status !== "active") {
-        await supabase.auth.signOut();
-        setError("This driver account is not active yet.");
         return;
       }
     }

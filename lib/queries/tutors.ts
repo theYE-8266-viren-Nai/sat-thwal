@@ -58,7 +58,7 @@ export async function insertTutorProfile(
     .from("tutors")
     .insert({
       ...payload,
-      verified: true,
+      verified: false,
       rating: 0,
       review_count: 0,
     })

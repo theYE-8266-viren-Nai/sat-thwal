@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getTutorByOwner, insertTutorProfile, updateTutorProfile } from "@/lib/queries/tutors";
 import { parseGradesCsv } from "@/lib/tutorEligibility";
 import { TOWNSHIPS } from "@/lib/constants/townships";
+import { getProviderRegistration } from "@/lib/queries/providerRegistrations";
+import { isProviderPaymentMethod } from "@/lib/providerRegistration";
+import { toErrorMessage } from "@/lib/supabase/errors";
+import type { ProviderPaymentMethod } from "@/types/database.types";
 
 export interface ApplyAsTutorInput {
   csvText: string;
@@ -15,9 +19,13 @@ export interface ApplyAsTutorInput {
   pricePerSession: string;
   sessionMode: "online" | "in_person" | "both";
   availabilityNote: string;
+  paymentMethod: ProviderPaymentMethod;
+  transactionReference: string;
 }
 
-export type ApplyAsTutorResult = { ok: true; tutorId: string } | { ok: false; error: string };
+export type ApplyAsTutorResult =
+  | { ok: true; tutorId: string }
+  | { ok: false; error: string; tutorId?: string };
 
 export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTutorResult> {
   const supabase = await createClient();
@@ -48,7 +56,14 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
   if (!["online", "in_person", "both"].includes(input.sessionMode)) {
     return { ok: false, error: "Select a valid session mode." };
   }
+  if (!isProviderPaymentMethod(input.paymentMethod)) {
+    return { ok: false, error: "Select a valid payment method." };
+  }
+  if (!input.transactionReference.trim()) {
+    return { ok: false, error: "Enter the payment transaction reference." };
+  }
 
+  let createdTutorId: string | undefined;
   try {
     const created = await insertTutorProfile(supabase, {
       name,
@@ -61,9 +76,30 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
       availability_note: input.availabilityNote.trim() || null,
       owner_profile_id: user.id,
     });
+    createdTutorId = created.id;
+
+    const registration = await getProviderRegistration(supabase, user.id, "tutor");
+    if (!registration) throw new Error("The tutor payment registration was not created.");
+
+    const { error: paymentError } = await supabase.rpc(
+      "submit_provider_registration_payment",
+      {
+        p_registration_id: registration.id,
+        p_payment_method: input.paymentMethod,
+        p_transaction_reference: input.transactionReference.trim(),
+      },
+    );
+    if (paymentError) throw paymentError;
+
     return { ok: true, tutorId: created.id };
-  } catch {
-    return { ok: false, error: "Couldn't save your tutor profile. Try again." };
+  } catch (error) {
+    return {
+      ok: false,
+      error: createdTutorId
+        ? `Your tutor profile was saved, but the payment reference needs to be submitted again. ${toErrorMessage(error)}`
+        : "Couldn't save your tutor profile. Try again.",
+      tutorId: createdTutorId,
+    };
   }
 }
 

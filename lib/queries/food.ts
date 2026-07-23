@@ -156,7 +156,7 @@ export function foodToCard({ package: foodPackage, restaurant }: FoodItem): Serv
     subtitle: restaurant.name,
     priceLabel: `${formatMMK(foodPackage.monthly_price)} / month`,
     rating: restaurant.rating,
-    verified: false,
+    verified: restaurant.verified,
     meta: [
       { icon: "map-pin", label: `${restaurant.township} · ${formatDistance(restaurant.distance_km)}` },
       { icon: "utensils", label: packageMealLabel(foodPackage.package_type) },
@@ -191,7 +191,7 @@ export function restaurantToCard(group: FoodItem[]): ServiceCardData {
     subtitle: restaurant.township,
     priceLabel: `From ${formatMMK(cheapest.package.monthly_price)} / month`,
     rating: restaurant.rating,
-    verified: false,
+    verified: restaurant.verified,
     meta: [
       { icon: "map-pin", label: `${restaurant.township} · ${formatDistance(restaurant.distance_km)}` },
       { icon: "utensils", label: `${group.length} monthly packages` },
@@ -214,7 +214,7 @@ export function foodToDetail({ package: foodPackage, restaurant }: FoodItem): Se
     title: foodPackage.name,
     providerName: restaurant.name,
     providerAvatar: restaurant.image_url,
-    verified: false,
+    verified: restaurant.verified,
     rating: restaurant.rating,
     priceLabel: `${formatMMK(foodPackage.monthly_price)} / month`,
     availabilityLines: [restaurant.opening_hours ?? "Hours unavailable", "Monthly food subscription"],

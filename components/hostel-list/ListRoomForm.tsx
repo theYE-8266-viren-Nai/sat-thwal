@@ -12,9 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { FacilitiesMultiSelect } from "@/components/shared/FacilitiesMultiSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
+import { ProviderPaymentFields } from "@/components/provider/ProviderPaymentFields";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
-import type { GenderPolicy } from "@/types/database.types";
+import { PROVIDER_REGISTRATION_FEES_MMK } from "@/lib/providerRegistration";
+import type {
+  GenderPolicy,
+  ProviderPaymentMethod,
+} from "@/types/database.types";
 import { listHostelRoom } from "@/lib/actions/hostels";
 
 interface ListRoomFormProps {
@@ -42,6 +47,9 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
   const [availableRooms, setAvailableRooms] = useState("1");
   const [mealsIncluded, setMealsIncluded] = useState(false);
   const [description, setDescription] = useState("");
+  const [paymentMethod, setPaymentMethod] =
+    useState<ProviderPaymentMethod>("kbzpay");
+  const [transactionReference, setTransactionReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const canSubmit =
@@ -51,6 +59,7 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
     !!monthlyRent &&
     !!roomType &&
     !!availableRooms &&
+    !!transactionReference.trim() &&
     !submitting;
 
   async function handleSubmit() {
@@ -68,11 +77,18 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
         availableRooms,
         mealsIncluded,
         description,
+        paymentMethod,
+        transactionReference,
       });
       if (result.ok) {
+        toast.success("Listing submitted. Your payment is under review.");
         router.push(`/services/hostel/${result.hostelId}`);
       } else {
         toast.error(result.error === "already-listed" ? "You already have a room listed." : result.error);
+        if (result.hostelId) {
+          router.push(`/services/hostel/${result.hostelId}`);
+          router.refresh();
+        }
       }
     } finally {
       setSubmitting(false);
@@ -182,6 +198,15 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
           />
         </div>
 
+        <ProviderPaymentFields
+          idPrefix="hostel-listing"
+          feeMmk={PROVIDER_REGISTRATION_FEES_MMK.hostel}
+          paymentMethod={paymentMethod}
+          transactionReference={transactionReference}
+          onPaymentMethodChange={setPaymentMethod}
+          onTransactionReferenceChange={setTransactionReference}
+        />
+
         <Button
           type="button"
           size="touch"
@@ -189,7 +214,7 @@ export function ListRoomForm({ userId, defaultTownship }: ListRoomFormProps) {
           onClick={handleSubmit}
           className="rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
         >
-          {submitting ? "Submitting..." : "List my room"}
+          {submitting ? "Submitting..." : "Submit listing and payment"}
         </Button>
       </div>
     </div>
