@@ -10,7 +10,7 @@ import { SuggestedPrompts } from "@/components/smartmatch/SuggestedPrompts";
 import { RecentSearches } from "@/components/smartmatch/RecentSearches";
 import { LoadingIndicator } from "@/components/smartmatch/LoadingIndicator";
 import { RecommendationResults } from "@/components/smartmatch/RecommendationResults";
-import { VoiceAssistantButton } from "@/components/smartmatch/VoiceAssistantButton";
+import { VoiceResultReader } from "@/components/smartmatch/VoiceResultReader";
 import type { ServiceCardData } from "@/types/domain";
 
 type Status = "idle" | "loading" | "results" | "error";
@@ -24,6 +24,9 @@ export function SmartMatchClient() {
   const [results, setResults] = useState<ServiceCardData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
+  // Results stay hidden until the voice assistant starts speaking, so the list
+  // and the read-out appear in sync.
+  const [resultsRevealed, setResultsRevealed] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -52,6 +55,7 @@ export function SmartMatchClient() {
     setStatus("loading");
     setError(null);
     setUsingFallback(false);
+    setResultsRevealed(false);
     addRecentSearch(text);
     setRecentSearches(getRecentSearches());
 
@@ -67,9 +71,12 @@ export function SmartMatchClient() {
       }
 
       const matches = (await response.json()) as ServiceCardData[];
+      const safeMatches = Array.isArray(matches) ? matches : [];
       setUsingFallback(response.headers.get("X-SmartMatch-Source") === "fallback");
-      setResults(Array.isArray(matches) ? matches : []);
+      setResults(safeMatches);
       setStatus("results");
+      // Nothing to read out for empty results, so reveal them right away.
+      if (safeMatches.length === 0) setResultsRevealed(true);
     } catch {
       setResults([]);
       setUsingFallback(false);
@@ -97,13 +104,24 @@ export function SmartMatchClient() {
 
       {status === "results" && profileId && (
         <>
-          {usingFallback && (
-            <div className="rounded-2xl border border-brand-orange/20 bg-brand-orange/10 p-4 text-sm text-orange-700">
-              AI matching is unavailable right now, so these are basic matches.
-            </div>
+          {/* Headless: reads results aloud and reveals them when speech starts. */}
+          <VoiceResultReader
+            query={query}
+            results={results}
+            onReveal={() => setResultsRevealed(true)}
+          />
+          {/* Keep the loading state until the voice starts, so they sync up. */}
+          {!resultsRevealed && <LoadingIndicator />}
+          {resultsRevealed && (
+            <>
+              {usingFallback && (
+                <div className="rounded-2xl border border-brand-orange/20 bg-brand-orange/10 p-4 text-sm text-orange-700">
+                  AI matching is unavailable right now, so these are basic matches.
+                </div>
+              )}
+              <RecommendationResults query={query} results={results} />
+            </>
           )}
-          <VoiceAssistantButton query={query} results={results} />
-          <RecommendationResults query={query} results={results} />
         </>
       )}
 
