@@ -270,6 +270,17 @@ export async function confirmFoodPackageRequest(
   return normalizeRequestStatus(data);
 }
 
+export async function confirmHostelRequest(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("confirm_hostel_request", {
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
 export async function markRequestCompletedByRequester(
   supabase: SupabaseClient<Database>,
   requestId: string,

@@ -8,9 +8,14 @@ import { SUBJECTS } from "@/lib/constants/subjects";
 interface SubjectMultiSelectProps {
   value: string[];
   onChange: (value: string[]) => void;
+  label?: string;
 }
 
-export function SubjectMultiSelect({ value, onChange }: SubjectMultiSelectProps) {
+export function SubjectMultiSelect({
+  value,
+  onChange,
+  label = "Preferred subjects",
+}: SubjectMultiSelectProps) {
   function toggle(subject: string) {
     if (value.includes(subject)) {
       onChange(value.filter((s) => s !== subject));
@@ -21,7 +26,7 @@ export function SubjectMultiSelect({ value, onChange }: SubjectMultiSelectProps)
 
   return (
     <div className="flex flex-col gap-3">
-      <Label>Preferred subjects</Label>
+      <Label>{label}</Label>
       <div className="flex flex-wrap gap-2">
         {SUBJECTS.map((subject) => {
           const selected = value.includes(subject);

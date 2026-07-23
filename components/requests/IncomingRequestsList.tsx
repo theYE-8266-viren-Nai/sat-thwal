@@ -6,6 +6,7 @@ import { Check, CheckCircle2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   confirmFoodPackageRequest,
+  confirmHostelRequest,
   markRequestCompletedByOwner,
   updateRequestStatus,
 } from "@/lib/queries/requests";
@@ -37,6 +38,8 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
       const updated =
         status === "confirmed" && request?.service_type === "food"
           ? await confirmFoodPackageRequest(supabase, requestId)
+          : status === "confirmed" && request?.service_type === "hostel"
+            ? await confirmHostelRequest(supabase, requestId)
           : null;
       if (!updated) await updateRequestStatus(supabase, requestId, status);
       setRows((prev) => prev.map((r) => (r.id === requestId ? updated ?? { ...r, status } : r)));

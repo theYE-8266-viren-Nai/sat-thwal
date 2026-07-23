@@ -109,7 +109,11 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
 
           <ImageUpload bucket="tutor-photos" userId={userId} label="Photo" value={photoUrl} onChange={setPhotoUrl} />
 
-          <SubjectMultiSelect value={subjects} onChange={setSubjects} />
+          <SubjectMultiSelect
+            value={subjects}
+            onChange={setSubjects}
+            label="Subjects you can teach"
+          />
 
           <LabeledSelect
             id="tutor-township"

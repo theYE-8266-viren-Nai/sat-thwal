@@ -362,6 +362,10 @@ export type Database = {
         Args: { p_request_id: string };
         Returns: RequestRow;
       };
+      confirm_hostel_request: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
       submit_provider_registration_payment: {
         Args: {
           p_registration_id: string;
