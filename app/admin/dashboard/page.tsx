@@ -1,25 +1,29 @@
 import Link from "next/link";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { requireAdminProfile } from "@/lib/admin/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getMonetizationReport } from "@/lib/admin/monetization";
+import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
 import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
 import { getAdminServiceOverview } from "@/lib/admin/serviceOverview";
 import { getPendingProviderRegistrationCount } from "@/lib/queries/providerRegistrations";
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { RestaurantOwnerAccounts } from "@/components/admin/RestaurantOwnerAccounts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatMMK } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
+  const ownerAccountsResult = await loadRestaurantOwnerAccounts();
   const [serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
     await Promise.all([
-    getAdminServiceOverview(supabase),
-    getAdminRequestDetails(supabase),
-    getMonetizationReport(supabase),
-    getPendingProviderRegistrationCount(supabase),
-  ]);
+      getAdminServiceOverview(supabase),
+      getAdminRequestDetails(supabase),
+      getMonetizationReport(supabase),
+      getPendingProviderRegistrationCount(supabase),
+    ]);
 
   return (
     <main className="min-h-screen bg-background px-5 py-8 md:px-8">
@@ -84,6 +88,11 @@ export default async function AdminDashboardPage() {
           ))}
         </div>
       </section>
+
+      <RestaurantOwnerAccounts
+        accounts={ownerAccountsResult.accounts}
+        setupError={ownerAccountsResult.error}
+      />
 
       <section className="mx-auto mt-6 max-w-5xl">
         <div className="flex flex-col gap-1">
@@ -227,6 +236,22 @@ export default async function AdminDashboardPage() {
       </section>
     </main>
   );
+}
+
+async function loadRestaurantOwnerAccounts() {
+  try {
+    const adminClient = createAdminClient();
+    return {
+      accounts: await getRestaurantOwnerAccounts(adminClient),
+      error: null,
+    };
+  } catch {
+    return {
+      accounts: [],
+      error:
+        "Restaurant owner emails need SUPABASE_SERVICE_ROLE_KEY in .env.local. Add the service_role key from Supabase Project Settings > API Keys, then restart the dev server.",
+    };
+  }
 }
 
 function formatDateTime(value: string) {
