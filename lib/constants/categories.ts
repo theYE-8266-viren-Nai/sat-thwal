@@ -41,7 +41,7 @@ export const CATEGORIES: Record<ServiceCategory, CategoryConfig> = {
     icon: Utensils,
     color: "var(--category-food)",
     detailCtaLabel: "View Details",
-    bookCtaLabel: "Order",
+    bookCtaLabel: "Subscribe",
   },
   transportation: {
     category: "transportation",

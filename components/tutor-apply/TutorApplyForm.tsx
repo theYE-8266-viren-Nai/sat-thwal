@@ -12,9 +12,12 @@ import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { GradesCsvUpload } from "@/components/tutor-apply/GradesCsvUpload";
+import { ProviderPaymentFields } from "@/components/provider/ProviderPaymentFields";
 import { TOWNSHIPS } from "@/lib/constants/townships";
+import { PROVIDER_REGISTRATION_FEES_MMK } from "@/lib/providerRegistration";
 import type { EligibilityResult } from "@/lib/tutorEligibility";
 import { applyAsTutor } from "@/lib/actions/tutors";
+import type { ProviderPaymentMethod } from "@/types/database.types";
 
 interface TutorApplyFormProps {
   userId: string;
@@ -41,11 +44,20 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
   const [price, setPrice] = useState("");
   const [sessionMode, setSessionMode] = useState<"online" | "in_person" | "both">("both");
   const [availabilityNote, setAvailabilityNote] = useState("");
+  const [paymentMethod, setPaymentMethod] =
+    useState<ProviderPaymentMethod>("kbzpay");
+  const [transactionReference, setTransactionReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const step2Unlocked = !!eligibility?.ok && eligibility.eligible;
   const canSubmit =
-    step2Unlocked && !!name && subjects.length > 0 && !!township && !!price && !submitting;
+    step2Unlocked &&
+    !!name &&
+    subjects.length > 0 &&
+    !!township &&
+    !!price &&
+    !!transactionReference.trim() &&
+    !submitting;
 
   async function handleSubmit() {
     if (!csvText) return;
@@ -61,11 +73,18 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
         pricePerSession: price,
         sessionMode,
         availabilityNote,
+        paymentMethod,
+        transactionReference,
       });
       if (result.ok) {
+        toast.success("Application submitted. Your payment is under review.");
         router.push(`/services/tutor/${result.tutorId}`);
       } else {
         toast.error(result.error === "already-a-tutor" ? "You already have a tutor profile." : result.error);
+        if (result.tutorId) {
+          router.push(`/services/tutor/${result.tutorId}`);
+          router.refresh();
+        }
       }
     } finally {
       setSubmitting(false);
@@ -151,6 +170,15 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
             />
           </div>
 
+          <ProviderPaymentFields
+            idPrefix="tutor-application"
+            feeMmk={PROVIDER_REGISTRATION_FEES_MMK.tutor}
+            paymentMethod={paymentMethod}
+            transactionReference={transactionReference}
+            onPaymentMethodChange={setPaymentMethod}
+            onTransactionReferenceChange={setTransactionReference}
+          />
+
           <Button
             type="button"
             size="touch"
@@ -158,7 +186,7 @@ export function TutorApplyForm({ userId, defaultName, defaultTownship }: TutorAp
             onClick={handleSubmit}
             className="rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
           >
-            {submitting ? "Submitting..." : "Submit application"}
+            {submitting ? "Submitting..." : "Submit application and payment"}
           </Button>
         </div>
       )}

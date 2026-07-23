@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, Bus, Clock, Users, Wallet } from "lucide-react";
 import { ConfirmationModal } from "@/components/detail/ConfirmationModal";
-import { SaveButton } from "@/components/services/SaveButton";
 import { RouteTimeline } from "@/components/transportation/RouteTimeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +12,9 @@ import type { ServiceCardData } from "@/types/domain";
 interface TransportationRouteCardProps {
   data: ServiceCardData;
   profileId: string;
-  initialSaved: boolean;
 }
 
-export function TransportationRouteCard({
-  data,
-  profileId,
-  initialSaved,
-}: TransportationRouteCardProps) {
+export function TransportationRouteCard({ data, profileId }: TransportationRouteCardProps) {
   return (
     <Card className="flex h-full flex-col gap-4 border-border p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
@@ -37,13 +31,6 @@ export function TransportationRouteCard({
             <p className="mt-1 text-xs text-muted-foreground">Driver: {data.driverName}</p>
           )}
         </div>
-        <SaveButton
-          profileId={profileId}
-          category={data.category}
-          serviceId={data.id}
-          initialSaved={initialSaved}
-          className="h-9 w-9 shrink-0 border border-border shadow-none"
-        />
       </div>
 
       <RouteTimeline stops={data.routeStops ?? []} compact />

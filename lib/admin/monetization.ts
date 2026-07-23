@@ -1,17 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, ServiceType } from "@/types/database.types";
-
-export const MONETIZATION_FEES_MMK = {
-  tutor: 2_000,
-  hostel: 5_000,
-  transportation: 3_000,
-  restaurantListing: 20_000,
-} as const;
-
-type CommissionService = Extract<ServiceType, "tutor" | "hostel" | "transportation">;
+import {
+  PROVIDER_REGISTRATION_FEES_MMK,
+  PROVIDER_TYPE_LABELS,
+} from "@/lib/providerRegistration";
+import type { Database, ProviderType } from "@/types/database.types";
 
 export interface MonetizationLineItem {
-  key: CommissionService | "restaurantListing";
+  key: ProviderType;
   label: string;
   count: number;
   feeMmk: number;
@@ -23,91 +18,65 @@ export interface MonetizationReport {
   lineItems: MonetizationLineItem[];
 }
 
-const COMMISSION_SERVICES: Array<{
-  key: CommissionService;
-  label: string;
-  feeMmk: number;
-}> = [
-  { key: "tutor", label: "Tutor completed bookings", feeMmk: MONETIZATION_FEES_MMK.tutor },
-  { key: "hostel", label: "Hostel completed bookings", feeMmk: MONETIZATION_FEES_MMK.hostel },
-  {
-    key: "transportation",
-    label: "Transportation completed bookings",
-    feeMmk: MONETIZATION_FEES_MMK.transportation,
-  },
+const PROVIDER_TYPES: ProviderType[] = [
+  "tutor",
+  "hostel",
+  "transportation",
+  "restaurant",
 ];
 
 export async function getMonetizationReport(
   supabase: SupabaseClient<Database>,
 ): Promise<MonetizationReport> {
-  const [completedRequestsResult, restaurantListingsResult] = await Promise.all([
-    supabase
-      .from("requests")
-      .select("service_type, completed_at, requester_completed_at, owner_completed_at")
-      .in("service_type", COMMISSION_SERVICES.map((service) => service.key)),
-    supabase
-      .from("restaurants")
-      .select("id", { count: "exact", head: true })
-      .not("owner_profile_id", "is", null),
-  ]);
+  const { data: payments, error: paymentError } = await supabase
+    .from("provider_payment_submissions")
+    .select("registration_id, amount_mmk, reviewed_at")
+    .eq("status", "paid");
 
-  if (completedRequestsResult.error) throw completedRequestsResult.error;
-  if (restaurantListingsResult.error) throw restaurantListingsResult.error;
+  if (paymentError) throw paymentError;
 
-  const completedCounts = new Map<CommissionService, number>(
-    COMMISSION_SERVICES.map((service) => [service.key, 0]),
+  const registrationIds = [
+    ...new Set((payments ?? []).map((payment) => payment.registration_id)),
+  ];
+  const registrations = registrationIds.length
+    ? await supabase
+        .from("provider_registrations")
+        .select("id, provider_type")
+        .in("id", registrationIds)
+    : { data: [], error: null };
+
+  if (registrations.error) throw registrations.error;
+
+  const registrationType = new Map(
+    (registrations.data ?? []).map((registration) => [
+      registration.id,
+      registration.provider_type,
+    ]),
   );
+  const counts = new Map(PROVIDER_TYPES.map((providerType) => [providerType, 0]));
+  const totals = new Map(PROVIDER_TYPES.map((providerType) => [providerType, 0]));
 
-  (completedRequestsResult.data ?? []).forEach((request) => {
-    if (!isCommissionService(request.service_type)) return;
-    if (!isCompletedRequest(request)) return;
+  (payments ?? []).forEach((payment) => {
+    const providerType = registrationType.get(payment.registration_id);
+    if (!providerType) return;
 
-    completedCounts.set(
-      request.service_type,
-      (completedCounts.get(request.service_type) ?? 0) + 1,
+    counts.set(providerType, (counts.get(providerType) ?? 0) + 1);
+    totals.set(
+      providerType,
+      (totals.get(providerType) ?? 0) + payment.amount_mmk,
     );
   });
 
-  const commissionLineItems = COMMISSION_SERVICES.map((service) => {
-    const count = completedCounts.get(service.key) ?? 0;
-    return {
-      key: service.key,
-      label: service.label,
-      count,
-      feeMmk: service.feeMmk,
-      totalMmk: count * service.feeMmk,
-    };
-  });
-
-  const restaurantCount = restaurantListingsResult.count ?? 0;
-  const lineItems: MonetizationLineItem[] = [
-    ...commissionLineItems,
-    {
-      key: "restaurantListing",
-      label: "Restaurant platform listings",
-      count: restaurantCount,
-      feeMmk: MONETIZATION_FEES_MMK.restaurantListing,
-      totalMmk: restaurantCount * MONETIZATION_FEES_MMK.restaurantListing,
-    },
-  ];
+  const lineItems = PROVIDER_TYPES.map((providerType) => ({
+    key: providerType,
+    label: `${PROVIDER_TYPE_LABELS[providerType]} registrations`,
+    count: counts.get(providerType) ?? 0,
+    feeMmk: PROVIDER_REGISTRATION_FEES_MMK[providerType],
+    totalMmk: totals.get(providerType) ?? 0,
+  }));
 
   return {
     totalMmk: lineItems.reduce((sum, item) => sum + item.totalMmk, 0),
     lineItems,
   };
-}
-
-function isCompletedRequest(request: {
-  completed_at: string | null;
-  requester_completed_at: string | null;
-  owner_completed_at: string | null;
-}) {
-  return Boolean(
-    request.completed_at ||
-      (request.requester_completed_at && request.owner_completed_at),
-  );
-}
-
-function isCommissionService(value: ServiceType): value is CommissionService {
-  return value === "tutor" || value === "hostel" || value === "transportation";
 }

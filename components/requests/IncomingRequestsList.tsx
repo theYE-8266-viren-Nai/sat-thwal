@@ -4,7 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Check, CheckCircle2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { markRequestCompletedByOwner, updateRequestStatus } from "@/lib/queries/requests";
+import {
+  confirmFoodPackageRequest,
+  markRequestCompletedByOwner,
+  updateRequestStatus,
+} from "@/lib/queries/requests";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,11 +33,17 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
     setPendingId(requestId);
     try {
       const supabase = createClient();
-      await updateRequestStatus(supabase, requestId, status);
-      setRows((prev) => prev.map((r) => (r.id === requestId ? { ...r, status } : r)));
+      const request = rows.find((row) => row.id === requestId);
+      const updated =
+        status === "confirmed" && request?.service_type === "food"
+          ? await confirmFoodPackageRequest(supabase, requestId)
+          : null;
+      if (!updated) await updateRequestStatus(supabase, requestId, status);
+      setRows((prev) => prev.map((r) => (r.id === requestId ? updated ?? { ...r, status } : r)));
       toast.success(status === "confirmed" ? "Request accepted" : "Request declined");
-    } catch {
-      toast.error("Couldn't update the request. Try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Couldn't update the request. Try again.";
+      toast.error(message);
     } finally {
       setPendingId(null);
     }

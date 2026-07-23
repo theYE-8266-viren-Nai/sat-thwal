@@ -4,7 +4,6 @@ import { getTutors, tutorToCard, getTutorByOwner } from "@/lib/queries/tutors";
 import { getHostels, hostelToCard, getHostelByOwner } from "@/lib/queries/hostels";
 import { getFoodItems, groupFoodItemsByRestaurant, restaurantToCard } from "@/lib/queries/food";
 import { getRoutes, routeToCard } from "@/lib/queries/transportation";
-import { getSavedItems } from "@/lib/queries/savedItems";
 import { getRequests } from "@/lib/queries/requests";
 import { GreetingHeader } from "@/components/home/GreetingHeader";
 import { SmartMatchSearchBox } from "@/components/home/SmartMatchSearchBox";
@@ -21,20 +20,17 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profile, tutors, hostels, foodItems, routes, savedItems, ownedTutor, ownedHostel, requests] =
-    await Promise.all([
-      getProfile(supabase, user.id),
-      getTutors(supabase),
-      getHostels(supabase),
-      getFoodItems(supabase),
-      getRoutes(supabase),
-      getSavedItems(supabase, user.id),
-      getTutorByOwner(supabase, user.id),
-      getHostelByOwner(supabase, user.id),
-      getRequests(supabase, user.id),
-    ]);
+  const [profile, tutors, hostels, foodItems, routes, ownedTutor, ownedHostel, requests] = await Promise.all([
+    getProfile(supabase, user.id),
+    getTutors(supabase),
+    getHostels(supabase),
+    getFoodItems(supabase),
+    getRoutes(supabase),
+    getTutorByOwner(supabase, user.id),
+    getHostelByOwner(supabase, user.id),
+    getRequests(supabase, user.id),
+  ]);
 
-  const savedKeys = new Set(savedItems.map((s) => `${s.service_type}:${s.service_id}`));
   const restaurantGroups = groupFoodItemsByRestaurant(foodItems);
 
   const recommended: ServiceCardData[] = [
@@ -100,7 +96,7 @@ export default async function HomePage() {
   hostels.forEach((h) => cardByKey.set(`hostel:${h.id}`, hostelToCard(h)));
   restaurantGroups.forEach((group) => {
     const card = restaurantToCard(group);
-    group.forEach((item) => cardByKey.set(`food:${item.meal.id}`, card));
+    group.forEach((item) => cardByKey.set(`food:${item.package.id}`, card));
   });
   routes.forEach((r) => cardByKey.set(`transportation:${r.id}`, routeToCard(r)));
 
@@ -131,43 +127,24 @@ export default async function HomePage() {
       <ServiceSection
         title="Recommended for you"
         items={recommended}
-        profileId={user.id}
-        savedKeys={savedKeys}
         emptyLabel="Complete your profile preferences to see personalized picks."
       />
 
       <ServiceSection
         title="Nearby student services"
         items={nearby}
-        profileId={user.id}
-        savedKeys={savedKeys}
         emptyLabel="No services found near your township yet."
       />
 
       <ActiveRequestsStrip items={activeRequests} />
 
-      <ServiceSection
-        title="Popular right now"
-        items={popular}
-        profileId={user.id}
-        savedKeys={savedKeys}
-      />
+      <ServiceSection title="Popular right now" items={popular} />
 
-      <ServiceSection
-        title="New listings"
-        items={newListings}
-        profileId={user.id}
-        savedKeys={savedKeys}
-      />
+      <ServiceSection title="New listings" items={newListings} />
 
-      <ServiceSection
-        title="Within your budget"
-        items={withinBudget}
-        profileId={user.id}
-        savedKeys={savedKeys}
-      />
+      <ServiceSection title="Within your budget" items={withinBudget} />
 
-      <RecentlyViewedSection profileId={user.id} savedKeys={savedKeys} />
+      <RecentlyViewedSection />
     </div>
   );
 }

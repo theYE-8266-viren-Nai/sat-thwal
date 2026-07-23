@@ -5,11 +5,9 @@ import type { ServiceCardData } from "@/types/domain";
 interface RecommendationResultsProps {
   query: string;
   results: ServiceCardData[];
-  profileId: string;
-  savedKeys: Set<string>;
 }
 
-export function RecommendationResults({ query, results, profileId, savedKeys }: RecommendationResultsProps) {
+export function RecommendationResults({ query, results }: RecommendationResultsProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
@@ -27,12 +25,7 @@ export function RecommendationResults({ query, results, profileId, savedKeys }: 
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((item) => (
-            <ServiceCard
-              key={`${item.category}-${item.id}`}
-              data={item}
-              profileId={profileId}
-              initialSaved={savedKeys.has(`${item.category}:${item.id}`)}
-            />
+            <ServiceCard key={`${item.category}-${item.id}`} data={item} />
           ))}
         </div>
       )}

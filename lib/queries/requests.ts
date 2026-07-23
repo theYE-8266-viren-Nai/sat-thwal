@@ -48,7 +48,12 @@ export async function getExistingActiveRequest(
   category: ServiceCategory,
   serviceId: string,
 ) {
-  if (category !== "tutor" && category !== "hostel" && category !== "transportation") return null;
+  if (
+    category !== "tutor" &&
+    category !== "hostel" &&
+    category !== "food" &&
+    category !== "transportation"
+  ) return null;
 
   const { data, error } = await supabase
     .from("requests")
@@ -99,6 +104,17 @@ export async function getPeerRequestBlockReason(
       .maybeSingle();
     if (error) throw error;
     return data ? "Drivers can't book seats on transportation routes." : null;
+  }
+
+  if (category === "food") {
+    const { data, error } = await supabase
+      .from("restaurants")
+      .select("id")
+      .eq("owner_profile_id", profileId)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? "Restaurant owners can't subscribe to food packages." : null;
   }
 
   return null;
@@ -208,6 +224,17 @@ export async function updateRequestStatus(
   if (error) throw error;
 }
 
+export async function confirmFoodPackageRequest(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("confirm_food_package_request", {
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
 export async function markRequestCompletedByRequester(
   supabase: SupabaseClient<Database>,
   requestId: string,
@@ -253,23 +280,23 @@ export async function getRequestsForHostel(supabase: SupabaseClient<Database>, h
 }
 
 export async function getRequestsForRestaurant(supabase: SupabaseClient<Database>, restaurantId: string) {
-  const { data: meals, error: mealsError } = await supabase
-    .from("meals")
+  const { data: packages, error: packagesError } = await supabase
+    .from("food_packages")
     .select("id")
     .eq("restaurant_id", restaurantId);
-  if (mealsError) throw mealsError;
+  if (packagesError) throw packagesError;
 
-  const mealIds = (meals ?? []).map((meal) => meal.id);
-  if (mealIds.length === 0) return [];
+  const packageIds = (packages ?? []).map((foodPackage) => foodPackage.id);
+  if (packageIds.length === 0) return [];
 
   const { data, error } = await supabase
     .from("requests")
     .select("*")
     .eq("service_type", "food")
-    .in("service_id", mealIds)
+    .in("service_id", packageIds)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizeRequestStatus);
 }
 
 export async function getUnseenResponses(supabase: SupabaseClient<Database>, profileId: string) {

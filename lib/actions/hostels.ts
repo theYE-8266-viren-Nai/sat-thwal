@@ -4,7 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getHostelByOwner, insertHostelListing, updateHostelListing } from "@/lib/queries/hostels";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
-import type { GenderPolicy } from "@/types/database.types";
+import { getProviderRegistration } from "@/lib/queries/providerRegistrations";
+import { isProviderPaymentMethod } from "@/lib/providerRegistration";
+import { toErrorMessage } from "@/lib/supabase/errors";
+import type {
+  GenderPolicy,
+  ProviderPaymentMethod,
+} from "@/types/database.types";
 
 export interface HostelRoomInput {
   name: string;
@@ -18,6 +24,8 @@ export interface HostelRoomInput {
   availableRooms: string;
   mealsIncluded: boolean;
   description: string;
+  paymentMethod?: ProviderPaymentMethod;
+  transactionReference?: string;
 }
 
 function validateHostelRoomInput(input: HostelRoomInput) {
@@ -46,14 +54,15 @@ function validateHostelRoomInput(input: HostelRoomInput) {
   if (!Number.isFinite(availableRooms) || availableRooms <= 0) {
     return { ok: false as const, error: "Available rooms must be at least 1." };
   }
-
   return {
     ok: true as const,
     value: { name, township, distance, rent, availableRooms },
   };
 }
 
-export type HostelRoomResult = { ok: true; hostelId: string } | { ok: false; error: string };
+export type HostelRoomResult =
+  | { ok: true; hostelId: string }
+  | { ok: false; error: string; hostelId?: string };
 
 export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoomResult> {
   const supabase = await createClient();
@@ -64,11 +73,18 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
 
   const existing = await getHostelByOwner(supabase, user.id);
   if (existing) return { ok: false, error: "already-listed" };
+  if (!input.paymentMethod || !isProviderPaymentMethod(input.paymentMethod)) {
+    return { ok: false, error: "Select a valid payment method." };
+  }
+  if (!input.transactionReference?.trim()) {
+    return { ok: false, error: "Enter the payment transaction reference." };
+  }
 
   const validated = validateHostelRoomInput(input);
   if (!validated.ok) return validated;
   const { name, township, distance, rent, availableRooms } = validated.value;
 
+  let createdHostelId: string | undefined;
   try {
     const created = await insertHostelListing(supabase, {
       name,
@@ -84,9 +100,30 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
       description: input.description.trim() || null,
       owner_profile_id: user.id,
     });
+    createdHostelId = created.id;
+
+    const registration = await getProviderRegistration(supabase, user.id, "hostel");
+    if (!registration) throw new Error("The hostel payment registration was not created.");
+
+    const { error: paymentError } = await supabase.rpc(
+      "submit_provider_registration_payment",
+      {
+        p_registration_id: registration.id,
+        p_payment_method: input.paymentMethod,
+        p_transaction_reference: input.transactionReference.trim(),
+      },
+    );
+    if (paymentError) throw paymentError;
+
     return { ok: true, hostelId: created.id };
-  } catch {
-    return { ok: false, error: "Couldn't save your listing. Try again." };
+  } catch (error) {
+    return {
+      ok: false,
+      error: createdHostelId
+        ? `Your room was saved, but the payment reference needs to be submitted again. ${toErrorMessage(error)}`
+        : "Couldn't save your listing. Try again.",
+      hostelId: createdHostelId,
+    };
   }
 }
 

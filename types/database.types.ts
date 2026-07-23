@@ -3,6 +3,19 @@ export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type UserRole = "student" | "driver" | "admin" | "restaurant";
+export type FoodPackageType =
+  | "breakfast_lunch_dinner"
+  | "breakfast_lunch"
+  | "breakfast_dinner"
+  | "lunch_dinner";
+export type ProviderType = "tutor" | "hostel" | "restaurant" | "transportation";
+export type ProviderRegistrationStatus =
+  | "pending_payment"
+  | "payment_review"
+  | "active"
+  | "suspended";
+export type ProviderPaymentStatus = "submitted" | "paid" | "rejected" | "waived";
+export type ProviderPaymentMethod = "kbzpay" | "wavepay" | "bank_transfer" | "other";
 
 type ProfileRow = {
   id: string;
@@ -73,6 +86,7 @@ type RestaurantRow = {
   halal: boolean;
   opening_hours: string | null;
   student_discount_percent: number | null;
+  verified: boolean;
   created_at: string;
   owner_profile_id: string | null;
 }
@@ -85,6 +99,18 @@ type MealRow = {
   image_url: string | null;
   is_student_package: boolean;
   created_at: string;
+}
+
+type FoodPackageRow = {
+  id: string;
+  restaurant_id: string;
+  package_type: FoodPackageType;
+  name: string;
+  monthly_price: number;
+  max_subscribers: number;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 type TransportationRow = {
@@ -161,6 +187,38 @@ type RequestRow = {
   updated_at: string;
 }
 
+type ProviderFeeScheduleRow = {
+  provider_type: ProviderType;
+  amount_mmk: number;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+type ProviderRegistrationRow = {
+  id: string;
+  profile_id: string;
+  provider_type: ProviderType;
+  fee_amount_mmk: number;
+  status: ProviderRegistrationStatus;
+  activated_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+type ProviderPaymentSubmissionRow = {
+  id: string;
+  registration_id: string;
+  amount_mmk: number;
+  payment_method: ProviderPaymentMethod;
+  transaction_reference: string;
+  status: ProviderPaymentStatus;
+  rejection_reason: string | null;
+  submitted_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -192,6 +250,18 @@ export type Database = {
         Row: MealRow;
         Insert: Partial<MealRow>;
         Update: Partial<MealRow>;
+        Relationships: [];
+      };
+      food_packages: {
+        Row: FoodPackageRow;
+        Insert: Partial<FoodPackageRow> & {
+          restaurant_id: string;
+          package_type: FoodPackageType;
+          name: string;
+          monthly_price: number;
+          max_subscribers: number;
+        };
+        Update: Partial<FoodPackageRow>;
         Relationships: [];
       };
       transportation_routes: {
@@ -239,6 +309,36 @@ export type Database = {
         Update: Partial<RequestRow>;
         Relationships: [];
       };
+      provider_fee_schedule: {
+        Row: ProviderFeeScheduleRow;
+        Insert: Partial<ProviderFeeScheduleRow> & {
+          provider_type: ProviderType;
+          amount_mmk: number;
+        };
+        Update: Partial<ProviderFeeScheduleRow>;
+        Relationships: [];
+      };
+      provider_registrations: {
+        Row: ProviderRegistrationRow;
+        Insert: Partial<ProviderRegistrationRow> & {
+          profile_id: string;
+          provider_type: ProviderType;
+          fee_amount_mmk: number;
+        };
+        Update: Partial<ProviderRegistrationRow>;
+        Relationships: [];
+      };
+      provider_payment_submissions: {
+        Row: ProviderPaymentSubmissionRow;
+        Insert: Partial<ProviderPaymentSubmissionRow> & {
+          registration_id: string;
+          amount_mmk: number;
+          payment_method: ProviderPaymentMethod;
+          transaction_reference: string;
+        };
+        Update: Partial<ProviderPaymentSubmissionRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -257,6 +357,26 @@ export type Database = {
       confirm_transportation_request: {
         Args: { p_request_id: string };
         Returns: RequestRow;
+      };
+      confirm_food_package_request: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      submit_provider_registration_payment: {
+        Args: {
+          p_registration_id: string;
+          p_payment_method: ProviderPaymentMethod;
+          p_transaction_reference: string;
+        };
+        Returns: ProviderPaymentSubmissionRow;
+      };
+      review_provider_registration_payment: {
+        Args: {
+          p_payment_id: string;
+          p_approve: boolean;
+          p_rejection_reason?: string | null;
+        };
+        Returns: ProviderPaymentSubmissionRow;
       };
     };
   };

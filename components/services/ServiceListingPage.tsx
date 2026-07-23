@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { getSavedItems } from "@/lib/queries/savedItems";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { FilterSheet } from "@/components/services/FilterSheet";
@@ -21,7 +20,7 @@ interface ServiceListingPageProps<TRow> {
   formatRangeValue?: (n: number) => string;
   fetchRows: (supabase: SupabaseClient<Database>) => Promise<TRow[]>;
   toCard: (row: TRow) => ServiceCardData;
-  renderCard?: (card: ServiceCardData, profileId: string, initialSaved: boolean) => ReactNode;
+  renderCard?: (card: ServiceCardData, profileId: string) => ReactNode;
   matchesSearch: (row: TRow, query: string) => boolean;
   applyFilters: (row: TRow, filters: FilterState) => boolean;
   emptyMessage: string;
@@ -32,7 +31,6 @@ interface ServiceListingPageProps<TRow> {
     rows: TRow[];
     filteredRows: TRow[];
     profileId: string | null;
-    savedKeys: Set<string>;
     loading: boolean;
   }) => ReactNode;
 }
@@ -55,7 +53,6 @@ export function ServiceListingPage<TRow>({
 }: ServiceListingPageProps<TRow>) {
   const [rows, setRows] = useState<TRow[]>([]);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({});
   const [loading, setLoading] = useState(true);
@@ -68,14 +65,10 @@ export function ServiceListingPage<TRow>({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const [data, saved] = await Promise.all([
-        fetchRows(supabase),
-        user ? getSavedItems(supabase, user.id) : Promise.resolve([]),
-      ]);
+      const data = await fetchRows(supabase);
       if (cancelled) return;
       setRows(data);
       setProfileId(user?.id ?? null);
-      setSavedKeys(new Set(saved.map((s) => `${s.service_type}:${s.service_id}`)));
       setLoading(false);
     }
 
@@ -109,7 +102,7 @@ export function ServiceListingPage<TRow>({
         />
       </div>
 
-      {renderSections?.({ rows, filteredRows, profileId, savedKeys, loading })}
+      {renderSections?.({ rows, filteredRows, profileId, loading })}
 
       {!hideMainList && (
         <>
@@ -125,15 +118,7 @@ export function ServiceListingPage<TRow>({
                 profileId &&
                 filteredCards.map((card) => (
                   <div key={card.id}>
-                    {renderCard ? (
-                      renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
-                    ) : (
-                      <ServiceCardCompact
-                        data={card}
-                        profileId={profileId}
-                        initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-                      />
-                    )}
+                    {renderCard ? renderCard(card, profileId) : <ServiceCardCompact data={card} />}
                   </div>
                 ))}
             </div>
@@ -146,15 +131,7 @@ export function ServiceListingPage<TRow>({
                 profileId &&
                 filteredCards.map((card) => (
                   <div key={card.id}>
-                    {renderCard ? (
-                      renderCard(card, profileId, savedKeys.has(`${card.category}:${card.id}`))
-                    ) : (
-                      <ServiceCard
-                        data={card}
-                        profileId={profileId}
-                        initialSaved={savedKeys.has(`${card.category}:${card.id}`)}
-                      />
-                    )}
+                    {renderCard ? renderCard(card, profileId) : <ServiceCard data={card} />}
                   </div>
                 ))}
             </div>

@@ -67,31 +67,13 @@ export async function updateSession(request: NextRequest) {
     const isAdmin = isAdminRole(role);
     const isRestaurant = isRestaurantRole(role);
     const landingPath = getRoleLandingPath(role);
-    const { data: driverProfile } = isDriver
-      ? await supabase
-          .from("driver_profiles")
-          .select("status")
-          .eq("id", user.id)
-          .maybeSingle()
-      : { data: null };
-    const isActiveDriver = isDriver && driverProfile?.status === "active";
-
     if (isPublicRoute) {
-      if (isDriver && !isActiveDriver) {
-        return response;
-      }
       const url = request.nextUrl.clone();
       url.pathname = landingPath;
       return NextResponse.redirect(url);
     }
 
-    if (isDriver && !isActiveDriver) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-
-    if (isActiveDriver && !isDriverRoute) {
+    if (isDriver && !isDriverRoute) {
       const url = request.nextUrl.clone();
       url.pathname = "/driver/dashboard";
       return NextResponse.redirect(url);
@@ -109,7 +91,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (!isActiveDriver && isDriverRoute) {
+    if (!isDriver && isDriverRoute) {
       const url = request.nextUrl.clone();
       url.pathname = landingPath;
       return NextResponse.redirect(url);

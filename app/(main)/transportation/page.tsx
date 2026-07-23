@@ -50,9 +50,7 @@ export default function TransportationPage() {
       formatRangeValue={(n) => (n >= 360 && n <= 660 ? minutesToLabel(n) : formatMMK(n))}
       fetchRows={getRoutes}
       toCard={routeToCard}
-      renderCard={(card, profileId, initialSaved) => (
-        <TransportationRouteCard data={card} profileId={profileId} initialSaved={initialSaved} />
-      )}
+      renderCard={(card, profileId) => <TransportationRouteCard data={card} profileId={profileId} />}
       matchesSearch={(row, query) => {
         if (!query.trim()) return true;
         const q = query.toLowerCase();

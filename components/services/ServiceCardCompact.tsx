@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { SaveButton } from "@/components/services/SaveButton";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -18,11 +17,9 @@ const META_ICONS: Record<ServiceCardMeta["icon"], typeof MapPin> = {
 
 interface ServiceCardCompactProps {
   data: ServiceCardData;
-  profileId: string;
-  initialSaved: boolean;
 }
 
-export function ServiceCardCompact({ data, profileId, initialSaved }: ServiceCardCompactProps) {
+export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
   const category = CATEGORIES[data.category];
   const [primaryMeta, secondaryMeta] = data.meta;
 
@@ -55,16 +52,6 @@ export function ServiceCardCompact({ data, profileId, initialSaved }: ServiceCar
             );
           })}
           <span className="text-base font-semibold text-foreground">{data.priceLabel}</span>
-        </div>
-
-        <div className="shrink-0 self-start">
-          <SaveButton
-            profileId={profileId}
-            category={data.category}
-            serviceId={data.id}
-            initialSaved={initialSaved}
-            className="h-9 w-9 bg-transparent shadow-none hover:bg-muted"
-          />
         </div>
       </Card>
     </Link>

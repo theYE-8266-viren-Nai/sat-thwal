@@ -27,7 +27,7 @@ import {
 import type { ServiceCategory } from "@/types/domain";
 import type { RouteStop } from "@/types/domain";
 
-type ConfirmationAction = "book" | "request" | "requestSeat" | "contact";
+type ConfirmationAction = "book" | "request" | "requestSeat" | "subscribe" | "contact";
 
 interface ConfirmationModalProps {
   action: ConfirmationAction;
@@ -55,6 +55,11 @@ const ACTION_COPY: Record<ConfirmationAction, { title: string; description: stri
     title: "Request a seat",
     description: "Add your detailed pickup address. The driver will confirm your pending seat request.",
     confirmLabel: "Book seat",
+  },
+  subscribe: {
+    title: "Confirm subscription",
+    description: "Send a monthly package subscription request. The restaurant will confirm capacity.",
+    confirmLabel: "Subscribe",
   },
   contact: {
     title: "Contact provider",

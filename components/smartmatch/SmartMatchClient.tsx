@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getSavedItems } from "@/lib/queries/savedItems";
 import { getRecentSearches, addRecentSearch } from "@/lib/recentlyViewed";
 import { AIAvatar } from "@/components/smartmatch/AIAvatar";
 import { ChatInput } from "@/components/smartmatch/ChatInput";
@@ -19,7 +18,6 @@ type Status = "idle" | "loading" | "results" | "error";
 export function SmartMatchClient() {
   const searchParams = useSearchParams();
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [query, setQuery] = useState("");
@@ -37,12 +35,7 @@ export function SmartMatchClient() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [saved] = await Promise.all([
-        getSavedItems(supabase, user.id),
-      ]);
-
       setProfileId(user.id);
-      setSavedKeys(new Set(saved.map((s) => `${s.service_type}:${s.service_id}`)));
 
       const initialQuery = searchParams.get("q");
       if (initialQuery) {
@@ -110,7 +103,7 @@ export function SmartMatchClient() {
             </div>
           )}
           <VoiceAssistantButton query={query} results={results} />
-          <RecommendationResults query={query} results={results} profileId={profileId} savedKeys={savedKeys} />
+          <RecommendationResults query={query} results={results} />
         </>
       )}
 

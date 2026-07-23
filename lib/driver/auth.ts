@@ -33,7 +33,7 @@ export async function requireDriverProfile() {
     .maybeSingle();
 
   if (driverProfileError) throwSupabaseError(driverProfileError, "Could not load driver profile.");
-  if (!driverProfile || driverProfile.status !== "active") {
+  if (!driverProfile) {
     redirect("/login");
   }
 

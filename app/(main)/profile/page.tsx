@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, profileToStudentProfile } from "@/lib/queries/profiles";
-import { getSavedItems } from "@/lib/queries/savedItems";
 import { getRequests } from "@/lib/queries/requests";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
@@ -18,9 +17,8 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profileRow, savedItems, requests] = await Promise.all([
+  const [profileRow, requests] = await Promise.all([
     getProfile(supabase, user.id),
-    getSavedItems(supabase, user.id),
     getRequests(supabase, user.id),
   ]);
 
@@ -39,13 +37,6 @@ export default async function ProfilePage() {
       <PreferenceEditor profile={profile} />
 
       <ProfileSection title="Activity">
-        <Link href="/saved" className="flex min-h-11 items-center justify-between py-3">
-          <span className="text-sm text-muted-foreground">Saved services</span>
-          <span className="flex items-center gap-1 text-sm font-medium text-foreground">
-            {savedItems.length}
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </span>
-        </Link>
         <Link href="/saved" className="flex min-h-11 items-center justify-between py-3">
           <span className="text-sm text-muted-foreground">Request history</span>
           <span className="flex items-center gap-1 text-sm font-medium text-foreground">
