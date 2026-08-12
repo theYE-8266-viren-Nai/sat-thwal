@@ -57,7 +57,7 @@ export default function LoginPage() {
     <Card className="border-none shadow-lg">
       <CardHeader>
         <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Log in to continue finding student services.</CardDescription>
+        <CardDescription>Log in to continue with official UIT student services.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

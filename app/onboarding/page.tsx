@@ -32,7 +32,7 @@ export default function OnboardingPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Your session expired — please log in again.");
+      if (!user) throw new Error("Your session expired. Please log in again.");
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -69,12 +69,10 @@ export default function OnboardingPage() {
       <Logo />
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground">
-          Everything students need, in one place.
-        </h1>
+        <h1 className="text-2xl font-bold text-foreground">Set up your official UIT student profile.</h1>
         <p className="text-muted-foreground">
-          Tell us a bit about you so we can personalize tutors, hostels, food, and
-          transportation recommendations. You can always change this later from your profile.
+          Your school-controlled UIT verification is complete. Add the campus details Sat Thwal
+          needs to match you with approved tutors, housing, food, and transportation options.
         </p>
       </div>
 
