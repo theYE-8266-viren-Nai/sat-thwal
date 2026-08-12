@@ -26,7 +26,7 @@ export function normalizeRequestStatus<T extends RequestRow>(request: T): T {
 
 function getRequestInsertErrorMessage(error: { code?: string; message?: string }) {
   if (error.code === "23505") {
-    return "You've already requested this listing. Track it from Saved & Bookings.";
+    return "You've already requested this option. Track it from Saved Requests.";
   }
 
   return error.message ?? "Couldn't send your request. Try again.";
@@ -54,7 +54,7 @@ async function ensureApprovedRequestTarget(
       .eq("id", serviceId)
       .maybeSingle();
     if (error) throw error;
-    if (!data?.verified) throw new Error("This hostel listing is still awaiting admin approval.");
+    if (!data?.verified) throw new Error("This housing option is still awaiting school approval.");
   }
 }
 
@@ -160,7 +160,7 @@ export async function createRequest(
 
   const existing = await getExistingActiveRequest(supabase, profileId, category, serviceId);
   if (existing) {
-    throw new Error("You've already requested this listing. Track it from Saved & Bookings.");
+    throw new Error("You've already requested this option. Track it from Saved Requests.");
   }
 
   await ensureApprovedRequestTarget(supabase, category, serviceId);
@@ -200,7 +200,7 @@ export async function createTransportationRequest(
 
   const existing = await getExistingActiveRequest(supabase, studentId, "transportation", routeId);
   if (existing) {
-    throw new Error("You've already requested this route. Track it from Saved & Bookings.");
+    throw new Error("You've already requested this route. Track it from Saved Requests.");
   }
 
   const { error: profileError } = await supabase

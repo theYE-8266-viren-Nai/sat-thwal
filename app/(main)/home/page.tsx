@@ -125,24 +125,24 @@ export default async function HomePage() {
       />
 
       <ServiceSection
-        title="Recommended for you"
+        title="Recommended student support"
         items={recommended}
-        emptyLabel="Complete your profile preferences to see personalized picks."
+        emptyLabel="Complete your student profile to see school-relevant support options."
       />
 
       <ServiceSection
-        title="Nearby student services"
+        title="Near your school area"
         items={nearby}
-        emptyLabel="No services found near your township yet."
+        emptyLabel="No school-approved support options found near your township yet."
       />
 
       <ActiveRequestsStrip items={activeRequests} />
 
-      <ServiceSection title="Popular right now" items={popular} />
+      <ServiceSection title="Common student choices" items={popular} />
 
-      <ServiceSection title="New listings" items={newListings} />
+      <ServiceSection title="Recently added support" items={newListings} />
 
-      <ServiceSection title="Within your budget" items={withinBudget} />
+      <ServiceSection title="Within your stated budget" items={withinBudget} />
 
       <RecentlyViewedSection />
     </div>

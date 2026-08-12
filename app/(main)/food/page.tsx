@@ -30,8 +30,8 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function FoodPage() {
   return (
     <ServiceListingPage<FoodItem>
-      title="Find Food Service"
-      searchPlaceholder="Search restaurants, packages..."
+      title="Meal Support"
+      searchPlaceholder="Search approved meal plans or kitchens..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={(n) => (n < 100 ? `${n} km` : formatMMK(n))}
       fetchRows={getFoodItems}
@@ -56,7 +56,7 @@ export default function FoodPage() {
         if (filters.openNow && !isOpenNow(restaurant.opening_hours)) return false;
         return true;
       }}
-      emptyMessage="No monthly packages match your filters yet. Try widening your search."
+      emptyMessage="No approved monthly meal plans match your filters yet. Try widening your search."
       hideMainList
       renderSections={({ filteredRows, profileId, loading }) => {
         if (loading || !profileId) return null;
@@ -72,9 +72,9 @@ export default function FoodPage() {
 
         return (
           <>
-            <ServiceSection title="All monthly packages" items={allPackages} />
-            <ServiceSection title="Vegetarian-friendly packages" items={vegetarianPackages} />
-            <ServiceSection title="Halal-friendly packages" items={halalPackages} />
+            <ServiceSection title="All approved meal plans" items={allPackages} />
+            <ServiceSection title="Vegetarian-friendly meal plans" items={vegetarianPackages} />
+            <ServiceSection title="Halal-friendly meal plans" items={halalPackages} />
           </>
         );
       }}

@@ -106,7 +106,7 @@ export function hostelToCard(hostel: HostelRow): ServiceCardData {
       { icon: "users", label: `${hostel.available_rooms} rooms available` },
       ...(hostel.meals_included ? [{ icon: "utensils" as const, label: "Meals included" }] : []),
     ],
-    ctaLabel: "Book Hostel",
+    ctaLabel: "Request Room",
     href: `/services/hostel/${hostel.id}`,
   };
 }
@@ -130,7 +130,7 @@ export function hostelToDetail(hostel: HostelRow): ServiceDetailData {
       hostel.description ?? `${hostel.name} is a ${GENDER_LABEL[hostel.gender_policy].toLowerCase()} hostel in ${hostel.township}.`,
     amenities: hostel.meals_included ? [...hostel.facilities, "Meals included"] : hostel.facilities,
     ctaLabel: "Request Room",
-    contactInfo: "Message via Sat Thwal to get this hostel owner's contact details.",
+    contactInfo: "Request this approved housing option through Set Thwal. The service contact will follow up with next steps.",
     ownerProfileId: hostel.owner_profile_id,
   };
 }

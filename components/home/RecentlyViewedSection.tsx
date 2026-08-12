@@ -59,5 +59,5 @@ export function RecentlyViewedSection() {
 
   if (!ready || items.length === 0) return null;
 
-  return <ServiceSection title="Recently viewed" items={items} />;
+  return <ServiceSection title="Recently reviewed options" items={items} />;
 }

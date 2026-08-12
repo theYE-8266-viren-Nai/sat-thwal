@@ -43,27 +43,27 @@ interface ConfirmationModalProps {
 
 const ACTION_COPY: Record<ConfirmationAction, { title: string; description: string; confirmLabel: string }> = {
   book: {
-    title: "Confirm booking",
-    description: "Send a booking request. The provider will confirm availability with you directly.",
-    confirmLabel: "Confirm booking",
+    title: "Send support request",
+    description: "Send a request for this school-approved service. The service contact will confirm availability.",
+    confirmLabel: "Send request",
   },
   request: {
-    title: "Confirm request",
-    description: "Send a request. The provider will follow up to confirm the details.",
-    confirmLabel: "Confirm request",
+    title: "Send support request",
+    description: "Send a request through Set Thwal. The service contact will confirm the details.",
+    confirmLabel: "Send request",
   },
   requestSeat: {
     title: "Request a seat",
-    description: "Add your detailed pickup address. The driver will confirm your pending seat request.",
-    confirmLabel: "Book seat",
+    description: "Add your detailed pickup address. The approved ferry contact will confirm your pending seat request.",
+    confirmLabel: "Request seat",
   },
   subscribe: {
-    title: "Confirm subscription",
-    description: "Send a monthly package subscription request. The restaurant will confirm capacity.",
-    confirmLabel: "Subscribe",
+    title: "Request meal plan",
+    description: "Send a monthly meal plan request. The approved meal contact will confirm capacity.",
+    confirmLabel: "Request plan",
   },
   contact: {
-    title: "Contact provider",
+    title: "Contact service",
     description: "",
     confirmLabel: "Got it",
   },
@@ -128,7 +128,7 @@ export function ConfirmationModal({
         await createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
       }
       setDone(true);
-      toast.success("Request pending", { description: `Track it from Saved & Bookings.` });
+      toast.success("Request pending", { description: `Track it from Saved.` });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Couldn't send your request. Try again.";
       toast.error(message);
@@ -159,7 +159,7 @@ export function ConfirmationModal({
             <CheckCircle2 className="h-12 w-12 text-brand-mint" />
             <SheetTitle>Request sent</SheetTitle>
             <p className="text-sm text-muted-foreground">
-              Your request for {title} is pending. You can track its status from Saved & Bookings.
+              Your request for {title} is pending. You can track its status from Saved.
             </p>
             <Button
               size="touch"
@@ -205,7 +205,7 @@ export function ConfirmationModal({
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Phone number for the driver"
+                      placeholder="Phone number for the ferry contact"
                       className="h-10"
                     />
                   )}
@@ -215,7 +215,7 @@ export function ConfirmationModal({
                     placeholder={
                       action === "requestSeat"
                         ? "Enter your detailed pickup address"
-                        : "Add a note for the provider (optional)"
+                        : "Add a note for the service contact (optional)"
                     }
                     rows={action === "requestSeat" ? 4 : 3}
                   />
