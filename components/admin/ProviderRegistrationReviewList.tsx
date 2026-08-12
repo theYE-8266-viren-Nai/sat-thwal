@@ -19,12 +19,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { reviewProviderRegistrationPayment } from "@/lib/actions/providerRegistrations";
 import {
-  PROVIDER_PAYMENT_METHOD_LABELS,
-  formatProviderRegistrationFeeRate,
   PROVIDER_TYPE_LABELS,
 } from "@/lib/providerRegistration";
 import type { ProviderRegistrationReview } from "@/lib/queries/providerRegistrations";
-import { formatMMK } from "@/lib/utils";
+import type { ProviderPaymentMethod } from "@/types/database.types";
+
+const PROVIDER_VERIFICATION_CHANNEL_LABELS: Record<ProviderPaymentMethod, string> = {
+  kbzpay: "Student affairs office",
+  wavepay: "School admin desk",
+  bank_transfer: "Partner school coordinator",
+  other: "Other school verifier",
+};
 
 interface ProviderRegistrationReviewListProps {
   reviews: ProviderRegistrationReview[];
@@ -65,8 +70,8 @@ export function ProviderRegistrationReviewList({
 
       toast.success(
         decision === "approve"
-          ? "Provider payment approved and account activated."
-          : "Payment rejected. The provider can submit again.",
+          ? "Provider approved for school participation."
+          : "Verification rejected. The provider can submit again.",
       );
       setSelected(null);
       router.refresh();
@@ -79,9 +84,9 @@ export function ProviderRegistrationReviewList({
     return (
       <Card className="border-dashed p-8 text-center">
         <Clock3 className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
-        <h2 className="mt-3 font-semibold text-foreground">No payments awaiting review</h2>
+        <h2 className="mt-3 font-semibold text-foreground">No providers awaiting approval</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          New provider payments will appear here.
+          New school verification requests will appear here.
         </p>
       </Card>
     );
@@ -106,22 +111,22 @@ export function ProviderRegistrationReviewList({
                   {review.providerPhone || "No phone number on profile"}
                 </p>
               </div>
-              <p className="font-semibold text-foreground">
-                {formatMMK(review.payment.amount_mmk)}
+              <p className="text-sm font-semibold text-brand-indigo">
+                Awaiting school approval
               </p>
             </div>
 
             <dl className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-muted-foreground">Fee</dt>
+                <dt className="text-muted-foreground">Approval status</dt>
                 <dd className="mt-1 font-medium text-foreground">
-                  {formatProviderRegistrationFeeRate()} of listing amount
+                  Pending school verification
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Method</dt>
+                <dt className="text-muted-foreground">Verification channel</dt>
                 <dd className="mt-1 break-all font-medium text-foreground">
-                  {PROVIDER_PAYMENT_METHOD_LABELS[review.payment.payment_method]}
+                  {PROVIDER_VERIFICATION_CHANNEL_LABELS[review.payment.payment_method]}
                 </dd>
               </div>
               <div>
@@ -145,7 +150,7 @@ export function ProviderRegistrationReviewList({
                 onClick={() => openReview(review, "approve")}
               >
                 <Check className="h-4 w-4" aria-hidden="true" />
-                Approve payment
+                Approve provider
               </Button>
             </div>
           </Card>
@@ -156,12 +161,12 @@ export function ProviderRegistrationReviewList({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {decision === "approve" ? "Approve provider payment?" : "Reject payment?"}
+              {decision === "approve" ? "Approve provider?" : "Reject verification?"}
             </DialogTitle>
             <DialogDescription>
               {decision === "approve"
-                ? "This records received revenue and immediately activates the provider."
-                : "The provider will return to payment required and can submit again."}
+                ? "This approves the provider for school participation and publishes their service tools."
+                : "The provider will return to approval required and can submit again."}
             </DialogDescription>
           </DialogHeader>
 
@@ -174,7 +179,7 @@ export function ProviderRegistrationReviewList({
                 id="provider-payment-rejection-reason"
                 value={rejectionReason}
                 onChange={(event) => setRejectionReason(event.target.value)}
-                placeholder="For example, the payment could not be verified"
+                placeholder="For example, the provider details could not be verified"
                 rows={3}
               />
             </div>
@@ -198,7 +203,7 @@ export function ProviderRegistrationReviewList({
                 ? "Saving..."
                 : decision === "approve"
                   ? "Approve and activate"
-                  : "Reject payment"}
+                  : "Reject verification"}
             </Button>
           </DialogFooter>
         </DialogContent>

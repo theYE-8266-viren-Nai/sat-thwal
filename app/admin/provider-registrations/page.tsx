@@ -21,13 +21,13 @@ export default async function ProviderRegistrationsPage() {
 
         <section className="mb-6">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Provider payments
+            Provider approvals
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-foreground">
-            Registration review
+            School verification review
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Confirm provider payments before provider services are published.
+            Confirm provider eligibility before services are published to students.
           </p>
         </section>
 
