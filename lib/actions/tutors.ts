@@ -56,7 +56,7 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
     return { ok: false, error: "Select a valid session mode." };
   }
   if (!isProviderPaymentMethod(input.paymentMethod)) {
-    return { ok: false, error: "Select a valid payment method." };
+    return { ok: false, error: "Select a valid verification channel." };
   }
 
   let createdTutorId: string | undefined;
@@ -75,7 +75,7 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
     createdTutorId = created.id;
 
     const registration = await getProviderRegistration(supabase, user.id, "tutor");
-    if (!registration) throw new Error("The tutor payment registration was not created.");
+    if (!registration) throw new Error("The tutor school verification was not created.");
 
     const { error: paymentError } = await supabase.rpc(
       "submit_provider_registration_payment",
@@ -92,7 +92,7 @@ export async function applyAsTutor(input: ApplyAsTutorInput): Promise<ApplyAsTut
     return {
       ok: false,
       error: createdTutorId
-        ? `Your tutor profile was saved, but the payment could not be submitted. ${toErrorMessage(error)}`
+        ? `Your tutor profile was saved, but school verification could not be submitted. ${toErrorMessage(error)}`
         : "Couldn't save your tutor profile. Try again.",
       tutorId: createdTutorId,
     };
