@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, CheckCircle2, Loader2, RotateCcw, ShieldCheck, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -39,11 +39,11 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
     if (!file) return;
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Please choose a JPEG, PNG, or WebP image.");
+      toast.error("Please choose a JPEG, PNG, or WebP image of your UIT student ID.");
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error("Image must be smaller than 5MB.");
+      toast.error("Student ID image must be smaller than 5MB.");
       return;
     }
     setSelectedFile(file);
@@ -77,7 +77,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
         if (videoRef.current) videoRef.current.srcObject = stream;
       });
     } catch {
-      toast.error("Couldn't access your camera. You can upload a photo instead.");
+      toast.error("Could not access your camera. You can upload your UIT ID photo instead.");
     }
   }
 
@@ -133,7 +133,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
 
       if (uploadError) {
         console.error("Student ID upload failed", uploadError);
-        setError("Couldn't upload the photo. Please try again.");
+        setError("We could not securely upload your ID photo. Please try again.");
         setStage("preview");
         return;
       }
@@ -150,7 +150,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
         setError(
           result.reason ||
             result.error ||
-            "That doesn't look like a valid student ID. Please try again with a clearer photo.",
+            "We could not confirm this as a UIT student ID. Please use a clearer photo that shows the UIT name, your photo, and your name.",
         );
         setStage("preview");
         return;
@@ -159,7 +159,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
       onVerified();
     } catch (error) {
       console.error("Student ID verification threw", error);
-      setError("Something went wrong verifying your ID. Please try again.");
+      setError("Something went wrong during student verification. Please try again.");
       setStage("preview");
     }
   }
@@ -168,6 +168,22 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
     <div className="flex flex-col gap-4">
       {stage === "choose" && (
         <div className="flex flex-col gap-3">
+          <div className="grid gap-3 text-sm text-muted-foreground">
+            <div className="flex gap-3">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
+              <p>
+                Submit the UIT-issued student ID card tied to your own account. This step keeps
+                student services restricted to verified university members.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
+              <p>
+                Make sure the UIT name, your name, and your ID photo are visible. Cover unrelated
+                details if needed, but do not block those fields.
+              </p>
+            </div>
+          </div>
           <Button
             type="button"
             size="touch"
@@ -185,7 +201,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="h-4 w-4" />
-            Upload a photo
+            Upload ID photo
           </Button>
           <input
             ref={cameraInputRef}
@@ -210,6 +226,9 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
           <div className="overflow-hidden rounded-2xl border border-border bg-muted">
             <video ref={videoRef} autoPlay playsInline muted className="aspect-video w-full object-cover" />
           </div>
+          <p className="text-sm text-muted-foreground">
+            Frame the card flat in good light so UIT, your name, and your photo are readable.
+          </p>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -229,7 +248,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
               onClick={capturePhoto}
             >
               <Camera className="h-4 w-4" />
-              Capture
+              Use photo
             </Button>
           </div>
         </div>
@@ -239,8 +258,12 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
         <div className="flex flex-col gap-3">
           <div className="overflow-hidden rounded-2xl border border-border bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={previewUrl} alt="Your student ID" className="aspect-video w-full object-cover" />
+            <img src={previewUrl} alt="Your UIT student ID preview" className="aspect-video w-full object-cover" />
           </div>
+          <p className="text-sm text-muted-foreground">
+            Only verification reviewers and the secure verification service can use this image. It is
+            not shown to tutors, hostel owners, restaurants, or drivers.
+          </p>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -253,7 +276,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
               onClick={retake}
             >
               <RotateCcw className="h-4 w-4" />
-              Retake
+              Choose again
             </Button>
             <Button
               type="button"
@@ -262,7 +285,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
               onClick={submitForVerification}
             >
               {stage === "verifying" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {stage === "verifying" ? "Verifying..." : "Submit for verification"}
+              {stage === "verifying" ? "Checking UIT status..." : "Verify UIT status"}
             </Button>
           </div>
         </div>
