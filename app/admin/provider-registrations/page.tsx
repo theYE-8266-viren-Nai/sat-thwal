@@ -15,7 +15,7 @@ export default async function ProviderRegistrationsPage() {
         <Button variant="ghost" asChild className="-ml-3 mb-4">
           <Link href="/admin/dashboard">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Admin dashboard
+            School Admin Dashboard
           </Link>
         </Button>
 
