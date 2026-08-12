@@ -10,6 +10,12 @@ Instead of presenting Set Thwal as an open marketplace, this proposal positions 
 
 Set Thwal helps UIT administer student welfare requests through verified students, approved providers, and school-supervised service coordination.
 
+## Proposal Abstract
+
+Set Thwal is a UIT-first e-government pilot for student welfare coordination. The system gives the school a supervised digital channel where eligible students can request support for tutoring, accommodation, food, and transportation, while administrators verify access, approve providers, and monitor request outcomes.
+
+The pilot is designed to replace fragmented informal coordination with a school-governed service workflow. Students gain a trusted place to request help, providers participate only after approval, and UIT receives visibility into welfare demand, unresolved requests, and provider responsiveness. By centering verification, approval, and reporting, Set Thwal can serve as a practical model for university-level digital welfare administration.
+
 ## Problem
 
 Students often need support outside the classroom: safe housing, reliable transportation, affordable food, and academic help. These needs are usually handled through scattered chats, informal referrals, phone calls, and manual administrator follow-up. That makes it difficult for the school to know who is requesting support, which providers are trustworthy, whether a request was handled, and where student welfare pressure is increasing.
@@ -29,6 +35,15 @@ The system supports four welfare categories:
 - Affordable food access through approved restaurant or meal providers.
 - Campus transportation through approved routes and drivers.
 
+## Core System Features
+
+- Verified student access: students enter the welfare channel through school-linked identity verification.
+- Approved provider participation: tutors, hostel owners, food providers, and transportation providers are reviewed before their services are visible.
+- School-supervised request lifecycle: requests move through visible statuses such as pending, confirmed, completed, or cancelled.
+- Category-level welfare coordination: tutoring, hostels, food, and transportation are handled as public-service support categories instead of unrelated marketplaces.
+- Admin oversight and reporting: administrators can monitor demand, provider responsiveness, unresolved cases, and service coverage.
+- Pilot-ready governance: the first deployment stays focused on UIT so the school can validate policy, workflow, and reporting before wider replication.
+
 ## Administrative Control
 
 The school administration remains the center of authority. Admin users can review student verification signals, approve or reject providers, inspect provider payment or registration status, monitor service listings, and oversee student requests from submission through completion.
@@ -40,6 +55,16 @@ This structure gives UIT a practical governance layer:
 - Service publication depends on approval.
 - Requests are visible to administrators.
 - Completion status can be tracked instead of lost in informal channels.
+
+## How the Pilot Works
+
+1. A student creates an account and completes UIT student verification.
+2. The verified student browses approved welfare support categories.
+3. The student submits a request for a tutor, hostel, food package, or transportation route.
+4. The request is recorded with a trackable status and becomes visible in the relevant oversight workflow.
+5. The approved provider responds to the request within their own service area.
+6. Administrators monitor pending, confirmed, cancelled, completed, and unresolved requests.
+7. UIT uses the collected demand and status data to improve welfare planning and provider supervision.
 
 ## Student Verification
 
@@ -82,6 +107,10 @@ The first deployment should remain UIT-first and focused. A narrow pilot can val
 - Reporting across tutors, hostels, food, and transportation.
 
 Once the UIT model is stable, the same structure can be adapted for other universities or education departments without changing the core governance idea: school-administered welfare coordination.
+
+## Out of Scope for This Pitch
+
+This pitch does not require changing the application workflow during the proposal stage. The focus is the policy and narrative pivot: Set Thwal should be described as a school-supervised e-government/student welfare pilot rather than a general commercial marketplace.
 
 ## Closing Message
 
