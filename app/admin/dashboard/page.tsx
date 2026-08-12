@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { requireAdminProfile } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getMonetizationReport } from "@/lib/admin/monetization";
 import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
 import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
 import { getAdminServiceOverview } from "@/lib/admin/serviceOverview";
@@ -12,18 +11,24 @@ import { LogoutButton } from "@/components/profile/LogoutButton";
 import { RestaurantOwnerAccounts } from "@/components/admin/RestaurantOwnerAccounts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn, formatMMK } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
   const ownerAccountsResult = await loadRestaurantOwnerAccounts();
-  const [serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
-    await Promise.all([
-      getAdminServiceOverview(supabase),
-      getAdminRequestDetails(supabase),
-      getMonetizationReport(supabase),
-      getPendingProviderRegistrationCount(supabase),
-    ]);
+  const [serviceOverview, requestDetails, pendingApprovalCount] = await Promise.all([
+    getAdminServiceOverview(supabase),
+    getAdminRequestDetails(supabase),
+    getPendingProviderRegistrationCount(supabase),
+  ]);
+  const totalServiceCount = serviceOverview.reduce((sum, item) => sum + item.totalCount, 0);
+  const activeRequestTotal = serviceOverview.reduce(
+    (sum, item) => sum + item.activeRequestCount,
+    0,
+  );
+  const completedRequestCount = requestDetails.filter(
+    (request) => request.status === "completed",
+  ).length;
 
   return (
     <main className="min-h-screen bg-background px-5 py-8 md:px-8">
@@ -31,13 +36,14 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Admin Dashboard
+              School Admin Dashboard
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-foreground">
               Welcome, {profile.full_name ?? "admin"}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Admin users are routed here instead of the student or driver dashboards.
+              Govern student welfare services, provider approvals, and request activity
+              from one UIT-controlled workspace.
             </p>
           </div>
           <div className="sm:w-36">
@@ -48,9 +54,9 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-6 max-w-5xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Service Overview</h2>
+          <h2 className="text-lg font-semibold text-foreground">Student Welfare Services</h2>
           <p className="text-sm text-muted-foreground">
-            Live counts across the four student service categories.
+            Live school visibility across academic support, accommodation, food, and transport.
           </p>
         </div>
 
@@ -98,7 +104,7 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold text-foreground">Request Details</h2>
           <p className="text-sm text-muted-foreground">
-            Recent student requests and accepted bookings across every category.
+            Recent student requests and school-visible service outcomes across every category.
           </p>
         </div>
 
@@ -176,62 +182,54 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-6 max-w-5xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Monetization Report</h2>
+          <h2 className="text-lg font-semibold text-foreground">School Governance Center</h2>
           <p className="text-sm text-muted-foreground">
-            Revenue received from provider registrations and transportation commissions.
+            Operational signals for provider oversight, student demand, and service readiness.
           </p>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-sm text-muted-foreground">Received revenue</p>
+            <p className="text-sm text-muted-foreground">Approved service records</p>
             <p className="mt-1 text-3xl font-semibold text-foreground">
-              {formatMMK(monetizationReport.totalMmk)}
+              {totalServiceCount}
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-muted-foreground">Payments awaiting review</p>
+                <p className="text-sm text-muted-foreground">Providers awaiting review</p>
                 <p className="mt-1 text-3xl font-semibold text-foreground">
-                  {pendingPaymentCount}
+                  {pendingApprovalCount}
                 </p>
               </div>
               <Clock3 className="h-5 w-5 text-brand-indigo" aria-hidden="true" />
             </div>
             <Button variant="link" asChild className="mt-2 h-auto p-0">
               <Link href="/admin/provider-registrations">
-                Review registrations
+                Review providers
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
           </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {monetizationReport.lineItems.map((item) => (
-            <article
-              key={item.key}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-foreground">{item.label}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.count} paid registration{item.count === 1 ? "" : "s"}
-                  </p>
-                  {item.commissionCount > 0 && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {item.commissionCount} accepted seat{item.commissionCount === 1 ? "" : "s"} at 15%
-                    </p>
-                  )}
-                </div>
-                <p className="shrink-0 text-base font-semibold text-foreground">
-                  {formatMMK(item.totalMmk)}
-                </p>
-              </div>
-            </article>
-          ))}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">Active student requests</p>
+            <p className="mt-1 text-3xl font-semibold text-foreground">
+              {activeRequestTotal}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Pending or confirmed requests requiring service follow-up.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">Completed support cases</p>
+            <p className="mt-1 text-3xl font-semibold text-foreground">
+              {completedRequestCount}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Student requests completed through approved service channels.
+            </p>
+          </div>
         </div>
       </section>
     </main>
