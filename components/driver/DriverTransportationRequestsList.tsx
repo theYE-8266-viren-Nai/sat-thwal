@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, MapPin, Phone, Route } from "lucide-react";
 import { toast } from "sonner";
@@ -20,9 +20,14 @@ interface DriverTransportationRequestsListProps {
 export function DriverTransportationRequestsList({ requests }: DriverTransportationRequestsListProps) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const router = useRouter();
-  const pendingRequests = requests.filter((request) => request.status === "pending");
-  const acceptedRequests = requests.filter((request) => request.status === "confirmed");
-  const completedRequests = requests.filter((request) => request.status === "completed");
+  const { pendingRequests, acceptedRequests, completedRequests } = useMemo(
+    () => ({
+      pendingRequests: requests.filter((request) => request.status === "pending"),
+      acceptedRequests: requests.filter((request) => request.status === "confirmed"),
+      completedRequests: requests.filter((request) => request.status === "completed"),
+    }),
+    [requests],
+  );
 
   async function complete(requestId: string) {
     setPendingId(requestId);
@@ -51,18 +56,18 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
       : null;
 
     return (
-      <article key={request.id} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <article key={request.id} className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-medium text-foreground">{studentName}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{routeName}</p>
+            <p className="truncate text-sm font-semibold text-foreground">{studentName}</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">{routeName}</p>
           </div>
-          <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
+          <Badge className={cn("h-6 shrink-0 rounded-full px-2 text-[0.7rem] font-semibold", REQUEST_STATUS_STYLES[request.status])}>
             {REQUEST_STATUS_LABEL[request.status]}
           </Badge>
         </div>
 
-        <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+        <div className="grid gap-2 text-sm text-muted-foreground lg:grid-cols-2">
           <span className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
             <span>
@@ -87,7 +92,7 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
         </div>
 
         {request.note && (
-          <p className="rounded-lg bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
+          <p className="line-clamp-2 rounded-lg bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
             {request.note}
           </p>
         )}
@@ -111,7 +116,7 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
         )}
 
         {request.status === "confirmed" && (canComplete || waitingForStudent || studentCompletedFirst) && (
-          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+          <div className="rounded-lg border border-border bg-secondary/40 p-3">
             {waitingForStudent ? (
               <p className="text-sm text-muted-foreground">Waiting for student to confirm completion.</p>
             ) : (
@@ -120,8 +125,8 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
                   <p className="text-sm text-muted-foreground">Student marked this complete.</p>
                 )}
                 <Button
-                  size="touch"
-                  className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+                  size="sm"
+                  className="rounded-lg bg-brand-mint text-white hover:bg-brand-mint/90"
                   disabled={pendingId === request.id}
                   onClick={() => complete(request.id)}
                 >
@@ -134,7 +139,7 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
         )}
 
         {request.status === "completed" && (
-          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+          <div className="rounded-lg border border-border bg-secondary/40 p-3">
             <p className="text-sm font-medium text-foreground">Completed by both sides</p>
             {completedDateLabel && (
               <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
@@ -152,15 +157,15 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
     emptyMessage: string,
   ) {
     return (
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-2.5">
         <div>
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
         {rows.length > 0 ? (
           rows.map((request) => renderRequestCard(request))
         ) : (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
             {emptyMessage}
           </div>
         )}
@@ -169,7 +174,12 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-3 gap-2">
+        <RequestMetric label="Pending" value={pendingRequests.length} />
+        <RequestMetric label="Approved" value={acceptedRequests.length} />
+        <RequestMetric label="Done" value={completedRequests.length} />
+      </div>
       {renderSection(
         "Incoming requests",
         "Pending students waiting for your response.",
@@ -188,6 +198,15 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
         completedRequests,
         "No completed transportation requests yet.",
       )}
+    </div>
+  );
+}
+
+function RequestMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+      <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-lg font-semibold text-foreground">{value}</p>
     </div>
   );
 }

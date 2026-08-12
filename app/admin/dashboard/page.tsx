@@ -16,9 +16,9 @@ import { cn, formatMMK } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
-  const ownerAccountsResult = await loadRestaurantOwnerAccounts();
-  const [serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
+  const [ownerAccountsResult, serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
     await Promise.all([
+      loadRestaurantOwnerAccounts(),
       getAdminServiceOverview(supabase),
       getAdminRequestDetails(supabase),
       getMonetizationReport(supabase),
@@ -26,17 +26,17 @@ export default async function AdminDashboardPage() {
     ]);
 
   return (
-    <main className="min-h-screen bg-background px-5 py-8 md:px-8">
-      <section className="mx-auto max-w-5xl rounded-xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <main className="min-h-screen bg-background px-4 py-5 md:px-6">
+      <section className="mx-auto max-w-6xl rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Admin Dashboard
             </p>
-            <h1 className="mt-2 text-2xl font-semibold text-foreground">
+            <h1 className="mt-1 text-xl font-semibold text-foreground md:text-2xl">
               Welcome, {profile.full_name ?? "admin"}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Admin users are routed here instead of the student or driver dashboards.
             </p>
           </div>
@@ -46,31 +46,31 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Service Overview</h2>
+          <h2 className="text-base font-semibold text-foreground">Service Overview</h2>
           <p className="text-sm text-muted-foreground">
             Live counts across the four student service categories.
           </p>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {serviceOverview.map((item) => (
             <article
               key={item.key}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm"
+              className="rounded-xl border border-border bg-card p-3 shadow-sm"
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 <div>
-                  <h3 className="font-semibold text-foreground">{item.label}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{item.label}</h3>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Total
                     </p>
-                    <p className="mt-1 text-2xl font-semibold text-foreground">
+                    <p className="mt-0.5 text-xl font-semibold text-foreground">
                       {item.totalCount}
                     </p>
                   </div>
@@ -78,7 +78,7 @@ export default async function AdminDashboardPage() {
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Active
                     </p>
-                    <p className="mt-1 text-2xl font-semibold text-foreground">
+                    <p className="mt-0.5 text-xl font-semibold text-foreground">
                       {item.activeRequestCount}
                     </p>
                   </div>
@@ -94,46 +94,46 @@ export default async function AdminDashboardPage() {
         setupError={ownerAccountsResult.error}
       />
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Request Details</h2>
+          <h2 className="text-base font-semibold text-foreground">Request Details</h2>
           <p className="text-sm text-muted-foreground">
             Recent student requests and accepted bookings across every category.
           </p>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           {requestDetails.length === 0 ? (
             <div className="p-5 text-sm text-muted-foreground">
               No request activity has been recorded yet.
             </div>
           ) : (
-            <div className="max-h-[32rem] overflow-auto">
+            <div className="max-h-[28rem] overflow-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="sticky top-0 z-10 border-b border-border bg-secondary text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Requester</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Listing</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Requested</th>
-                    <th className="px-4 py-3 font-medium">Accepted</th>
-                    <th className="px-4 py-3 font-medium">Completed</th>
+                    <th className="px-3 py-2.5 font-medium">Requester</th>
+                    <th className="px-3 py-2.5 font-medium">Category</th>
+                    <th className="px-3 py-2.5 font-medium">Listing</th>
+                    <th className="px-3 py-2.5 font-medium">Status</th>
+                    <th className="px-3 py-2.5 font-medium">Requested</th>
+                    <th className="px-3 py-2.5 font-medium">Accepted</th>
+                    <th className="px-3 py-2.5 font-medium">Completed</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {requestDetails.map((request) => (
                     <tr key={request.id} className="align-top">
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <p className="font-medium text-foreground">{request.requesterName}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {request.requesterPhone ?? "No phone added"}
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.serviceLabel}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <p className="font-medium text-foreground">{request.serviceName}</p>
                         {request.providerName && (
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -146,7 +146,7 @@ export default async function AdminDashboardPage() {
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <Badge
                           className={cn(
                             "px-2.5 text-xs font-semibold",
@@ -156,13 +156,13 @@ export default async function AdminDashboardPage() {
                           {REQUEST_STATUS_LABEL[request.status]}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {formatDateTime(request.requestedAt)}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.acceptedAt ? formatDateTime(request.acceptedAt) : "-"}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.completedAt ? formatDateTime(request.completedAt) : "-"}
                       </td>
                     </tr>
@@ -174,26 +174,26 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Monetization Report</h2>
+          <h2 className="text-base font-semibold text-foreground">Monetization Report</h2>
           <p className="text-sm text-muted-foreground">
             Revenue received from provider registrations and transportation commissions.
           </p>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Received revenue</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {formatMMK(monetizationReport.totalMmk)}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted-foreground">Payments awaiting review</p>
-                <p className="mt-1 text-3xl font-semibold text-foreground">
+                <p className="mt-1 text-2xl font-semibold text-foreground">
                   {pendingPaymentCount}
                 </p>
               </div>
@@ -208,11 +208,11 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           {monetizationReport.lineItems.map((item) => (
             <article
               key={item.key}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm"
+              className="rounded-xl border border-border bg-card p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>

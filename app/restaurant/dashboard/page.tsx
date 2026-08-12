@@ -16,13 +16,15 @@ export default async function RestaurantDashboardPage() {
     );
   }
 
-  const packages = await getFoodPackagesForRestaurant(supabase, restaurant.id);
-  const requests = await getRequestsForRestaurant(supabase, restaurant.id);
+  const [packages, requests] = await Promise.all([
+    getFoodPackagesForRestaurant(supabase, restaurant.id),
+    getRequestsForRestaurant(supabase, restaurant.id),
+  ]);
   const requesters = await getProfilesByIds(supabase, [...new Set(requests.map((r) => r.profile_id))]);
   const requesterMap = new Map(requesters.map((p) => [p.id, p]));
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col gap-5">
       <FoodPackageManager restaurantId={restaurant.id} packages={packages} />
       {requests.length === 0 ? (
         <EmptyState message="No one has subscribed to your packages yet." />

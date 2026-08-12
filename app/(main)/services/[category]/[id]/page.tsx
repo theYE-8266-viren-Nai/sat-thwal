@@ -100,7 +100,7 @@ export default async function ServiceDetailPage({
   ]);
 
   return (
-    <div className="pb-4">
+    <div className="pb-3">
       <RecordRecentlyViewed category={typedCategory} id={id} />
       <PageHeader title={detail.title} />
       <ServiceDetailHeader data={detail} />
@@ -115,22 +115,22 @@ export default async function ServiceDetailPage({
         />
       )}
 
-      <div className="px-5 md:px-8">
+      <div className="px-4 md:px-6">
         <DetailInfoSection icon={Wallet} title="Pricing" lines={[detail.priceLabel]} />
         <DetailInfoSection icon={Clock} title="Availability" lines={detail.availabilityLines} />
         <DetailInfoSection icon={MapPin} title="Location" lines={[detail.locationLabel]} />
       </div>
 
       {typedCategory === "transportation" && detail.routeStops && (
-        <div className="px-5 py-4 md:px-8">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Complete route</h3>
-          <div className="rounded-lg border border-border bg-card p-4">
+        <div className="px-4 py-3 md:px-6">
+          <h3 className="mb-2 text-sm font-semibold text-foreground">Complete route</h3>
+          <div className="rounded-lg border border-border bg-card p-3">
             <RouteTimeline stops={detail.routeStops} />
           </div>
         </div>
       )}
 
-      <div className="px-5 py-2 md:px-8">
+      <div className="px-4 py-2 md:px-6">
         <h3 className="mb-1 text-sm font-semibold text-foreground">Description</h3>
         <p className="text-sm text-muted-foreground">{detail.description}</p>
       </div>

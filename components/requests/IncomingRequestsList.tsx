@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, CheckCircle2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -26,9 +26,14 @@ interface IncomingRequestsListProps {
 export function IncomingRequestsList({ requests, requesterNames }: IncomingRequestsListProps) {
   const [rows, setRows] = useState(requests);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const pendingRequests = rows.filter((request) => request.status === "pending");
-  const acceptedRequests = rows.filter((request) => request.status === "confirmed");
-  const completedRequests = rows.filter((request) => request.status === "completed");
+  const { pendingRequests, acceptedRequests, completedRequests } = useMemo(
+    () => ({
+      pendingRequests: rows.filter((request) => request.status === "pending"),
+      acceptedRequests: rows.filter((request) => request.status === "confirmed"),
+      completedRequests: rows.filter((request) => request.status === "completed"),
+    }),
+    [rows],
+  );
 
   async function respond(requestId: string, status: "confirmed" | "cancelled") {
     setPendingId(requestId);
@@ -79,23 +84,31 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
     return (
       <div
         key={request.id}
-        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+        className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-sm"
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-medium text-foreground">{requesterNames[request.id]}</p>
-            {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{requesterNames[request.id]}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Requested {formatRelativeDate(request.created_at)}
+            </p>
           </div>
-          <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
+          <Badge className={cn("h-6 shrink-0 rounded-full px-2 text-[0.7rem] font-semibold", REQUEST_STATUS_STYLES[request.status])}>
             {REQUEST_STATUS_LABEL[request.status]}
           </Badge>
         </div>
 
+        {request.note && (
+          <p className="line-clamp-2 rounded-lg bg-secondary/50 px-3 py-2 text-sm text-muted-foreground">
+            {request.note}
+          </p>
+        )}
+
         {request.status === "pending" && (
           <div className="flex gap-2">
             <Button
-              size="touch"
-              className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+              size="sm"
+              className="flex-1 rounded-lg bg-brand-mint text-white hover:bg-brand-mint/90"
               disabled={pendingId === request.id}
               onClick={() => respond(request.id, "confirmed")}
             >
@@ -104,8 +117,8 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
             </Button>
             <Button
               variant="outline"
-              size="touch"
-              className="flex-1 rounded-xl"
+              size="sm"
+              className="flex-1 rounded-lg"
               disabled={pendingId === request.id}
               onClick={() => respond(request.id, "cancelled")}
             >
@@ -116,7 +129,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
         )}
 
         {request.status === "confirmed" && (canComplete || waitingForStudent || studentCompletedFirst) && (
-          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+          <div className="rounded-lg border border-border bg-secondary/40 p-3">
             {waitingForStudent ? (
               <p className="text-sm text-muted-foreground">Waiting for student to confirm completion.</p>
             ) : (
@@ -125,8 +138,8 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
                   <p className="text-sm text-muted-foreground">Student marked this complete.</p>
                 )}
                 <Button
-                  size="touch"
-                  className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+                  size="sm"
+                  className="rounded-lg bg-brand-mint text-white hover:bg-brand-mint/90"
                   disabled={pendingId === request.id}
                   onClick={() => complete(request.id)}
                 >
@@ -139,7 +152,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
         )}
 
         {request.status === "completed" && (
-          <div className="rounded-xl border border-border bg-secondary/40 p-3">
+          <div className="rounded-lg border border-border bg-secondary/40 p-3">
             <p className="text-sm font-medium text-foreground">Completed by both sides</p>
             {completedDateLabel && (
               <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
@@ -152,43 +165,67 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
 
   function renderEmpty(message: string) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         {message}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 px-5 md:px-8">
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Incoming requests</h2>
-          <p className="text-sm text-muted-foreground">Pending students waiting for your response.</p>
-        </div>
+    <div className="flex flex-col gap-5 px-4 md:px-6">
+      <div className="grid grid-cols-3 gap-2">
+        <SummaryPill label="Pending" value={pendingRequests.length} />
+        <SummaryPill label="Accepted" value={acceptedRequests.length} />
+        <SummaryPill label="Completed" value={completedRequests.length} />
+      </div>
+
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Incoming requests" description="Pending students waiting for your response." />
         {pendingRequests.length > 0
           ? pendingRequests.map((request) => renderRequestCard(request))
           : renderEmpty("No pending requests right now.")}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Accepted requests</h2>
-          <p className="text-sm text-muted-foreground">Students you have already accepted.</p>
-        </div>
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Accepted requests" description="Students you have already accepted." />
         {acceptedRequests.length > 0
           ? acceptedRequests.map((request) => renderRequestCard(request))
           : renderEmpty("No accepted requests yet.")}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Completed requests</h2>
-          <p className="text-sm text-muted-foreground">Requests both sides marked complete.</p>
-        </div>
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Completed requests" description="Requests both sides marked complete." />
         {completedRequests.length > 0
           ? completedRequests.map((request) => renderRequestCard(request))
           : renderEmpty("No completed requests yet.")}
       </section>
     </div>
   );
+}
+
+function SectionHeading({ title, description }: { title: string; description: string }) {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function SummaryPill({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+      <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-lg font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function formatRelativeDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }

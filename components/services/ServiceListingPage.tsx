@@ -62,13 +62,13 @@ export function ServiceListingPage<TRow>({
 
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const data = await fetchRows(supabase);
+      const [authResult, data] = await Promise.all([
+        supabase.auth.getUser(),
+        fetchRows(supabase),
+      ]);
       if (cancelled) return;
       setRows(data);
-      setProfileId(user?.id ?? null);
+      setProfileId(authResult.data.user?.id ?? null);
       setLoading(false);
     }
 
@@ -92,7 +92,7 @@ export function ServiceListingPage<TRow>({
     <div>
       <PageHeader title={title} subtitle={`${filteredCards.length} available`} />
 
-      <div className="flex items-center gap-2 px-5 pb-4 md:px-8">
+      <div className="flex items-center gap-2 px-4 pb-3 md:px-6">
         <SearchInput value={query} onChange={setQuery} placeholder={searchPlaceholder} />
         <FilterSheet
           fields={filterFields}
@@ -107,10 +107,10 @@ export function ServiceListingPage<TRow>({
       {!hideMainList && (
         <>
           {listHeading && (
-            <h2 className="mb-3 mt-7 px-5 text-lg font-bold text-foreground md:px-8">{listHeading}</h2>
+            <h2 className="mb-2 mt-5 px-4 text-base font-semibold text-foreground md:px-6">{listHeading}</h2>
           )}
           {listVariant === "compact" ? (
-            <div className="flex flex-col gap-3 px-5 md:px-8">
+            <div className="flex flex-col gap-2.5 px-4 md:px-6">
               {loading &&
                 Array.from({ length: 6 }).map((_, i) => <ServiceCardCompactSkeleton key={i} />)}
 
@@ -123,7 +123,7 @@ export function ServiceListingPage<TRow>({
                 ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 md:px-6 xl:grid-cols-4">
               {loading &&
                 Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
 

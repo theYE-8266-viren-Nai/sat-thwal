@@ -32,17 +32,17 @@ export function CategoryCard({ category, existingTutorId, existingHostelId }: Ca
   const cardContent = (
     <>
       <div
-        className="flex h-12 w-12 items-center justify-center rounded-xl"
+        className="flex h-10 w-10 items-center justify-center rounded-lg"
         style={{ backgroundColor: `color-mix(in srgb, ${category.color} 15%, white)` }}
       >
-        <Icon className="h-6 w-6" style={{ color: category.color }} />
+        <Icon className="h-5 w-5" style={{ color: category.color }} />
       </div>
       <span className="text-sm font-semibold text-foreground">{category.label}</span>
     </>
   );
 
   const cardClassName =
-    "flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-4 text-center shadow-sm transition-shadow hover:shadow-md";
+    "flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0";
 
   if (!actions) {
     return (

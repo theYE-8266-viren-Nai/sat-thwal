@@ -25,8 +25,8 @@ export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
 
   return (
     <Link href={data.href} className="block">
-      <Card className="flex flex-row items-center gap-4 overflow-hidden border-border p-4 shadow-sm transition-shadow hover:shadow-md">
-        <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-md bg-muted">
+      <Card className="flex flex-row items-center gap-3 overflow-hidden rounded-lg border-border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-muted sm:h-28 sm:w-28">
           {data.image ? (
             <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
           ) : (
@@ -39,8 +39,8 @@ export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <h3 className="line-clamp-1 text-base font-semibold text-foreground">{data.title}</h3>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h3 className="line-clamp-1 text-sm font-semibold text-foreground sm:text-base">{data.title}</h3>
           <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
           {[primaryMeta, secondaryMeta].filter(Boolean).map((meta, i) => {
             const Icon = META_ICONS[(meta as ServiceCardMeta).icon];
@@ -51,7 +51,7 @@ export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
               </span>
             );
           })}
-          <span className="text-base font-semibold text-foreground">{data.priceLabel}</span>
+          <span className="truncate text-sm font-semibold text-foreground">{data.priceLabel}</span>
         </div>
       </Card>
     </Link>

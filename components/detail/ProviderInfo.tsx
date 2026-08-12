@@ -5,8 +5,8 @@ import type { ServiceDetailData } from "@/types/detail";
 
 export function ProviderInfo({ data }: { data: ServiceDetailData }) {
   return (
-    <div className="flex items-center gap-3 px-5 py-4 md:px-8">
-      <Avatar className="h-11 w-11">
+    <div className="flex items-center gap-3 px-4 py-3 md:px-6">
+      <Avatar className="h-10 w-10">
         {data.providerAvatar && <AvatarImage src={data.providerAvatar} alt={data.providerName} />}
         <AvatarFallback>
           {data.providerAvatar === null && data.providerName ? (

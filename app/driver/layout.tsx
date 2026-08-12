@@ -15,13 +15,13 @@ export default async function DriverLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-4 backdrop-blur md:px-8">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Driver Panel
             </p>
-            <h1 className="truncate text-xl font-semibold text-foreground">
+            <h1 className="truncate text-lg font-semibold text-foreground">
               {displayName}
             </h1>
           </div>
@@ -30,7 +30,7 @@ export default async function DriverLayout({ children }: { children: React.React
           </div>
         </div>
       </header>
-      <main className="px-5 py-6 md:px-8">
+      <main className="px-4 py-5 md:px-6">
         {isActive ? (
           children
         ) : (

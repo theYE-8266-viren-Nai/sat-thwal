@@ -26,8 +26,8 @@ export function ServiceCard({ data }: ServiceCardProps) {
 
   return (
     <Link href={data.href} className="block h-full">
-      <Card className="flex h-full flex-col overflow-hidden border-border py-0 shadow-sm transition-shadow hover:shadow-md">
-        <div className="relative aspect-[4/3] w-full bg-muted">
+      <Card className="flex h-full flex-col overflow-hidden rounded-lg border-border py-0 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+        <div className="relative aspect-[5/3] w-full bg-muted">
           {data.image ? (
             <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
           ) : (
@@ -41,12 +41,12 @@ export function ServiceCard({ data }: ServiceCardProps) {
           {data.verified && <VerifiedBadge className="absolute left-2 top-2 bg-white/90" />}
         </div>
 
-        <div className="flex flex-1 flex-col gap-2 p-4">
-          <h3 className="line-clamp-1 font-semibold text-foreground">{data.title}</h3>
+        <div className="flex flex-1 flex-col gap-1.5 p-3">
+          <h3 className="line-clamp-1 text-sm font-semibold text-foreground">{data.title}</h3>
           <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
 
-          <div className="flex flex-col gap-1">
-            {data.meta.map((item, i) => {
+          <div className="flex flex-col gap-1 pt-0.5">
+            {data.meta.slice(0, 3).map((item, i) => {
               const Icon = META_ICONS[item.icon];
               return (
                 <span key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -57,10 +57,10 @@ export function ServiceCard({ data }: ServiceCardProps) {
             })}
           </div>
 
-          <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="font-semibold text-foreground">{data.priceLabel}</span>
+          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+            <span className="min-w-0 truncate text-sm font-semibold text-foreground">{data.priceLabel}</span>
             <Badge
-              className="h-auto px-3 py-1.5 text-xs font-semibold text-white"
+              className="h-7 shrink-0 rounded-full px-2.5 text-[0.7rem] font-semibold text-white"
               style={{ backgroundColor: category.color }}
             >
               {data.ctaLabel}
