@@ -1,8 +1,8 @@
 const PROMPTS = [
-  "Find approved Data Structures tutoring",
-  "Find student housing under 150,000 MMK",
-  "Find an approved meal plan with a student discount",
-  "Find a campus ferry route to UIT",
+  "Find a tutor for Data Structures",
+  "Find a hostel under 150,000 MMK",
+  "Find food with a student discount",
+  "Find a transportation route to UIT",
 ];
 
 export function SuggestedPrompts({ onSelect }: { onSelect: (prompt: string) => void }) {

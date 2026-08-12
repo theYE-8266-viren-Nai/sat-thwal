@@ -129,16 +129,16 @@ export default function SavedPage() {
 
   return (
     <div>
-      <PageHeader title="Saved Requests" />
+      <PageHeader title="Saved & Bookings" />
       <div className="px-5 md:px-8">
         <Tabs defaultValue="pending">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="pending">Pending requests</TabsTrigger>
+            <TabsTrigger value="pending">Pending bookings</TabsTrigger>
             <TabsTrigger value="confirmed">Accepted</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           <TabsContent value="pending" className="pt-4">
-            {renderRequestGrid("pending", "No pending support requests right now.")}
+            {renderRequestGrid("pending", "No pending bookings right now.")}
           </TabsContent>
           <TabsContent value="confirmed" className="pt-4">
             {renderRequestGrid("confirmed", "No accepted requests yet.")}

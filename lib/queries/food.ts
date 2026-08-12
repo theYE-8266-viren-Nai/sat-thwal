@@ -219,7 +219,7 @@ export function foodToDetail({ package: foodPackage, restaurant }: FoodItem): Se
     priceLabel: `${formatMMK(foodPackage.monthly_price)} / month`,
     availabilityLines: [restaurant.opening_hours ?? "Hours unavailable", "Monthly meal support plan"],
     locationLabel: `${restaurant.township}, ${formatDistance(restaurant.distance_km)}`,
-    description: `${foodPackage.name} is a monthly ${packageLabel.toLowerCase()} meal support plan from ${restaurant.name}. Students request the plan through Sat Thwal and do not choose individual dishes.`,
+    description: `${foodPackage.name} is a monthly ${packageLabel.toLowerCase()} meal support plan from ${restaurant.name}. Students request the plan through Set Thwal and do not choose individual dishes.`,
     amenities: [
       packageLabel,
       `${foodPackage.max_subscribers} student plan capacity`,
@@ -227,7 +227,7 @@ export function foodToDetail({ package: foodPackage, restaurant }: FoodItem): Se
       restaurant.halal && "Halal",
     ].filter((v): v is string => Boolean(v)),
     ctaLabel: "Request Plan",
-    contactInfo: "Request this meal plan through Sat Thwal. The approved meal contact will confirm availability.",
+    contactInfo: "Request this meal plan through Set Thwal. The approved meal contact will confirm availability.",
     ownerProfileId: restaurant.owner_profile_id,
   };
 }

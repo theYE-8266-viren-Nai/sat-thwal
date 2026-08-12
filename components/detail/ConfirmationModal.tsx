@@ -49,7 +49,7 @@ const ACTION_COPY: Record<ConfirmationAction, { title: string; description: stri
   },
   request: {
     title: "Send support request",
-    description: "Send a request through Sat Thwal. The service contact will confirm the details.",
+    description: "Send a request through Set Thwal. The service contact will confirm the details.",
     confirmLabel: "Send request",
   },
   requestSeat: {

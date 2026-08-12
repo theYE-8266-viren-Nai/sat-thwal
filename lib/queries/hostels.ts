@@ -130,7 +130,7 @@ export function hostelToDetail(hostel: HostelRow): ServiceDetailData {
       hostel.description ?? `${hostel.name} is a ${GENDER_LABEL[hostel.gender_policy].toLowerCase()} hostel in ${hostel.township}.`,
     amenities: hostel.meals_included ? [...hostel.facilities, "Meals included"] : hostel.facilities,
     ctaLabel: "Request Room",
-    contactInfo: "Request this approved housing option through Sat Thwal. The service contact will follow up with next steps.",
+    contactInfo: "Request this approved housing option through Set Thwal. The service contact will follow up with next steps.",
     ownerProfileId: hostel.owner_profile_id,
   };
 }

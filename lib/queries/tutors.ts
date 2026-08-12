@@ -134,12 +134,12 @@ export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
     rating: tutor.rating,
     reviewCount: tutor.review_count,
     priceLabel: `${formatMMK(tutor.price_per_session)} / session`,
-    availabilityLines: [tutor.availability_note ?? "Request availability through Sat Thwal", modeLabel],
+    availabilityLines: [tutor.availability_note ?? "Request availability through Set Thwal", modeLabel],
     locationLabel: tutor.township,
     description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")}.`,
     amenities: tutor.subjects,
     ctaLabel: "Request Session",
-    contactInfo: "Request this approved tutor through Sat Thwal. The service contact will follow up with next steps.",
+    contactInfo: "Request this approved tutor through Set Thwal. The service contact will follow up with next steps.",
     ownerProfileId: tutor.owner_profile_id,
   };
 }

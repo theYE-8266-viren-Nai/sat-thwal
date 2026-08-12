@@ -387,7 +387,7 @@ export function routeToDetail(route: TransportationRow): ServiceDetailData {
       ),
     ],
     ctaLabel: "Request Seat",
-    contactInfo: "Request this ferry seat through Sat Thwal. The approved ferry contact will confirm the pickup details.",
+    contactInfo: "Request this ferry seat through Set Thwal. The approved ferry contact will confirm the pickup details.",
     routeStops,
     vehicleType: route.vehicle_type,
     availableSeats: route.available_seats,
