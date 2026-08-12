@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getMonetizationReport } from "@/lib/admin/monetization";
 import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
 import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
+import { getSchoolReportingMetrics } from "@/lib/admin/schoolReportingMetrics";
 import { getAdminServiceOverview } from "@/lib/admin/serviceOverview";
 import { getPendingProviderRegistrationCount } from "@/lib/queries/providerRegistrations";
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
@@ -17,8 +18,15 @@ import { cn, formatMMK } from "@/lib/utils";
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
   const ownerAccountsResult = await loadRestaurantOwnerAccounts();
-  const [serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
+  const [
+    schoolReportingMetrics,
+    serviceOverview,
+    requestDetails,
+    monetizationReport,
+    pendingPaymentCount,
+  ] =
     await Promise.all([
+      getSchoolReportingMetrics(supabase),
       getAdminServiceOverview(supabase),
       getAdminRequestDetails(supabase),
       getMonetizationReport(supabase),
@@ -42,6 +50,73 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="sm:w-36">
             <LogoutButton />
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-6 max-w-5xl">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold text-foreground">
+            School Reporting Metrics
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Government-ready indicators for student support demand and provider readiness.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">Active requests</p>
+            <p className="mt-1 text-3xl font-semibold text-foreground">
+              {schoolReportingMetrics.activeRequestCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">Approved providers</p>
+            <p className="mt-1 text-3xl font-semibold text-foreground">
+              {schoolReportingMetrics.approvedProviderCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">Pending approvals</p>
+            <p className="mt-1 text-3xl font-semibold text-foreground">
+              {schoolReportingMetrics.pendingApprovalCount}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-5 py-4">
+            <h3 className="font-semibold text-foreground">Service Demand by Category</h3>
+          </div>
+          <div className="divide-y divide-border">
+            {schoolReportingMetrics.demandByCategory.map((item) => (
+              <div
+                key={item.key}
+                className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_7rem_7rem_7rem]"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-foreground">{item.label}</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {item.sharePercent}%
+                    </p>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-brand-indigo"
+                      style={{ width: `${item.sharePercent}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {item.requestCount} total request{item.requestCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <MetricCell label="Active" value={item.activeRequestCount} />
+                <MetricCell label="Approved" value={item.approvedProviderCount} />
+                <MetricCell label="Pending" value={item.pendingApprovalCount} />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -261,4 +336,15 @@ function formatDateTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function MetricCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-xl font-semibold text-foreground">{value}</p>
+    </div>
+  );
 }
