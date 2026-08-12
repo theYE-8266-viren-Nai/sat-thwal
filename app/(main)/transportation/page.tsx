@@ -44,7 +44,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function TransportationPage() {
   return (
     <ServiceListingPage<TransportationRow>
-      title="University Ferry"
+      title="Campus Transport"
       searchPlaceholder="Search routes, stops or townships..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={(n) => (n >= 360 && n <= 660 ? minutesToLabel(n) : formatMMK(n))}
@@ -86,7 +86,7 @@ export default function TransportationPage() {
         if (filters.seatsAvailable && row.available_seats <= 0) return false;
         return true;
       }}
-      emptyMessage="No routes match your filters yet. Try widening your search."
+      emptyMessage="No approved ferry routes match your filters yet. Try widening your search."
     />
   );
 }

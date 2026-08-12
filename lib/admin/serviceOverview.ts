@@ -20,19 +20,19 @@ const SERVICE_OVERVIEW_META: Record<
 > = {
   tutor: {
     label: "Tutors",
-    description: "Tutor listings and active session requests.",
+    description: "School-visible academic support listings and active session requests.",
   },
   hostel: {
     label: "Hostels",
-    description: "Room listings and active room requests.",
+    description: "Accommodation options monitored for student welfare and availability.",
   },
   food: {
     label: "Food packages",
-    description: "Enabled monthly packages and active subscriptions.",
+    description: "Approved meal support options and active student subscriptions.",
   },
   transportation: {
     label: "Transportation",
-    description: "Routes and active seat requests.",
+    description: "Student route coverage, seat demand, and active transport requests.",
   },
 };
 

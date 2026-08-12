@@ -21,7 +21,7 @@ export function ActiveRequestsStrip({ items }: ActiveRequestsStripProps) {
 
   return (
     <section className="mt-7 px-5 md:px-8">
-      <h2 className="mb-3 text-lg font-bold text-foreground">Your active requests</h2>
+      <h2 className="mb-3 text-lg font-bold text-foreground">Your school support requests</h2>
       <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
         {items.map(({ requestId, status, card }) => {
           const category = CATEGORIES[card.category];

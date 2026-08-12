@@ -73,7 +73,7 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
   const existing = await getHostelByOwner(supabase, user.id);
   if (existing) return { ok: false, error: "already-listed" };
   if (!input.paymentMethod || !isProviderPaymentMethod(input.paymentMethod)) {
-    return { ok: false, error: "Select a valid payment method." };
+    return { ok: false, error: "Select a valid verification channel." };
   }
 
   const validated = validateHostelRoomInput(input);
@@ -99,7 +99,7 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
     createdHostelId = created.id;
 
     const registration = await getProviderRegistration(supabase, user.id, "hostel");
-    if (!registration) throw new Error("The hostel payment registration was not created.");
+    if (!registration) throw new Error("The hostel school verification was not created.");
 
     const { error: paymentError } = await supabase.rpc(
       "submit_provider_registration_payment",
@@ -116,7 +116,7 @@ export async function listHostelRoom(input: HostelRoomInput): Promise<HostelRoom
     return {
       ok: false,
       error: createdHostelId
-        ? `Your room was saved, but the payment could not be submitted. ${toErrorMessage(error)}`
+        ? `Your room was saved, but school verification could not be submitted. ${toErrorMessage(error)}`
         : "Couldn't save your listing. Try again.",
       hostelId: createdHostelId,
     };

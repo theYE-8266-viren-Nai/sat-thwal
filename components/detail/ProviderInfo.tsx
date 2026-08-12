@@ -18,7 +18,7 @@ export function ProviderInfo({ data }: { data: ServiceDetailData }) {
       </Avatar>
       <div>
         <p className="text-sm font-semibold text-foreground">{data.providerName}</p>
-        <p className="text-xs text-muted-foreground">Service provider</p>
+        <p className="text-xs text-muted-foreground">School-approved contact</p>
       </div>
     </div>
   );

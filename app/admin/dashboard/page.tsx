@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getMonetizationReport } from "@/lib/admin/monetization";
 import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
 import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
+import { getSchoolReportingMetrics } from "@/lib/admin/schoolReportingMetrics";
 import { getAdminServiceOverview } from "@/lib/admin/serviceOverview";
 import { getPendingProviderRegistrationCount } from "@/lib/queries/providerRegistrations";
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
@@ -16,14 +17,29 @@ import { cn, formatMMK } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
-  const [ownerAccountsResult, serviceOverview, requestDetails, monetizationReport, pendingPaymentCount] =
-    await Promise.all([
-      loadRestaurantOwnerAccounts(),
-      getAdminServiceOverview(supabase),
-      getAdminRequestDetails(supabase),
-      getMonetizationReport(supabase),
-      getPendingProviderRegistrationCount(supabase),
-    ]);
+  const [
+    ownerAccountsResult,
+    schoolReportingMetrics,
+    serviceOverview,
+    requestDetails,
+    monetizationReport,
+    pendingApprovalCount,
+  ] = await Promise.all([
+    loadRestaurantOwnerAccounts(),
+    getSchoolReportingMetrics(supabase),
+    getAdminServiceOverview(supabase),
+    getAdminRequestDetails(supabase),
+    getMonetizationReport(supabase),
+    getPendingProviderRegistrationCount(supabase),
+  ]);
+  const totalServiceCount = serviceOverview.reduce((sum, item) => sum + item.totalCount, 0);
+  const activeRequestTotal = serviceOverview.reduce(
+    (sum, item) => sum + item.activeRequestCount,
+    0,
+  );
+  const completedRequestCount = requestDetails.filter(
+    (request) => request.status === "completed",
+  ).length;
 
   return (
     <main className="min-h-screen bg-background px-4 py-5 md:px-6">
@@ -31,13 +47,14 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Admin Dashboard
+              School Admin Dashboard
             </p>
             <h1 className="mt-1 text-xl font-semibold text-foreground md:text-2xl">
               Welcome, {profile.full_name ?? "admin"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Admin users are routed here instead of the student or driver dashboards.
+              Govern student welfare services, provider approvals, and request activity
+              from one UIT-controlled workspace.
             </p>
           </div>
           <div className="sm:w-36">
@@ -48,9 +65,76 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
+          <h2 className="text-base font-semibold text-foreground">
+            School Reporting Metrics
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Government-ready indicators for student support demand and provider readiness.
+          </p>
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Active requests</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {schoolReportingMetrics.activeRequestCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Approved providers</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {schoolReportingMetrics.approvedProviderCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Pending approvals</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {schoolReportingMetrics.pendingApprovalCount}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-4 py-3">
+            <h3 className="font-semibold text-foreground">Service Demand by Category</h3>
+          </div>
+          <div className="divide-y divide-border">
+            {schoolReportingMetrics.demandByCategory.map((item) => (
+              <div
+                key={item.key}
+                className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem]"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-foreground">{item.label}</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {item.sharePercent}%
+                    </p>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-brand-indigo"
+                      style={{ width: `${item.sharePercent}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {item.requestCount} total request{item.requestCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <MetricCell label="Active" value={item.activeRequestCount} />
+                <MetricCell label="Approved" value={item.approvedProviderCount} />
+                <MetricCell label="Pending" value={item.pendingApprovalCount} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-5 max-w-6xl">
+        <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold text-foreground">Service Overview</h2>
           <p className="text-sm text-muted-foreground">
-            Live counts across the four student service categories.
+            Live school visibility across academic support, accommodation, food, and transport.
           </p>
         </div>
 
@@ -63,7 +147,9 @@ export default async function AdminDashboardPage() {
               <div className="flex flex-col gap-3">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">{item.label}</h3>
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -98,7 +184,7 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold text-foreground">Request Details</h2>
           <p className="text-sm text-muted-foreground">
-            Recent student requests and accepted bookings across every category.
+            Recent student requests and school-visible service outcomes across every category.
           </p>
         </div>
 
@@ -176,6 +262,59 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
+          <h2 className="text-base font-semibold text-foreground">School Governance Center</h2>
+          <p className="text-sm text-muted-foreground">
+            Operational signals for provider oversight, student demand, and service readiness.
+          </p>
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Approved service records</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {totalServiceCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Providers awaiting review</p>
+                <p className="mt-1 text-2xl font-semibold text-foreground">
+                  {pendingApprovalCount}
+                </p>
+              </div>
+              <Clock3 className="h-5 w-5 text-brand-indigo" aria-hidden="true" />
+            </div>
+            <Button variant="link" asChild className="mt-2 h-auto p-0">
+              <Link href="/admin/provider-registrations">
+                Review providers
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Active student requests</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {activeRequestTotal}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Pending or confirmed requests requiring service follow-up.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Completed support cases</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {completedRequestCount}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Student requests completed through approved service channels.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-5 max-w-6xl">
+        <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold text-foreground">Monetization Report</h2>
           <p className="text-sm text-muted-foreground">
             Revenue received from provider registrations and transportation commissions.
@@ -194,7 +333,7 @@ export default async function AdminDashboardPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Payments awaiting review</p>
                 <p className="mt-1 text-2xl font-semibold text-foreground">
-                  {pendingPaymentCount}
+                  {pendingApprovalCount}
                 </p>
               </div>
               <Clock3 className="h-5 w-5 text-brand-indigo" aria-hidden="true" />
@@ -261,4 +400,15 @@ function formatDateTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function MetricCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-0.5 text-lg font-semibold text-foreground">{value}</p>
+    </div>
+  );
 }

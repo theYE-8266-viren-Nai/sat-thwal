@@ -18,7 +18,7 @@ export function ServiceSection({ title, seeAllHref, items, emptyLabel }: Service
         <h2 className="text-base font-semibold text-foreground">{title}</h2>
         {seeAllHref && (
           <Link href={seeAllHref} className="text-sm font-medium text-brand-indigo hover:underline">
-            See all
+            View all
           </Link>
         )}
       </div>

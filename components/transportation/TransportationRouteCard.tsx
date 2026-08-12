@@ -28,7 +28,7 @@ export function TransportationRouteCard({ data, profileId }: TransportationRoute
             )}
           </div>
           {data.driverName && (
-            <p className="mt-1 text-xs text-muted-foreground">Driver: {data.driverName}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Approved ferry contact: {data.driverName}</p>
           )}
         </div>
       </div>
@@ -72,9 +72,9 @@ export function TransportationRouteCard({ data, profileId }: TransportationRoute
             <Button
               size="touch"
               className="flex-1 rounded-xl bg-category-transport text-white hover:bg-emerald-600"
-              aria-label={`Book seat for ${data.title}`}
+              aria-label={`Request seat for ${data.title}`}
             >
-              Book Seat
+              Request Seat
             </Button>
           }
         />
