@@ -15,7 +15,7 @@ export async function submitProviderRegistrationPayment(input: {
   paymentMethod: string;
 }): Promise<ProviderPaymentActionResult> {
   if (!isProviderPaymentMethod(input.paymentMethod)) {
-    return { ok: false, error: "Select a valid payment method." };
+    return { ok: false, error: "Select a valid verification channel." };
   }
 
   const transactionReference = `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`.toUpperCase();
