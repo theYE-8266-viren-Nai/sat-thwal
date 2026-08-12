@@ -44,8 +44,8 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function TutorsPage() {
   return (
     <ServiceListingPage<TutorRow>
-      title="Tutor"
-      searchPlaceholder="Search tutors, subjects..."
+      title="Academic Support"
+      searchPlaceholder="Search approved tutors or subjects..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={formatMMK}
       fetchRows={getTutors}
@@ -76,7 +76,7 @@ export default function TutorsPage() {
         }
         return true;
       }}
-      emptyMessage="No tutors match your filters yet. Try widening your search."
+      emptyMessage="No approved tutors match your filters yet. Try widening your search."
     />
   );
 }

@@ -160,9 +160,9 @@ export function foodToCard({ package: foodPackage, restaurant }: FoodItem): Serv
     meta: [
       { icon: "map-pin", label: `${restaurant.township} · ${formatDistance(restaurant.distance_km)}` },
       { icon: "utensils", label: packageMealLabel(foodPackage.package_type) },
-      { icon: "users", label: `${foodPackage.max_subscribers} subscriber capacity` },
+      { icon: "users", label: `${foodPackage.max_subscribers} student plan capacity` },
     ],
-    ctaLabel: "Subscribe",
+    ctaLabel: "Request Plan",
     href: `/services/food/${foodPackage.id}`,
   };
 }
@@ -217,17 +217,17 @@ export function foodToDetail({ package: foodPackage, restaurant }: FoodItem): Se
     verified: restaurant.verified,
     rating: restaurant.rating,
     priceLabel: `${formatMMK(foodPackage.monthly_price)} / month`,
-    availabilityLines: [restaurant.opening_hours ?? "Hours unavailable", "Monthly food subscription"],
+    availabilityLines: [restaurant.opening_hours ?? "Hours unavailable", "Monthly meal support plan"],
     locationLabel: `${restaurant.township}, ${formatDistance(restaurant.distance_km)}`,
-    description: `${foodPackage.name} is a monthly ${packageLabel.toLowerCase()} subscription from ${restaurant.name}. Students subscribe to the package and do not choose individual dishes.`,
+    description: `${foodPackage.name} is a monthly ${packageLabel.toLowerCase()} meal support plan from ${restaurant.name}. Students request the plan through Sat Thwal and do not choose individual dishes.`,
     amenities: [
       packageLabel,
-      `${foodPackage.max_subscribers} subscriber capacity`,
+      `${foodPackage.max_subscribers} student plan capacity`,
       restaurant.vegetarian_options && "Vegetarian options",
       restaurant.halal && "Halal",
     ].filter((v): v is string => Boolean(v)),
-    ctaLabel: "Subscribe",
-    contactInfo: "Subscribe through Sat Thwal. The restaurant will confirm availability for this monthly package.",
+    ctaLabel: "Request Plan",
+    contactInfo: "Request this meal plan through Sat Thwal. The approved meal contact will confirm availability.",
     ownerProfileId: restaurant.owner_profile_id,
   };
 }

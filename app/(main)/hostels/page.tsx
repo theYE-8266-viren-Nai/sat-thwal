@@ -30,8 +30,8 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function HostelsPage() {
   return (
     <ServiceListingPage<HostelRow>
-      title="Hostel"
-      searchPlaceholder="Search hostels, townships..."
+      title="Student Housing"
+      searchPlaceholder="Search approved housing or townships..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={(n) => (n < 1000 ? `${n} km` : formatMMK(n))}
       fetchRows={getHostels}
@@ -61,7 +61,7 @@ export default function HostelsPage() {
         if (filters.availableOnly && row.available_rooms <= 0) return false;
         return true;
       }}
-      emptyMessage="No hostels match your filters yet. Try widening your search."
+      emptyMessage="No approved student housing matches your filters yet. Try widening your search."
     />
   );
 }

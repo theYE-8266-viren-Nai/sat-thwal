@@ -25,7 +25,7 @@ export function SmartMatchSearchBox() {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Ask SmartMatch AI — tutor, hostel, food, transportation..."
+        placeholder="Ask SmartMatch for school-approved tutoring, housing, meals, or ferry routes..."
         className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-white/70 focus:outline-none"
       />
       <button

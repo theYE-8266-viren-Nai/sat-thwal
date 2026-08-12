@@ -110,7 +110,7 @@ export function tutorToCard(tutor: TutorRow): ServiceCardData {
       { icon: "map-pin", label: tutor.township },
       { icon: "clock", label: modeLabel },
     ],
-    ctaLabel: "Book Session",
+    ctaLabel: "Request Session",
     href: `/services/tutor/${tutor.id}`,
   };
 }
@@ -134,12 +134,12 @@ export function tutorToDetail(tutor: TutorRow): ServiceDetailData {
     rating: tutor.rating,
     reviewCount: tutor.review_count,
     priceLabel: `${formatMMK(tutor.price_per_session)} / session`,
-    availabilityLines: [tutor.availability_note ?? "Contact tutor for availability", modeLabel],
+    availabilityLines: [tutor.availability_note ?? "Request availability through Sat Thwal", modeLabel],
     locationLabel: tutor.township,
     description: tutor.bio ?? `${tutor.name} tutors ${tutor.subjects.join(", ")}.`,
     amenities: tutor.subjects,
     ctaLabel: "Request Session",
-    contactInfo: "Message via Sat Thwal to get this tutor's contact details.",
+    contactInfo: "Request this approved tutor through Sat Thwal. The service contact will follow up with next steps.",
     ownerProfileId: tutor.owner_profile_id,
   };
 }

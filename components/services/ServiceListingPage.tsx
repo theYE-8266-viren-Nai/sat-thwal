@@ -90,7 +90,7 @@ export function ServiceListingPage<TRow>({
 
   return (
     <div>
-      <PageHeader title={title} subtitle={`${filteredCards.length} available`} />
+      <PageHeader title={title} subtitle={`${filteredCards.length} approved option${filteredCards.length === 1 ? "" : "s"}`} />
 
       <div className="flex items-center gap-2 px-5 pb-4 md:px-8">
         <SearchInput value={query} onChange={setQuery} placeholder={searchPlaceholder} />

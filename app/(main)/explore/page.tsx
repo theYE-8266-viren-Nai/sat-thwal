@@ -22,7 +22,7 @@ export default async function ExplorePage() {
 
   return (
     <div>
-      <PageHeader title="Explore" subtitle="Browse everything students need, by category" />
+      <PageHeader title="Explore Student Support" subtitle="Find school-supervised services by category" />
       <div className="grid grid-cols-1 gap-4 px-5 pt-2 sm:grid-cols-2 md:px-8">
         {CATEGORY_LIST.map((category) => (
           <Link
@@ -39,8 +39,8 @@ export default async function ExplorePage() {
             <div className="flex-1">
               <h2 className="font-semibold text-foreground">{category.label}</h2>
               <p className="text-sm text-muted-foreground">
-                {counts[category.category]} {category.singularLabel.toLowerCase()}
-                {counts[category.category] === 1 ? "" : "s"} available
+                {counts[category.category]} approved option
+                {counts[category.category] === 1 ? "" : "s"}
               </p>
             </div>
             <ArrowRight className="h-5 w-5 text-muted-foreground" />

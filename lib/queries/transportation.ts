@@ -341,9 +341,9 @@ export function routeToCard(route: TransportationRow): ServiceCardData {
       { icon: "bus", label: route.vehicle_type ?? "Shared vehicle" },
       { icon: "clock", label: `Departs ${departureTimeLabel}` },
       { icon: "clock", label: `Returns ${returnTimeLabel}` },
-      { icon: "users", label: `${route.available_seats} seats available` },
+      { icon: "users", label: `${route.available_seats} seats open for students` },
     ],
-    ctaLabel: "Book Seat",
+    ctaLabel: "Request Seat",
     href: `/services/transportation/${route.id}`,
     routeStops,
     driverName: route.driver_name,
@@ -373,21 +373,21 @@ export function routeToDetail(route: TransportationRow): ServiceDetailData {
     availabilityLines: [
       `Morning departure ${departureTimeLabel}`,
       `Evening return ${returnTimeLabel}`,
-      `${route.available_seats} of ${route.total_seats} seats available`,
+      `${route.available_seats} of ${route.total_seats} seats open for students`,
     ],
     locationLabel: routeStopsLabel,
-    description: `Driver: ${route.driver_name}. Vehicle: ${
+    description: `Approved ferry contact: ${route.driver_name}. Vehicle: ${
       route.vehicle_type ?? "Shared vehicle"
-    }. This UIT route covers ${routeStopsLabel}. Fill in your detailed pickup address when booking so the driver can confirm the exact pickup point.`,
+    }. This UIT route covers ${routeStopsLabel}. Fill in your detailed pickup address when requesting a seat so the ferry contact can confirm the exact pickup point.`,
     amenities: [
-      `Driver: ${route.driver_name}`,
+      `Approved ferry contact: ${route.driver_name}`,
       `Vehicle: ${route.vehicle_type ?? "Shared vehicle"}`,
       ...routeStops.map((stop) =>
         stop.pickupTime ? `${stop.name} at ${stop.pickupTime}` : stop.name,
       ),
     ],
-    ctaLabel: "Book Seat",
-    contactInfo: "Message via Sat Thwal to reserve your seat with this driver.",
+    ctaLabel: "Request Seat",
+    contactInfo: "Request this ferry seat through Sat Thwal. The approved ferry contact will confirm the pickup details.",
     routeStops,
     vehicleType: route.vehicle_type,
     availableSeats: route.available_seats,
