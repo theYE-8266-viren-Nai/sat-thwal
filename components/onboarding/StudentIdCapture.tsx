@@ -133,7 +133,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
 
       if (uploadError) {
         console.error("Student ID upload failed", uploadError);
-        setError("We could not securely upload your ID photo. Please try again.");
+        setError("We could not securely submit your ID photo for school-controlled verification. Please try again.");
         setStage("preview");
         return;
       }
@@ -150,7 +150,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
         setError(
           result.reason ||
             result.error ||
-            "We could not confirm this as a UIT student ID. Please use a clearer photo that shows the UIT name, your photo, and your name.",
+            "We could not confirm this as an official UIT student ID. Please use a clearer photo that shows the UIT name, your photo, and your name.",
         );
         setStage("preview");
         return;
@@ -159,7 +159,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
       onVerified();
     } catch (error) {
       console.error("Student ID verification threw", error);
-      setError("Something went wrong during student verification. Please try again.");
+      setError("Something went wrong during official student verification. Please try again.");
       setStage("preview");
     }
   }
@@ -172,8 +172,8 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
             <div className="flex gap-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
               <p>
-                Submit the UIT-issued student ID card tied to your own account. This step keeps
-                student services restricted to verified university members.
+                Submit the official UIT-issued student ID tied to your own account. This
+                school-controlled step keeps student services restricted to verified UIT members.
               </p>
             </div>
             <div className="flex gap-3">
@@ -227,7 +227,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
             <video ref={videoRef} autoPlay playsInline muted className="aspect-video w-full object-cover" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Frame the card flat in good light so UIT, your name, and your photo are readable.
+            Frame the official card flat in good light so UIT, your name, and your photo are readable.
           </p>
           <div className="flex gap-2">
             <Button
@@ -261,8 +261,8 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
             <img src={previewUrl} alt="Your UIT student ID preview" className="aspect-video w-full object-cover" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Only verification reviewers and the secure verification service can use this image. It is
-            not shown to tutors, hostel owners, restaurants, or drivers.
+            Only authorized verification reviewers and the secure verification service can use this
+            image. It is not shown to tutors, hostel owners, restaurants, or drivers.
           </p>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -285,7 +285,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
               onClick={submitForVerification}
             >
               {stage === "verifying" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {stage === "verifying" ? "Checking UIT status..." : "Verify UIT status"}
+              {stage === "verifying" ? "Checking official UIT status..." : "Verify official UIT status"}
             </Button>
           </div>
         </div>
