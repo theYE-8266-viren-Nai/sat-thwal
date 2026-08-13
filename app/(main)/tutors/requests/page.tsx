@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getServerAuthContext } from "@/lib/auth/server";
 import { getTutorByOwner } from "@/lib/queries/tutors";
 import { getRequestsForTutor } from "@/lib/queries/requests";
 import { getProfilesByIds } from "@/lib/queries/profiles";
@@ -7,13 +7,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { IncomingRequestsList } from "@/components/requests/IncomingRequestsList";
 
 export default async function TutorRequestsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, userId } = await getServerAuthContext();
+  if (!userId) return null;
 
-  const tutor = await getTutorByOwner(supabase, user.id);
+  const tutor = await getTutorByOwner(supabase, userId);
   if (!tutor) redirect("/tutors/apply");
 
   const requests = await getRequestsForTutor(supabase, tutor.id);

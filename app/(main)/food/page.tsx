@@ -81,7 +81,7 @@ export default function FoodPage() {
 
         return (
           <>
-            <ServiceSection title="All approved meal plans" items={allPackages} />
+            <ServiceSection title="All approved meal plans" items={allPackages} preloadFirstImage />
             <ServiceSection title="Vegetarian-friendly meal plans" items={vegetarianPackages} />
             <ServiceSection title="Halal-friendly meal plans" items={halalPackages} />
           </>

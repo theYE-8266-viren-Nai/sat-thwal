@@ -38,7 +38,13 @@ export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
       <Card className="flex flex-row items-center gap-4 overflow-hidden border-border p-4 shadow-sm transition-shadow hover:shadow-md">
         <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md bg-muted sm:h-32 sm:w-32">
           {data.image ? (
-            <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
+            <Image
+              src={data.image}
+              alt={data.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 639px) 7rem, 8rem"
+            />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center"

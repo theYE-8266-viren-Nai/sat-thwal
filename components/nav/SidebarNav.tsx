@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/constants/nav";
 import { Logo } from "@/components/shared/Logo";
+import { PredictiveNavLink } from "@/components/nav/PredictiveNavLink";
 import { cn } from "@/lib/utils";
 
 export function SidebarNav() {
@@ -17,7 +17,7 @@ export function SidebarNav() {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
-            <Link
+            <PredictiveNavLink
               key={item.href}
               href={item.href}
               className={cn(
@@ -29,7 +29,7 @@ export function SidebarNav() {
             >
               <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
               {item.label}
-            </Link>
+            </PredictiveNavLink>
           );
         })}
       </nav>

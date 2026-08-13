@@ -22,9 +22,10 @@ const META_ICONS: Record<ServiceCardMeta["icon"], typeof MapPin> = {
 
 interface ServiceCardProps {
   data: ServiceCardData;
+  preloadImage?: boolean;
 }
 
-export function ServiceCard({ data }: ServiceCardProps) {
+export function ServiceCard({ data, preloadImage = false }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
   const prefetch = usePredictivePrefetch(data);
 
@@ -39,7 +40,14 @@ export function ServiceCard({ data }: ServiceCardProps) {
       <Card className="flex h-full flex-col overflow-hidden border-border py-0 shadow-sm transition-shadow hover:shadow-md">
         <div className="relative aspect-[4/3] w-full bg-muted">
           {data.image ? (
-            <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
+            <Image
+              src={data.image}
+              alt={data.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 767px) 16rem, (max-width: 1023px) 33vw, 25vw"
+              preload={preloadImage}
+            />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center"

@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getFoodItemsByIds, foodToCard } from "@/lib/queries/food";
-import { getHostelsByIds, hostelToCard } from "@/lib/queries/hostels";
-import { getProfilesByIds } from "@/lib/queries/profiles";
+import { getHostelByOwner, getHostelsByIds, hostelToCard } from "@/lib/queries/hostels";
+import { getProfile, getProfilesByIds } from "@/lib/queries/profiles";
 import { getRequests, normalizeRequestStatus } from "@/lib/queries/requests";
 import { getRoutesByIds, routeToCard } from "@/lib/queries/transportation";
-import { getTutorsByIds, tutorToCard } from "@/lib/queries/tutors";
+import { getTutorByOwner, getTutorsByIds, tutorToCard } from "@/lib/queries/tutors";
 import type { Database } from "@/types/database.types";
 import type { ServiceCardData, ServiceCategory } from "@/types/domain";
 
@@ -25,11 +25,33 @@ export interface IncomingRequestScope {
   serviceIds: string[];
 }
 
+export interface OwnedServices {
+  tutorId: string | null;
+  hostelId: string | null;
+}
+
 export async function getCurrentProfileId(supabase: SupabaseClient<Database>) {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user?.id ?? null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
+export async function getCurrentProfile(supabase: SupabaseClient<Database>) {
+  const profileId = await getCurrentProfileId(supabase);
+  return profileId ? getProfile(supabase, profileId) : null;
+}
+
+export async function getOwnedServices(
+  supabase: SupabaseClient<Database>,
+  profileId: string,
+): Promise<OwnedServices> {
+  const [tutor, hostel] = await Promise.all([
+    getTutorByOwner(supabase, profileId),
+    getHostelByOwner(supabase, profileId),
+  ]);
+
+  return { tutorId: tutor?.id ?? null, hostelId: hostel?.id ?? null };
 }
 
 export async function getSavedRequestItems(

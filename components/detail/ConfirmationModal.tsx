@@ -119,8 +119,13 @@ export function ConfirmationModal({
       onOptimisticStatusChange?.("pending");
 
       const savedKey = queryKeys.savedRequests(profileId);
-      await queryClient.cancelQueries({ queryKey: savedKey });
+      const requestsKey = queryKeys.profileRequests(profileId);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: savedKey }),
+        queryClient.cancelQueries({ queryKey: requestsKey }),
+      ]);
       const previousSaved = queryClient.getQueryData<SavedRequestItem[]>(savedKey);
+      const previousRequests = queryClient.getQueryData<RequestRow[]>(requestsKey);
       const optimisticRequest: RequestRow = {
         ...createOptimisticRequest({
           profileId,
@@ -142,7 +147,12 @@ export function ConfirmationModal({
         ]);
       }
 
-      return { optimisticRequest, previousSaved };
+      queryClient.setQueryData<RequestRow[]>(requestsKey, (current = []) => [
+        optimisticRequest,
+        ...current.filter((request) => request.id !== optimisticRequest.id),
+      ]);
+
+      return { optimisticRequest, previousSaved, previousRequests };
     },
     onError: (error, _variables, context) => {
       if (context?.previousSaved) {
@@ -150,6 +160,13 @@ export function ConfirmationModal({
       } else if (context?.optimisticRequest) {
         queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
           current.filter((item) => item.request.id !== context.optimisticRequest.id),
+        );
+      }
+      if (context?.previousRequests) {
+        queryClient.setQueryData(queryKeys.profileRequests(profileId), context.previousRequests);
+      } else if (context?.optimisticRequest) {
+        queryClient.setQueryData<RequestRow[]>(queryKeys.profileRequests(profileId), (current = []) =>
+          current.filter((request) => request.id !== context.optimisticRequest.id),
         );
       }
       onOptimisticStatusChange?.(null);
@@ -165,11 +182,15 @@ export function ConfirmationModal({
           ),
         );
       }
+      queryClient.setQueryData<RequestRow[]>(queryKeys.profileRequests(profileId), (current = []) =>
+        current.map((item) => (item.id === context?.optimisticRequest.id ? request : item)),
+      );
       onOptimisticStatusChange?.(request.status);
       toast.success("Request pending", { description: "Track it from Saved." });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.savedRequests(profileId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileRequests(profileId) });
     },
   });
 

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/constants/nav";
 import { cn } from "@/lib/utils";
+import { PredictiveNavLink } from "@/components/nav/PredictiveNavLink";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -18,7 +18,7 @@ export function BottomNav() {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
-            <Link
+            <PredictiveNavLink
               key={item.href}
               href={item.href}
               className={cn(
@@ -28,7 +28,7 @@ export function BottomNav() {
             >
               <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
               {item.label}
-            </Link>
+            </PredictiveNavLink>
           );
         })}
       </div>

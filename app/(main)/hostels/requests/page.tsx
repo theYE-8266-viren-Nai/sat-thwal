@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getServerAuthContext } from "@/lib/auth/server";
 import { getHostelByOwner } from "@/lib/queries/hostels";
 import { getProfilesByIds } from "@/lib/queries/profiles";
 import { getRequestsForHostel } from "@/lib/queries/requests";
@@ -7,13 +7,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { IncomingRequestsList } from "@/components/requests/IncomingRequestsList";
 
 export default async function HostelRequestsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, userId } = await getServerAuthContext();
+  if (!userId) return null;
 
-  const hostel = await getHostelByOwner(supabase, user.id);
+  const hostel = await getHostelByOwner(supabase, userId);
   if (!hostel) redirect("/hostels/list");
 
   const requests = await getRequestsForHostel(supabase, hostel.id);

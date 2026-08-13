@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfile } from "@/lib/queries/profiles";
+import { queryKeys } from "@/lib/queryKeys";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { ACADEMIC_YEARS } from "@/lib/constants/subjects";
 import { LabeledSelect } from "@/components/shared/LabeledSelect";
@@ -18,7 +19,7 @@ import { formatMMK } from "@/lib/utils";
 import type { StudentProfile } from "@/types/domain";
 
 export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -34,15 +35,15 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
     setSaving(true);
     try {
       const supabase = createClient();
-      await updateProfile(supabase, profile.id, {
+      const updatedProfile = await updateProfile(supabase, profile.id, {
         academic_year: academicYear,
         township,
         budget_min: budget[0],
         budget_max: budget[1],
         preferred_subjects: subjects,
       });
+      queryClient.setQueryData(queryKeys.currentProfile, updatedProfile);
       setEditing(false);
-      router.refresh();
       toast.success("Profile updated");
     } catch {
       toast.error("Couldn't update your profile. Try again.");

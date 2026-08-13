@@ -61,8 +61,13 @@ export function RequestCard({
     mutationFn: () => markRequestCompletedByRequester(createClient(), requestId),
     onMutate: async () => {
       const key = queryKeys.savedRequests(profileId);
-      await queryClient.cancelQueries({ queryKey: key });
+      const requestsKey = queryKeys.profileRequests(profileId);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: key }),
+        queryClient.cancelQueries({ queryKey: requestsKey }),
+      ]);
       const previous = queryClient.getQueryData<SavedRequestItem[]>(key);
+      const previousRequests = queryClient.getQueryData<RequestRow[]>(requestsKey);
       const now = new Date().toISOString();
       let optimisticRequest: RequestRow | null = null;
 
@@ -81,7 +86,12 @@ export function RequestCard({
       );
 
       if (optimisticRequest) onRequestChange?.(optimisticRequest);
-      return { previous };
+      if (optimisticRequest) {
+        queryClient.setQueryData<RequestRow[]>(requestsKey, (current = []) =>
+          current.map((request) => (request.id === requestId ? optimisticRequest as RequestRow : request)),
+        );
+      }
+      return { previous, previousRequests };
     },
     onError: (_error, _variables, context) => {
       if (context?.previous) {
@@ -89,17 +99,24 @@ export function RequestCard({
         const restored = context.previous.find((item) => item.request.id === requestId)?.request;
         if (restored) onRequestChange?.(restored);
       }
+      if (context?.previousRequests) {
+        queryClient.setQueryData(queryKeys.profileRequests(profileId), context.previousRequests);
+      }
       toast.error("Couldn't mark this request complete. Try again.");
     },
     onSuccess: (updated) => {
       queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
         current.map((item) => (item.request.id === requestId ? { ...item, request: updated } : item)),
       );
+      queryClient.setQueryData<RequestRow[]>(queryKeys.profileRequests(profileId), (current = []) =>
+        current.map((request) => (request.id === requestId ? updated : request)),
+      );
       onRequestChange?.(updated);
       toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.savedRequests(profileId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileRequests(profileId) });
     },
   });
 

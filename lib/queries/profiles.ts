@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import type { StudentProfile } from "@/types/domain";
 
-type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 export async function getProfile(supabase: SupabaseClient<Database>, userId: string) {
   const { data, error } = await supabase

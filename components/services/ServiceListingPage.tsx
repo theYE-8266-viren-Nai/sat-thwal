@@ -123,9 +123,13 @@ export function ServiceListingPage<TRow>({
 
               {!loading &&
                 (!renderCard || profileId) &&
-                filteredCards.map((card) => (
+                filteredCards.map((card, index) => (
                   <div key={card.id} className="content-visibility-list-item">
-                    {renderCard && profileId ? renderCard(card, profileId) : <ServiceCard data={card} />}
+                    {renderCard && profileId ? (
+                      renderCard(card, profileId)
+                    ) : (
+                      <ServiceCard data={card} preloadImage={index === 0} />
+                    )}
                   </div>
                 ))}
             </div>
