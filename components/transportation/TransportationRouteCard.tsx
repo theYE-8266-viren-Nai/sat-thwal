@@ -7,6 +7,7 @@ import { RouteTimeline } from "@/components/transportation/RouteTimeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { usePredictivePrefetch } from "@/lib/hooks/usePredictivePrefetch";
 import type { ServiceCardData } from "@/types/domain";
 
 interface TransportationRouteCardProps {
@@ -15,8 +16,15 @@ interface TransportationRouteCardProps {
 }
 
 export function TransportationRouteCard({ data, profileId }: TransportationRouteCardProps) {
+  const prefetch = usePredictivePrefetch(data);
+
   return (
-    <Card className="flex h-full flex-col gap-4 border-border p-4 shadow-sm transition-shadow hover:shadow-md">
+    <Card
+      className="flex h-full flex-col gap-4 border-border p-4 shadow-sm transition-shadow hover:shadow-md"
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -56,7 +64,13 @@ export function TransportationRouteCard({ data, profileId }: TransportationRoute
 
       <div className="mt-auto flex flex-col gap-2 sm:flex-row">
         <Button asChild variant="outline" size="touch" className="flex-1 rounded-xl">
-          <Link href={data.href} aria-label={`View route ${data.title}`}>
+          <Link
+            href={data.href}
+            aria-label={`View route ${data.title}`}
+            onMouseEnter={prefetch}
+            onFocus={prefetch}
+            onTouchStart={prefetch}
+          >
             View Route
             <ArrowRight className="h-4 w-4" />
           </Link>

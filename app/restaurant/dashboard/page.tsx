@@ -24,16 +24,14 @@ export default async function RestaurantDashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <FoodPackageManager restaurantId={restaurant.id} packages={packages} />
-      {requests.length === 0 ? (
-        <EmptyState message="No one has subscribed to your packages yet." />
-      ) : (
-        <IncomingRequestsList
-          requests={requests}
-          requesterNames={Object.fromEntries(
-            requests.map((r) => [r.id, requesterMap.get(r.profile_id)?.full_name ?? "A student"]),
-          )}
-        />
-      )}
+      <IncomingRequestsList
+        requests={requests}
+        requesterNames={Object.fromEntries(
+          requests.map((r) => [r.id, requesterMap.get(r.profile_id)?.full_name ?? "A student"]),
+        )}
+        scopeKey={`restaurant:${restaurant.id}`}
+        scope={{ serviceType: "food", serviceIds: packages.map((item) => item.id) }}
+      />
     </div>
   );
 }

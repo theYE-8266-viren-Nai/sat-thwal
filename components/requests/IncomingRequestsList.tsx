@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, CheckCircle2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +11,8 @@ import {
   markRequestCompletedByOwner,
   updateRequestStatus,
 } from "@/lib/queries/requests";
+import { getIncomingRequestItems, type IncomingRequestItem, type IncomingRequestScope } from "@/lib/serviceFlowData";
+import { queryKeys } from "@/lib/queryKeys";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,20 +24,35 @@ type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 interface IncomingRequestsListProps {
   requests: RequestRow[];
   requesterNames: Record<string, string>;
+  scopeKey: string;
+  scope: IncomingRequestScope;
 }
 
-export function IncomingRequestsList({ requests, requesterNames }: IncomingRequestsListProps) {
-  const [rows, setRows] = useState(requests);
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  const pendingRequests = rows.filter((request) => request.status === "pending");
-  const acceptedRequests = rows.filter((request) => request.status === "confirmed");
-  const completedRequests = rows.filter((request) => request.status === "completed");
+export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope }: IncomingRequestsListProps) {
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.incomingRequests(scopeKey);
+  const initialItems = useMemo(
+    () =>
+      requests.map((request) => ({
+        request,
+        requesterName: requesterNames[request.id] ?? "A student",
+      })),
+    [requesterNames, requests],
+  );
+  const incomingQuery = useQuery({
+    queryKey,
+    queryFn: () => getIncomingRequestItems(createClient(), scope),
+    initialData: initialItems,
+  });
+  const items = incomingQuery.data ?? initialItems;
+  const pendingRequests = items.filter((item) => item.request.status === "pending");
+  const acceptedRequests = items.filter((item) => item.request.status === "confirmed");
+  const completedRequests = items.filter((item) => item.request.status === "completed");
 
-  async function respond(requestId: string, status: "confirmed" | "cancelled") {
-    setPendingId(requestId);
-    try {
+  const respondMutation = useMutation({
+    mutationFn: async ({ requestId, status }: { requestId: string; status: "confirmed" | "cancelled" }) => {
       const supabase = createClient();
-      const request = rows.find((row) => row.id === requestId);
+      const request = items.find((item) => item.request.id === requestId)?.request;
       const updated =
         status === "confirmed" && request?.service_type === "food"
           ? await confirmFoodPackageRequest(supabase, requestId)
@@ -42,31 +60,83 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
             ? await confirmHostelRequest(supabase, requestId)
           : null;
       if (!updated) await updateRequestStatus(supabase, requestId, status);
-      setRows((prev) => prev.map((r) => (r.id === requestId ? updated ?? { ...r, status } : r)));
-      toast.success(status === "confirmed" ? "Request accepted" : "Request declined");
-    } catch (error) {
+      return updated ?? (request ? { ...request, status, updated_at: new Date().toISOString() } : null);
+    },
+    onMutate: async ({ requestId, status }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<IncomingRequestItem[]>(queryKey);
+      const now = new Date().toISOString();
+
+      queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
+        current.map((item) =>
+          item.request.id === requestId
+            ? { ...item, request: { ...item.request, status, updated_at: now, seen_by_student: false } }
+            : item,
+        ),
+      );
+
+      return { previous };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
       const message = error instanceof Error ? error.message : "Couldn't update the request. Try again.";
       toast.error(message);
-    } finally {
-      setPendingId(null);
-    }
-  }
+    },
+    onSuccess: (updated, { status, requestId }) => {
+      if (updated) {
+        queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
+          current.map((item) => (item.request.id === requestId ? { ...item, request: updated } : item)),
+        );
+      }
+      toast.success(status === "confirmed" ? "Request accepted" : "Request declined");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
-  async function complete(requestId: string) {
-    setPendingId(requestId);
-    try {
-      const supabase = createClient();
-      const updated = await markRequestCompletedByOwner(supabase, requestId);
-      setRows((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
-      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
-    } catch {
+  const completeMutation = useMutation({
+    mutationFn: (requestId: string) => markRequestCompletedByOwner(createClient(), requestId),
+    onMutate: async (requestId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<IncomingRequestItem[]>(queryKey);
+      const now = new Date().toISOString();
+
+      queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
+        current.map((item) => {
+          if (item.request.id !== requestId) return item;
+          const completed = Boolean(item.request.requester_completed_at);
+          return {
+            ...item,
+            request: {
+              ...item.request,
+              status: completed ? "completed" : item.request.status,
+              owner_completed_at: now,
+              completed_at: completed ? now : item.request.completed_at,
+              updated_at: now,
+            },
+          };
+        }),
+      );
+
+      return { previous };
+    },
+    onError: (_error, _requestId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
       toast.error("Couldn't mark this request complete. Try again.");
-    } finally {
-      setPendingId(null);
-    }
-  }
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
+        current.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
+      );
+      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
-  function renderRequestCard(request: RequestRow) {
+  function renderRequestCard({ request, requesterName }: IncomingRequestItem) {
     const canComplete = request.status === "confirmed" && !request.owner_completed_at;
     const waitingForStudent =
       request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at;
@@ -79,11 +149,11 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
     return (
       <div
         key={request.id}
-        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+        className="content-visibility-list-item flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-medium text-foreground">{requesterNames[request.id]}</p>
+            <p className="font-medium text-foreground">{requesterName}</p>
             {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
           </div>
           <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
@@ -96,8 +166,9 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
             <Button
               size="touch"
               className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-              disabled={pendingId === request.id}
-              onClick={() => respond(request.id, "confirmed")}
+              disabled={respondMutation.isPending || completeMutation.isPending}
+              aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
+              onClick={() => respondMutation.mutate({ requestId: request.id, status: "confirmed" })}
             >
               <Check className="h-4 w-4" />
               Accept
@@ -106,8 +177,9 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
               variant="outline"
               size="touch"
               className="flex-1 rounded-xl"
-              disabled={pendingId === request.id}
-              onClick={() => respond(request.id, "cancelled")}
+              disabled={respondMutation.isPending || completeMutation.isPending}
+              aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
+              onClick={() => respondMutation.mutate({ requestId: request.id, status: "cancelled" })}
             >
               <X className="h-4 w-4" />
               Decline
@@ -127,11 +199,12 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
                 <Button
                   size="touch"
                   className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-                  disabled={pendingId === request.id}
-                  onClick={() => complete(request.id)}
+                  disabled={respondMutation.isPending || completeMutation.isPending}
+                  aria-busy={completeMutation.isPending && completeMutation.variables === request.id}
+                  onClick={() => completeMutation.mutate(request.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  {pendingId === request.id ? "Completing..." : "Complete"}
+                  Complete
                 </Button>
               </div>
             )}
@@ -166,7 +239,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
           <p className="text-sm text-muted-foreground">Pending students waiting for your response.</p>
         </div>
         {pendingRequests.length > 0
-          ? pendingRequests.map((request) => renderRequestCard(request))
+          ? pendingRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No pending requests right now.")}
       </section>
 
@@ -176,7 +249,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
           <p className="text-sm text-muted-foreground">Students you have already accepted.</p>
         </div>
         {acceptedRequests.length > 0
-          ? acceptedRequests.map((request) => renderRequestCard(request))
+          ? acceptedRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No accepted requests yet.")}
       </section>
 
@@ -186,7 +259,7 @@ export function IncomingRequestsList({ requests, requesterNames }: IncomingReque
           <p className="text-sm text-muted-foreground">Requests both sides marked complete.</p>
         </div>
         {completedRequests.length > 0
-          ? completedRequests.map((request) => renderRequestCard(request))
+          ? completedRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No completed requests yet.")}
       </section>
     </div>

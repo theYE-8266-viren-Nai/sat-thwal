@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { usePredictivePrefetch } from "@/lib/hooks/usePredictivePrefetch";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -22,11 +25,18 @@ interface ServiceCardCompactProps {
 export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
   const category = CATEGORIES[data.category];
   const [primaryMeta, secondaryMeta] = data.meta;
+  const prefetch = usePredictivePrefetch(data);
 
   return (
-    <Link href={data.href} className="block">
+    <Link
+      href={data.href}
+      className="block min-h-11"
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+    >
       <Card className="flex flex-row items-center gap-4 overflow-hidden border-border p-4 shadow-sm transition-shadow hover:shadow-md">
-        <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-md bg-muted">
+        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md bg-muted sm:h-32 sm:w-32">
           {data.image ? (
             <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
           ) : (
@@ -40,7 +50,7 @@ export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <h3 className="line-clamp-1 text-base font-semibold text-foreground">{data.title}</h3>
+          <h3 className="line-clamp-1 text-[clamp(0.95rem,0.9rem+0.2vw,1.05rem)] font-semibold text-foreground">{data.title}</h3>
           <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
           {[primaryMeta, secondaryMeta].filter(Boolean).map((meta, i) => {
             const Icon = META_ICONS[(meta as ServiceCardMeta).icon];

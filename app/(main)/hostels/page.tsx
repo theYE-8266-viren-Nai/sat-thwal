@@ -30,6 +30,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function HostelsPage() {
   return (
     <ServiceListingPage<HostelRow>
+      category="hostel"
       title="Student Housing"
       searchPlaceholder="Search approved housing or townships..."
       filterFields={FILTER_FIELDS}

@@ -44,6 +44,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function TransportationPage() {
   return (
     <ServiceListingPage<TransportationRow>
+      category="transportation"
       title="Campus Transport"
       searchPlaceholder="Search routes, stops or townships..."
       filterFields={FILTER_FIELDS}

@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createRequest } from "@/lib/queries/requests";
 import { createTransportationRegistration } from "@/lib/queries/transportationRegistrations";
+import { queryKeys } from "@/lib/queryKeys";
+import { createOptimisticRequest, type RequestRow, type SavedRequestItem } from "@/lib/serviceFlowData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +29,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { ServiceCategory } from "@/types/domain";
-import type { RouteStop } from "@/types/domain";
+import type { RouteStop, ServiceCardData } from "@/types/domain";
+import type { RequestStatus } from "@/types/database.types";
 
 type ConfirmationAction = "book" | "request" | "requestSeat" | "subscribe" | "contact";
 
@@ -38,6 +42,8 @@ interface ConfirmationModalProps {
   title: string;
   contactInfo?: string;
   routeStops?: RouteStop[];
+  optimisticCard?: ServiceCardData;
+  onOptimisticStatusChange?: (status: RequestStatus | null) => void;
   trigger: React.ReactNode;
 }
 
@@ -77,17 +83,97 @@ export function ConfirmationModal({
   title,
   contactInfo,
   routeStops = [],
+  optimisticCard,
+  onOptimisticStatusChange,
   trigger,
 }: ConfirmationModalProps) {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [phone, setPhone] = useState("");
   const [pickupStopId, setPickupStopId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const copy = ACTION_COPY[action];
 
-  async function handleConfirm() {
+  const requestMutation = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      if (action === "requestSeat" && category === "transportation") {
+        const pickupStop = routeStops.find((stop) => stop.id === pickupStopId) ?? routeStops[0];
+        return createTransportationRegistration(
+          supabase,
+          profileId,
+          serviceId,
+          pickupStop?.id ?? "pickup-stop",
+          pickupStop?.name ?? "Pickup stop",
+          pickupStop?.pickupTime,
+          note.trim(),
+          phone.trim(),
+        );
+      }
+
+      return createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
+    },
+    onMutate: async () => {
+      setDone(true);
+      onOptimisticStatusChange?.("pending");
+
+      const savedKey = queryKeys.savedRequests(profileId);
+      await queryClient.cancelQueries({ queryKey: savedKey });
+      const previousSaved = queryClient.getQueryData<SavedRequestItem[]>(savedKey);
+      const optimisticRequest: RequestRow = {
+        ...createOptimisticRequest({
+          profileId,
+          category,
+          serviceId,
+          note: note.trim() || undefined,
+        }),
+        pickup_stop_id: pickupStopId || null,
+        pickup_stop_name:
+          routeStops.find((stop) => stop.id === pickupStopId)?.name ?? null,
+        pickup_address: action === "requestSeat" ? note.trim() : null,
+        pickup_time: routeStops.find((stop) => stop.id === pickupStopId)?.pickupTime ?? null,
+      };
+
+      if (optimisticCard) {
+        queryClient.setQueryData<SavedRequestItem[]>(savedKey, (current = []) => [
+          { request: optimisticRequest, card: optimisticCard },
+          ...current.filter((item) => item.request.id !== optimisticRequest.id),
+        ]);
+      }
+
+      return { optimisticRequest, previousSaved };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousSaved) {
+        queryClient.setQueryData(queryKeys.savedRequests(profileId), context.previousSaved);
+      } else if (context?.optimisticRequest) {
+        queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
+          current.filter((item) => item.request.id !== context.optimisticRequest.id),
+        );
+      }
+      onOptimisticStatusChange?.(null);
+      setDone(false);
+      const message = error instanceof Error ? error.message : "Couldn't send your request. Try again.";
+      toast.error(message);
+    },
+    onSuccess: (request, _variables, context) => {
+      if (optimisticCard) {
+        queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
+          current.map((item) =>
+            item.request.id === context?.optimisticRequest.id ? { ...item, request } : item,
+          ),
+        );
+      }
+      onOptimisticStatusChange?.(request.status);
+      toast.success("Request pending", { description: "Track it from Saved." });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.savedRequests(profileId) });
+    },
+  });
+
+  function handleConfirm() {
     if (action === "contact") {
       setOpen(false);
       return;
@@ -108,33 +194,7 @@ export function ConfirmationModal({
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const supabase = createClient();
-      if (action === "requestSeat" && category === "transportation") {
-        const pickupStop =
-          routeStops.find((stop) => stop.id === pickupStopId) ?? routeStops[0];
-        await createTransportationRegistration(
-          supabase,
-          profileId,
-          serviceId,
-          pickupStop?.id ?? "pickup-stop",
-          pickupStop?.name ?? "Pickup stop",
-          pickupStop?.pickupTime,
-          note.trim(),
-          phone.trim(),
-        );
-      } else {
-        await createRequest(supabase, profileId, category, serviceId, note.trim() || undefined);
-      }
-      setDone(true);
-      toast.success("Request pending", { description: `Track it from Saved.` });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Couldn't send your request. Try again.";
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
-    }
+    requestMutation.mutate();
   }
 
   function handleOpenChange(next: boolean) {
@@ -227,10 +287,11 @@ export function ConfirmationModal({
               <Button
                 size="touch"
                 onClick={handleConfirm}
-                disabled={submitting}
+                disabled={requestMutation.isPending}
+                aria-busy={requestMutation.isPending}
                 className="w-full rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
               >
-                {submitting ? "Sending..." : copy.confirmLabel}
+                {copy.confirmLabel}
               </Button>
             </SheetFooter>
           </>

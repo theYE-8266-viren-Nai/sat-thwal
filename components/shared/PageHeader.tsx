@@ -28,7 +28,7 @@ export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
         <ArrowLeft className="h-5 w-5" />
       </Button>
       <div className="flex-1">
-        <h1 className="text-xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-[clamp(1.15rem,1rem+0.65vw,1.5rem)] font-bold text-foreground">{title}</h1>
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
       {action}

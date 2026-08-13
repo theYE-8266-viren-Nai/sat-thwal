@@ -44,6 +44,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function TutorsPage() {
   return (
     <ServiceListingPage<TutorRow>
+      category="tutor"
       title="Academic Support"
       searchPlaceholder="Search approved tutors or subjects..."
       filterFields={FILTER_FIELDS}

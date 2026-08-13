@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import { getCurrentProfileId } from "@/lib/serviceFlowData";
+import { queryKeys } from "@/lib/queryKeys";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { FilterSheet } from "@/components/services/FilterSheet";
@@ -11,9 +15,10 @@ import { ServiceCardCompact } from "@/components/services/ServiceCardCompact";
 import { ServiceCardSkeleton, ServiceCardCompactSkeleton } from "@/components/services/ServiceCardSkeleton";
 import { EmptyState } from "@/components/services/EmptyState";
 import type { Database } from "@/types/database.types";
-import type { FilterFieldConfig, FilterState, ServiceCardData } from "@/types/domain";
+import type { FilterFieldConfig, FilterState, ServiceCardData, ServiceCategory } from "@/types/domain";
 
 interface ServiceListingPageProps<TRow> {
+  category: ServiceCategory;
   title: string;
   searchPlaceholder: string;
   filterFields: FilterFieldConfig[];
@@ -36,6 +41,7 @@ interface ServiceListingPageProps<TRow> {
 }
 
 export function ServiceListingPage<TRow>({
+  category,
   title,
   searchPlaceholder,
   filterFields,
@@ -51,40 +57,28 @@ export function ServiceListingPage<TRow>({
   hideMainList = false,
   renderSections,
 }: ServiceListingPageProps<TRow>) {
-  const [rows, setRows] = useState<TRow[]>([]);
-  const [profileId, setProfileId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const data = await fetchRows(supabase);
-      if (cancelled) return;
-      setRows(data);
-      setProfileId(user?.id ?? null);
-      setLoading(false);
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const debouncedQuery = useDebouncedValue(query);
+  const rowsQuery = useQuery({
+    queryKey: queryKeys.serviceList(category),
+    queryFn: () => fetchRows(createClient()),
+  });
+  const profileQuery = useQuery({
+    queryKey: queryKeys.currentUser,
+    queryFn: () => getCurrentProfileId(createClient()),
+  });
+  const rows = rowsQuery.data ?? [];
+  const profileId = profileQuery.data ?? null;
+  const loading = !rowsQuery.data && rowsQuery.isPending;
+  const waitingForProfile = !profileId && profileQuery.isPending;
 
   const filteredRows = useMemo(() => {
     return rows
-      .filter((row) => matchesSearch(row, query))
+      .filter((row) => matchesSearch(row, debouncedQuery))
       .filter((row) => applyFilters(row, filters));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, query, filters]);
+  }, [rows, debouncedQuery, filters]);
 
   const filteredCards = useMemo(() => filteredRows.map(toCard), [filteredRows, toCard]);
 
@@ -111,27 +105,27 @@ export function ServiceListingPage<TRow>({
           )}
           {listVariant === "compact" ? (
             <div className="flex flex-col gap-3 px-5 md:px-8">
-              {loading &&
+              {(loading || (waitingForProfile && renderCard)) &&
                 Array.from({ length: 6 }).map((_, i) => <ServiceCardCompactSkeleton key={i} />)}
 
               {!loading &&
-                profileId &&
+                (!renderCard || profileId) &&
                 filteredCards.map((card) => (
-                  <div key={card.id}>
-                    {renderCard ? renderCard(card, profileId) : <ServiceCardCompact data={card} />}
+                  <div key={card.id} className="content-visibility-list-item">
+                    {renderCard && profileId ? renderCard(card, profileId) : <ServiceCardCompact data={card} />}
                   </div>
                 ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-3">
-              {loading &&
+              {(loading || (waitingForProfile && renderCard)) &&
                 Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
 
               {!loading &&
-                profileId &&
+                (!renderCard || profileId) &&
                 filteredCards.map((card) => (
-                  <div key={card.id}>
-                    {renderCard ? renderCard(card, profileId) : <ServiceCard data={card} />}
+                  <div key={card.id} className="content-visibility-list-item">
+                    {renderCard && profileId ? renderCard(card, profileId) : <ServiceCard data={card} />}
                   </div>
                 ))}
             </div>

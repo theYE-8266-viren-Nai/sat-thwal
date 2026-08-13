@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { getRequests } from "@/lib/queries/requests";
-import { getTutorsByIds, tutorToCard } from "@/lib/queries/tutors";
-import { getHostelsByIds, hostelToCard } from "@/lib/queries/hostels";
-import { getFoodItemsByIds, foodToCard } from "@/lib/queries/food";
-import { getRoutesByIds, routeToCard } from "@/lib/queries/transportation";
+import { getCurrentProfileId, getSavedRequestItems } from "@/lib/serviceFlowData";
+import { queryKeys } from "@/lib/queryKeys";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ServiceCardSkeleton } from "@/components/services/ServiceCardSkeleton";
 import { RequestCard } from "@/components/saved/RequestCard";
@@ -18,62 +15,19 @@ import type { ServiceCardData } from "@/types/domain";
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 export default function SavedPage() {
-  const [profileId, setProfileId] = useState<string | null>(null);
-  const [requests, setRequests] = useState<{ request: RequestRow; card: ServiceCardData }[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const requestRows = await getRequests(supabase, user.id);
-
-      const idsByCategory: Record<string, Set<string>> = {
-        tutor: new Set(),
-        hostel: new Set(),
-        food: new Set(),
-        transportation: new Set(),
-      };
-      requestRows.forEach((r) => idsByCategory[r.service_type].add(r.service_id));
-
-      const [tutors, hostels, foodItems, routes] = await Promise.all([
-        getTutorsByIds(supabase, [...idsByCategory.tutor]),
-        getHostelsByIds(supabase, [...idsByCategory.hostel]),
-        getFoodItemsByIds(supabase, [...idsByCategory.food]),
-        getRoutesByIds(supabase, [...idsByCategory.transportation]),
-      ]);
-
-      const cardMap = new Map<string, ServiceCardData>();
-      tutors.forEach((t) => cardMap.set(`tutor:${t.id}`, tutorToCard(t)));
-      hostels.forEach((h) => cardMap.set(`hostel:${h.id}`, hostelToCard(h)));
-      foodItems.forEach((f) => cardMap.set(`food:${f.package.id}`, foodToCard(f)));
-      routes.forEach((r) => cardMap.set(`transportation:${r.id}`, routeToCard(r)));
-
-      if (cancelled) return;
-
-      setRequests(
-        requestRows
-          .map((r) => {
-            const card = cardMap.get(`${r.service_type}:${r.service_id}`);
-            return card ? { request: r, card } : null;
-          })
-          .filter((r): r is { request: RequestRow; card: ServiceCardData } => Boolean(r)),
-      );
-      setProfileId(user.id);
-      setLoading(false);
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const queryClient = useQueryClient();
+  const profileQuery = useQuery({
+    queryKey: queryKeys.currentUser,
+    queryFn: () => getCurrentProfileId(createClient()),
+  });
+  const profileId = profileQuery.data ?? null;
+  const requestsQuery = useQuery({
+    queryKey: profileId ? queryKeys.savedRequests(profileId) : ["requests", "saved", "anonymous"],
+    queryFn: () => getSavedRequestItems(createClient(), profileId as string),
+    enabled: Boolean(profileId),
+  });
+  const requests = requestsQuery.data ?? [];
+  const loading = !requestsQuery.data && (requestsQuery.isPending || profileQuery.isPending);
 
   function getDisplayStatus(request: RequestRow): RequestStatus {
     if (
@@ -91,8 +45,11 @@ export default function SavedPage() {
   }
 
   function handleRequestChange(updated: RequestRow) {
-    setRequests((prev) =>
-      prev.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
+    if (!profileId) return;
+    queryClient.setQueryData<{ request: RequestRow; card: ServiceCardData }[]>(
+      queryKeys.savedRequests(profileId),
+      (prev = []) =>
+        prev.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
     );
   }
 
@@ -111,17 +68,19 @@ export default function SavedPage() {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map(({ request, card }) => (
-          <RequestCard
-            key={request.id}
-            requestId={request.id}
-            data={card}
-            status={getDisplayStatus(request)}
-            note={request.note}
-            requesterCompletedAt={request.requester_completed_at}
-            ownerCompletedAt={request.owner_completed_at}
-            completedAt={request.completed_at}
-            onRequestChange={handleRequestChange}
-          />
+          <div key={request.id} className="content-visibility-list-item">
+            <RequestCard
+              profileId={profileId}
+              requestId={request.id}
+              data={card}
+              status={getDisplayStatus(request)}
+              note={request.note}
+              requesterCompletedAt={request.requester_completed_at}
+              ownerCompletedAt={request.owner_completed_at}
+              completedAt={request.completed_at}
+              onRequestChange={handleRequestChange}
+            />
+          </div>
         ))}
       </div>
     );

@@ -16,7 +16,7 @@ import { RecordRecentlyViewed } from "@/components/detail/RecordRecentlyViewed";
 import { RouteTimeline } from "@/components/transportation/RouteTimeline";
 import { ProviderRegistrationGate } from "@/components/provider/ProviderRegistrationGate";
 import { getProviderRegistrationWithPayment } from "@/lib/queries/providerRegistrations";
-import type { ServiceCategory } from "@/types/domain";
+import type { ServiceCardData, ServiceCategory } from "@/types/domain";
 import type { ServiceDetailData } from "@/types/detail";
 import type { ProviderType } from "@/types/database.types";
 
@@ -28,6 +28,30 @@ const AMENITIES_TITLE: Record<ServiceCategory, string> = {
   food: "Package details",
   transportation: "Included",
 };
+
+function detailToCard(detail: ServiceDetailData): ServiceCardData {
+  return {
+    id: detail.id,
+    category: detail.category,
+    image: detail.image,
+    title: detail.title,
+    subtitle: detail.providerName,
+    priceLabel: detail.priceLabel,
+    rating: detail.rating,
+    reviewCount: detail.reviewCount,
+    verified: detail.verified,
+    meta: [
+      { icon: "map-pin", label: detail.locationLabel },
+      { icon: "clock", label: detail.availabilityLines[0] ?? "Availability on request" },
+    ],
+    ctaLabel: detail.ctaLabel,
+    href: `/services/${detail.category}/${detail.id}`,
+    routeStops: detail.routeStops,
+    vehicleType: detail.vehicleType,
+    availableSeats: detail.availableSeats,
+    totalSeats: detail.totalSeats,
+  };
+}
 
 export default async function ServiceDetailPage({
   params,
@@ -147,6 +171,7 @@ export default async function ServiceDetailPage({
         routeStops={detail.routeStops}
         existingRequestStatus={existingRequest?.status ?? null}
         requestBlockReason={requestBlockReason}
+        optimisticCard={detailToCard(detail)}
       />
     </div>
   );

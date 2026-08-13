@@ -149,3 +149,10 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .content-visibility-list-item {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 22rem;
+  }
+}

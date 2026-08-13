@@ -51,7 +51,7 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
       : null;
 
     return (
-      <article key={request.id} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <article key={request.id} className="content-visibility-list-item flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-medium text-foreground">{studentName}</p>
@@ -123,10 +123,11 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
                   size="touch"
                   className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
                   disabled={pendingId === request.id}
+                  aria-busy={pendingId === request.id}
                   onClick={() => complete(request.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  {pendingId === request.id ? "Completing..." : "Complete"}
+                  Complete
                 </Button>
               </div>
             )}

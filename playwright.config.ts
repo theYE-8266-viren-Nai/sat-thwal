@@ -26,11 +26,21 @@ export default defineConfig({
     },
     {
       name: "tablet",
-      use: { ...devices["iPad Pro 11"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 834, height: 1194 },
+        isMobile: true,
+        hasTouch: true,
+      },
     },
     {
       name: "mobile",
-      use: { ...devices["Pixel 7"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 393, height: 851 },
+        isMobile: true,
+        hasTouch: true,
+      },
     },
   ],
 });

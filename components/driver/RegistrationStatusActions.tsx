@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,10 +87,11 @@ export function RegistrationStatusActions({
         size="sm"
         className="flex-1 bg-brand-mint text-white shadow-sm hover:bg-brand-mint/90 sm:flex-none"
         disabled={disabled}
+        aria-busy={submitting === "confirmed"}
         onClick={() => setApproveOpen(true)}
         aria-label="Approve seat request"
       >
-        {submitting === "confirmed" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+        <CheckCircle2 className="h-4 w-4" />
         Approve
       </Button>
       <Button
@@ -98,10 +99,11 @@ export function RegistrationStatusActions({
         variant="destructive"
         className="flex-1 border border-destructive/30 bg-card text-destructive hover:bg-destructive/10 sm:flex-none"
         disabled={disabled}
+        aria-busy={submitting === "cancelled"}
         onClick={() => setRejectOpen(true)}
         aria-label="Reject seat request"
       >
-        {submitting === "cancelled" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+        <XCircle className="h-4 w-4" />
         Reject
       </Button>
 
@@ -124,9 +126,9 @@ export function RegistrationStatusActions({
             <Button
               className="bg-brand-mint text-white hover:bg-brand-mint/90"
               disabled={submitting !== null}
+              aria-busy={submitting === "confirmed"}
               onClick={approve}
             >
-              {submitting === "confirmed" && <Loader2 className="h-4 w-4 animate-spin" />}
               Approve Request
             </Button>
           </DialogFooter>
@@ -158,9 +160,9 @@ export function RegistrationStatusActions({
             <Button
               variant="destructive"
               disabled={submitting !== null}
+              aria-busy={submitting === "cancelled"}
               onClick={reject}
             >
-              {submitting === "cancelled" && <Loader2 className="h-4 w-4 animate-spin" />}
               Reject Request
             </Button>
           </DialogFooter>

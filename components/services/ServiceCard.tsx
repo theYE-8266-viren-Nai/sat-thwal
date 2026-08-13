@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
+import { usePredictivePrefetch } from "@/lib/hooks/usePredictivePrefetch";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -23,9 +26,16 @@ interface ServiceCardProps {
 
 export function ServiceCard({ data }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
+  const prefetch = usePredictivePrefetch(data);
 
   return (
-    <Link href={data.href} className="block h-full">
+    <Link
+      href={data.href}
+      className="block h-full min-h-11"
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+    >
       <Card className="flex h-full flex-col overflow-hidden border-border py-0 shadow-sm transition-shadow hover:shadow-md">
         <div className="relative aspect-[4/3] w-full bg-muted">
           {data.image ? (
@@ -42,8 +52,8 @@ export function ServiceCard({ data }: ServiceCardProps) {
         </div>
 
         <div className="flex flex-1 flex-col gap-2 p-4">
-          <h3 className="line-clamp-1 font-semibold text-foreground">{data.title}</h3>
-          <p className="line-clamp-1 text-sm text-muted-foreground">{data.subtitle}</p>
+          <h3 className="line-clamp-1 text-[clamp(0.95rem,0.9rem+0.2vw,1.05rem)] font-semibold text-foreground">{data.title}</h3>
+          <p className="line-clamp-1 text-[clamp(0.82rem,0.78rem+0.16vw,0.9rem)] text-muted-foreground">{data.subtitle}</p>
 
           <div className="flex flex-col gap-1">
             {data.meta.map((item, i) => {
