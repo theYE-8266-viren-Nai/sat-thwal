@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { ArrowRight, ClipboardList, Clock3 } from "lucide-react";
 import { requireAdminProfile } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
@@ -303,6 +303,26 @@ export default async function AdminDashboardPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               Student requests completed through approved service channels.
             </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:col-span-2 lg:col-span-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-brand-indigo" aria-hidden="true" />
+                  <p className="font-semibold text-foreground">Admin case audit trail</p>
+                </div>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  Review request decisions, completion signals, provider approvals, and export
+                  school-visible case history for reporting.
+                </p>
+              </div>
+              <Button variant="outline" asChild>
+                <Link href="/admin/audit-trail">
+                  View audit trail
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

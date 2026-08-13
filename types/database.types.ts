@@ -16,6 +16,17 @@ export type ProviderRegistrationStatus =
   | "suspended";
 export type ProviderPaymentStatus = "submitted" | "paid" | "rejected" | "waived";
 export type ProviderPaymentMethod = "kbzpay" | "wavepay" | "bank_transfer" | "other";
+export type AdminAuditEntityType = "request" | "provider_registration";
+export type AdminAuditEventType =
+  | "request_created"
+  | "request_confirmed"
+  | "request_cancelled"
+  | "request_owner_completed"
+  | "request_student_completed"
+  | "request_completed"
+  | "provider_payment_submitted"
+  | "provider_approved"
+  | "provider_rejected";
 
 type ProfileRow = {
   id: string;
@@ -219,6 +230,18 @@ type ProviderPaymentSubmissionRow = {
   reviewed_by: string | null;
 }
 
+type AdminAuditEventRow = {
+  id: string;
+  entity_type: AdminAuditEntityType;
+  entity_id: string;
+  event_type: AdminAuditEventType;
+  actor_profile_id: string | null;
+  actor_role: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -337,6 +360,17 @@ export type Database = {
           transaction_reference: string;
         };
         Update: Partial<ProviderPaymentSubmissionRow>;
+        Relationships: [];
+      };
+      admin_audit_events: {
+        Row: AdminAuditEventRow;
+        Insert: Partial<AdminAuditEventRow> & {
+          entity_type: AdminAuditEntityType;
+          entity_id: string;
+          event_type: AdminAuditEventType;
+          summary: string;
+        };
+        Update: Partial<AdminAuditEventRow>;
         Relationships: [];
       };
     };
