@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertCircle, Check, CheckCircle2, Clock3, X } from "lucide-react";
+import { AlertCircle, CalendarDays, Check, CheckCircle2, Clock3, MessageSquare, UserRound, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   confirmFoodPackageRequest,
@@ -31,6 +31,18 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "ST";
+}
+
+function formatRequestDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+}
 interface IncomingRequestsListProps {
   requests: RequestRow[];
   requesterNames: Record<string, string>;
@@ -38,9 +50,60 @@ interface IncomingRequestsListProps {
   scope: IncomingRequestScope;
 }
 
+const COPY_BY_SERVICE = {
+  tutor: {
+    pendingDescription: "Pending students waiting for your response.",
+    acceptedDescription: "Students you have already accepted.",
+    completedDescription: "Cases closed by student, system, or school admin.",
+    studentReportedProblem: "Student reported a problem",
+    awaitingStudent: "Awaiting student response",
+    studentCompletedFirst: "Student confirmed receipt. Mark support as provided.",
+    markProvided: "Mark as provided",
+    providedSuccess: "Support marked as provided.",
+    providedError: "Couldn't mark support as provided. Try again.",
+    completedTitle: "Resolved support case",
+  },
+  hostel: {
+    pendingDescription: "Pending students waiting for your response.",
+    acceptedDescription: "Residents you have already accepted.",
+    completedDescription: "Stays closed by resident, system, or school admin.",
+    studentReportedProblem: "Resident reported a problem",
+    awaitingStudent: "Awaiting resident response",
+    studentCompletedFirst: "Resident confirmed the stay. Mark the room as provided.",
+    markProvided: "Mark room as provided",
+    providedSuccess: "Room marked as provided.",
+    providedError: "Couldn't mark the room as provided. Try again.",
+    completedTitle: "Resolved hostel stay",
+  },
+  food: {
+    pendingDescription: "Pending students waiting for your response.",
+    acceptedDescription: "Students you have already accepted.",
+    completedDescription: "Cases closed by student, system, or school admin.",
+    studentReportedProblem: "Student reported a problem",
+    awaitingStudent: "Awaiting student response",
+    studentCompletedFirst: "Student confirmed receipt. Mark support as provided.",
+    markProvided: "Mark as provided",
+    providedSuccess: "Support marked as provided.",
+    providedError: "Couldn't mark support as provided. Try again.",
+    completedTitle: "Resolved support case",
+  },
+  transportation: {
+    pendingDescription: "Pending students waiting for your response.",
+    acceptedDescription: "Students you have already accepted.",
+    completedDescription: "Cases closed by student, system, or school admin.",
+    studentReportedProblem: "Student reported a problem",
+    awaitingStudent: "Awaiting student response",
+    studentCompletedFirst: "Student confirmed receipt. Mark support as provided.",
+    markProvided: "Mark as provided",
+    providedSuccess: "Support marked as provided.",
+    providedError: "Couldn't mark support as provided. Try again.",
+    completedTitle: "Resolved support case",
+  },
+} satisfies Record<IncomingRequestScope["serviceType"], Record<string, string>>;
 export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope }: IncomingRequestsListProps) {
   const queryClient = useQueryClient();
   const queryKey = queryKeys.incomingRequests(scopeKey);
+  const copy = COPY_BY_SERVICE[scope.serviceType];
   const initialItems = useMemo(
     () =>
       requests.map((request) => ({
@@ -136,13 +199,13 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     },
     onError: (_error, _requestId, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      toast.error("Couldn't mark support as provided. Try again.");
+      toast.error(copy.providedError);
     },
     onSuccess: (updated) => {
       queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
         current.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
       );
-      toast.success("Support marked as provided.");
+      toast.success(copy.providedSuccess);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -166,18 +229,36 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     return (
       <div
         key={request.id}
-        className="content-visibility-list-item flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+        className="content-visibility-list-item flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-medium text-foreground">{requesterName}</p>
-            {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-indigo/10 font-semibold text-brand-indigo">
+              {requesterName.trim() ? getInitials(requesterName) : <UserRound className="h-5 w-5" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate font-semibold text-foreground">{requesterName}</p>
+                <Badge className={cn("shrink-0 rounded-full px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
+                  {REQUEST_STATUS_LABEL[request.status]}
+                </Badge>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary/60 px-2.5 py-1">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  Requested {formatRequestDate(request.created_at)}
+                </span>
+              </div>
+            </div>
           </div>
-          <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
-            {REQUEST_STATUS_LABEL[request.status]}
-          </Badge>
         </div>
 
+        {request.note && (
+          <div className="flex gap-2 rounded-xl bg-secondary/45 px-3 py-2 text-sm text-muted-foreground">
+            <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
+            <p className="line-clamp-3">{request.note}</p>
+          </div>
+        )}
         <AcceptedRequestContactCard
           requestId={request.id}
           serviceType={request.service_type}
@@ -186,10 +267,10 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
         />
 
         {request.status === "pending" && (
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end">
             <Button
               size="touch"
-              className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+              className="rounded-xl bg-brand-mint px-5 text-white hover:bg-brand-mint/90 sm:min-w-36"
               disabled={respondMutation.isPending || providedMutation.isPending}
               aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
               onClick={() => respondMutation.mutate({ requestId: request.id, status: "confirmed" })}
@@ -200,7 +281,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
             <Button
               variant="outline"
               size="touch"
-              className="flex-1 rounded-xl"
+              className="rounded-xl px-5 sm:min-w-36"
               disabled={respondMutation.isPending || providedMutation.isPending}
               aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
               onClick={() => respondMutation.mutate({ requestId: request.id, status: "cancelled" })}
@@ -210,14 +291,13 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
             </Button>
           </div>
         )}
-
         {request.status === "confirmed" && (canMarkProvided || waitingForStudent || studentCompletedFirst || hasDispute) && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
             {hasDispute ? (
               <div className="flex items-start gap-2">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">Student reported a problem</p>
+                  <p className="text-sm font-medium text-foreground">{copy.studentReportedProblem}</p>
                   <p className="mt-1 text-sm text-muted-foreground">School admin review is needed.</p>
                 </div>
               </div>
@@ -225,14 +305,14 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
               <div className="flex items-start gap-2">
                 <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
                 <p className="text-sm text-muted-foreground">
-                  Awaiting student response
+                  {copy.awaitingStudent}
                   {autoResolveDateLabel ? `. Auto-resolves after ${autoResolveDateLabel}` : "."}
                 </p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {studentCompletedFirst && (
-                  <p className="text-sm text-muted-foreground">Student confirmed receipt. Mark support as provided.</p>
+                  <p className="text-sm text-muted-foreground">{copy.studentCompletedFirst}</p>
                 )}
                 <Button
                   size="touch"
@@ -242,7 +322,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
                   onClick={() => providedMutation.mutate(request.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  Mark as provided
+                  {copy.markProvided}
                 </Button>
               </div>
             )}
@@ -251,7 +331,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
 
         {request.status === "completed" && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
-            <p className="text-sm font-medium text-foreground">Resolved support case</p>
+            <p className="text-sm font-medium text-foreground">{copy.completedTitle}</p>
             {completedDateLabel && (
               <p className="mt-1 text-sm text-muted-foreground">Resolved on {completedDateLabel}</p>
             )}
@@ -274,7 +354,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">Incoming requests</h2>
-          <p className="text-sm text-muted-foreground">Pending students waiting for your response.</p>
+          <p className="text-sm text-muted-foreground">{copy.pendingDescription}</p>
         </div>
         {pendingRequests.length > 0
           ? pendingRequests.map((item) => renderRequestCard(item))
@@ -284,7 +364,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">Accepted requests</h2>
-          <p className="text-sm text-muted-foreground">Students you have already accepted.</p>
+          <p className="text-sm text-muted-foreground">{copy.acceptedDescription}</p>
         </div>
         {acceptedRequests.length > 0
           ? acceptedRequests.map((item) => renderRequestCard(item))
@@ -294,7 +374,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">Resolved requests</h2>
-          <p className="text-sm text-muted-foreground">Cases closed by student, system, or school admin.</p>
+          <p className="text-sm text-muted-foreground">{copy.completedDescription}</p>
         </div>
         {completedRequests.length > 0
           ? completedRequests.map((item) => renderRequestCard(item))
