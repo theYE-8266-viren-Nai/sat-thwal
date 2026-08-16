@@ -148,7 +148,7 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold text-foreground">Monthly packages</h2>
         <p className="text-sm text-muted-foreground">
@@ -157,7 +157,7 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
       </div>
 
       {availableTypes.length > 0 && (
-        <Card className="flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-end">
+        <Card className="flex flex-col gap-3 rounded-lg p-3 sm:flex-row sm:items-end">
           <div className="flex-1">
             <Label>Add package</Label>
             <Select value={selectedType} onValueChange={(value) => setSelectedType(value as FoodPackageType)}>
@@ -174,8 +174,8 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
             </Select>
           </div>
           <Button
-            size="touch"
-            className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
+            size="sm"
+            className="rounded-lg bg-brand-mint text-white hover:bg-brand-mint/90"
             disabled={adding}
             onClick={handleAdd}
           >
@@ -185,31 +185,31 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
         </Card>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         {rows.map((foodPackage) => {
           const draft = drafts[foodPackage.id] ?? toDraft(foodPackage);
           return (
-            <Card key={foodPackage.id} className="flex flex-col gap-4 rounded-lg p-4">
+            <Card key={foodPackage.id} className="flex flex-col gap-3 rounded-lg p-3 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {FOOD_PACKAGE_LABELS[foodPackage.package_type]}
                   </p>
                   <h3 className="text-base font-semibold text-foreground">{foodPackage.name}</h3>
                 </div>
-                <Badge variant={foodPackage.is_enabled ? "default" : "secondary"}>
+                <Badge variant={foodPackage.is_enabled ? "default" : "secondary"} className="h-6 rounded-full px-2 text-[0.7rem]">
                   {foodPackage.is_enabled ? "Enabled" : "Disabled"}
                 </Badge>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <Label htmlFor={`package-name-${foodPackage.id}`}>Package name</Label>
                   <Input
                     id={`package-name-${foodPackage.id}`}
                     value={draft.name}
                     onChange={(event) => updateDraft(foodPackage.id, { name: event.target.value })}
-                    className="mt-2 h-10"
+                    className="mt-1.5 h-9"
                   />
                 </div>
                 <div>
@@ -220,7 +220,7 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
                     min={0}
                     value={draft.monthlyPrice}
                     onChange={(event) => updateDraft(foodPackage.id, { monthlyPrice: event.target.value })}
-                    className="mt-2 h-10"
+                    className="mt-1.5 h-9"
                   />
                 </div>
                 <div>
@@ -231,7 +231,7 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
                     min={foodPackage.activeSubscriberCount}
                     value={draft.maxSubscribers}
                     onChange={(event) => updateDraft(foodPackage.id, { maxSubscribers: event.target.value })}
-                    className="mt-2 h-10"
+                    className="mt-1.5 h-9"
                   />
                 </div>
               </div>
@@ -256,8 +256,8 @@ export function FoodPackageManager({ restaurantId, packages }: FoodPackageManage
               </div>
 
               <Button
-                size="touch"
-                className="rounded-xl bg-brand-indigo text-white hover:bg-brand-indigo-dark"
+                size="sm"
+                className="rounded-lg bg-brand-indigo text-white hover:bg-brand-indigo-dark"
                 disabled={pendingId === foodPackage.id}
                 onClick={() => handleSave(foodPackage)}
               >

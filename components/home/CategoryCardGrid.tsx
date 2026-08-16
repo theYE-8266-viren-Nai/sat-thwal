@@ -10,7 +10,7 @@ interface CategoryCardGridProps {
 
 export function CategoryCardGrid({ existingTutorId, existingHostelId }: CategoryCardGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 px-5 pt-5 md:grid-cols-4 md:px-8">
+    <div className="grid grid-cols-2 gap-2.5 px-4 pt-4 md:grid-cols-4 md:px-6">
       {CATEGORY_LIST.map((category) => (
         <CategoryCard
           key={category.category}

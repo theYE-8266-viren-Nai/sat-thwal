@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ClipboardList, Clock3 } from "lucide-react";
 import { requireAdminProfile } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getMonetizationReport } from "@/lib/admin/monetization";
 import { getRestaurantOwnerAccounts } from "@/lib/admin/ownerAccounts";
 import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
 import { getSchoolReportingMetrics } from "@/lib/admin/schoolReportingMetrics";
@@ -14,21 +15,24 @@ import { RestaurantOwnerAccounts } from "@/components/admin/RestaurantOwnerAccou
 import { RequestResolutionActions } from "@/components/admin/RequestResolutionActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatMMK } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
   await resolveDueRequests(supabase);
-  const ownerAccountsResult = await loadRestaurantOwnerAccounts();
   const [
+    ownerAccountsResult,
     schoolReportingMetrics,
     serviceOverview,
     requestDetails,
+    monetizationReport,
     pendingApprovalCount,
   ] = await Promise.all([
+    loadRestaurantOwnerAccounts(),
     getSchoolReportingMetrics(supabase),
     getAdminServiceOverview(supabase),
     getAdminRequestDetails(supabase),
+    getMonetizationReport(supabase),
     getPendingProviderRegistrationCount(supabase),
   ]);
   const totalServiceCount = serviceOverview.reduce((sum, item) => sum + item.totalCount, 0);
@@ -46,17 +50,17 @@ export default async function AdminDashboardPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background px-5 py-8 md:px-8">
-      <section className="mx-auto max-w-5xl rounded-xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <main className="min-h-screen bg-background px-4 py-5 md:px-6">
+      <section className="mx-auto max-w-6xl rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               School Admin Dashboard
             </p>
-            <h1 className="mt-2 text-2xl font-semibold text-foreground">
+            <h1 className="mt-1 text-xl font-semibold text-foreground md:text-2xl">
               Welcome, {profile.full_name ?? "admin"}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Govern student welfare services, provider approvals, and request activity
               from one UIT-controlled workspace.
             </p>
@@ -67,9 +71,9 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-base font-semibold text-foreground">
             School Reporting Metrics
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -77,36 +81,36 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Active requests</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {schoolReportingMetrics.activeRequestCount}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Approved providers</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {schoolReportingMetrics.approvedProviderCount}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Pending approvals</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {schoolReportingMetrics.pendingApprovalCount}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border px-5 py-4">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-4 py-3">
             <h3 className="font-semibold text-foreground">Service Demand by Category</h3>
           </div>
           <div className="divide-y divide-border">
             {schoolReportingMetrics.demandByCategory.map((item) => (
               <div
                 key={item.key}
-                className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_7rem_7rem_7rem]"
+                className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem]"
               >
                 <div>
                   <div className="flex items-center justify-between gap-3">
@@ -134,31 +138,33 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Service Overview</h2>
+          <h2 className="text-base font-semibold text-foreground">Service Overview</h2>
           <p className="text-sm text-muted-foreground">
             Live school visibility across academic support, accommodation, food, and transport.
           </p>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {serviceOverview.map((item) => (
             <article
               key={item.key}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm"
+              className="rounded-xl border border-border bg-card p-3 shadow-sm"
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 <div>
-                  <h3 className="font-semibold text-foreground">{item.label}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{item.label}</h3>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Total
                     </p>
-                    <p className="mt-1 text-2xl font-semibold text-foreground">
+                    <p className="mt-0.5 text-xl font-semibold text-foreground">
                       {item.totalCount}
                     </p>
                   </div>
@@ -166,7 +172,7 @@ export default async function AdminDashboardPage() {
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Active
                     </p>
-                    <p className="mt-1 text-2xl font-semibold text-foreground">
+                    <p className="mt-0.5 text-xl font-semibold text-foreground">
                       {item.activeRequestCount}
                     </p>
                   </div>
@@ -182,9 +188,9 @@ export default async function AdminDashboardPage() {
         setupError={ownerAccountsResult.error}
       />
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Resolution Review Queue</h2>
+          <h2 className="text-base font-semibold text-foreground">Resolution Review Queue</h2>
           <p className="text-sm text-muted-foreground">
             Disputed and provider-confirmed cases that need school visibility.
           </p>
@@ -232,44 +238,44 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-6 max-w-5xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Request Details</h2>
+          <h2 className="text-base font-semibold text-foreground">Request Details</h2>
           <p className="text-sm text-muted-foreground">
             Recent student requests and school-visible service outcomes across every category.
           </p>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           {requestDetails.length === 0 ? (
             <div className="p-5 text-sm text-muted-foreground">
               No request activity has been recorded yet.
             </div>
           ) : (
-            <div className="max-h-[32rem] overflow-auto">
+            <div className="max-h-[28rem] overflow-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="sticky top-0 z-10 border-b border-border bg-secondary text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Requester</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Listing</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Requested</th>
-                    <th className="px-4 py-3 font-medium">Accepted</th>
-                    <th className="px-4 py-3 font-medium">Resolved</th>
+                    <th className="px-3 py-2.5 font-medium">Requester</th>
+                    <th className="px-3 py-2.5 font-medium">Category</th>
+                    <th className="px-3 py-2.5 font-medium">Listing</th>
+                    <th className="px-3 py-2.5 font-medium">Status</th>
+                    <th className="px-3 py-2.5 font-medium">Requested</th>
+                    <th className="px-3 py-2.5 font-medium">Accepted</th>
+                    <th className="px-3 py-2.5 font-medium">Resolved</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {requestDetails.map((request) => (
                     <tr key={request.id} className="align-top">
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <p className="font-medium text-foreground">{request.requesterName}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {request.requesterPhone ?? "No phone added"}
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.serviceLabel}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <p className="font-medium text-foreground">{request.serviceName}</p>
                         {request.providerName && (
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -282,7 +288,7 @@ export default async function AdminDashboardPage() {
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <Badge
                           className={cn(
                             "px-2.5 text-xs font-semibold",
@@ -298,13 +304,13 @@ export default async function AdminDashboardPage() {
                                 : REQUEST_STATUS_LABEL[request.status]}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {formatDateTime(request.requestedAt)}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.acceptedAt ? formatDateTime(request.acceptedAt) : "-"}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground">
                         {request.completedAt ? formatDateTime(request.completedAt) : "-"}
                       </td>
                     </tr>
@@ -316,26 +322,26 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-5xl">
+      <section className="mx-auto mt-5 max-w-6xl">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">School Governance Center</h2>
+          <h2 className="text-base font-semibold text-foreground">School Governance Center</h2>
           <p className="text-sm text-muted-foreground">
             Operational signals for provider oversight, student demand, and service readiness.
           </p>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Approved service records</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {totalServiceCount}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted-foreground">Providers awaiting review</p>
-                <p className="mt-1 text-3xl font-semibold text-foreground">
+                <p className="mt-1 text-2xl font-semibold text-foreground">
                   {pendingApprovalCount}
                 </p>
               </div>
@@ -348,18 +354,18 @@ export default async function AdminDashboardPage() {
               </Link>
             </Button>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Active student requests</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {activeRequestTotal}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
               Pending or confirmed requests requiring service follow-up.
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <p className="text-sm text-muted-foreground">Resolved support cases</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">
+            <p className="mt-1 text-2xl font-semibold text-foreground">
               {resolvedRequestCount}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
@@ -386,6 +392,67 @@ export default async function AdminDashboardPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-5 max-w-6xl">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-base font-semibold text-foreground">Monetization Report</h2>
+          <p className="text-sm text-muted-foreground">
+            Revenue received from provider registrations and transportation commissions.
+          </p>
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">Received revenue</p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {formatMMK(monetizationReport.totalMmk)}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Payments awaiting review</p>
+                <p className="mt-1 text-2xl font-semibold text-foreground">
+                  {pendingApprovalCount}
+                </p>
+              </div>
+              <Clock3 className="h-5 w-5 text-brand-indigo" aria-hidden="true" />
+            </div>
+            <Button variant="link" asChild className="mt-2 h-auto p-0">
+              <Link href="/admin/provider-registrations">
+                Review registrations
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+          {monetizationReport.lineItems.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-xl border border-border bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-foreground">{item.label}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.count} paid registration{item.count === 1 ? "" : "s"}
+                  </p>
+                  {item.commissionCount > 0 && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.commissionCount} accepted seat{item.commissionCount === 1 ? "" : "s"} at 15%
+                    </p>
+                  )}
+                </div>
+                <p className="shrink-0 text-base font-semibold text-foreground">
+                  {formatMMK(item.totalMmk)}
+                </p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </main>
@@ -423,7 +490,7 @@ function MetricCell({ label, value }: { label: string; value: number }) {
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-foreground">{value}</p>
+      <p className="mt-0.5 text-lg font-semibold text-foreground">{value}</p>
     </div>
   );
 }

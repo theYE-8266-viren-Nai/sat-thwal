@@ -9,7 +9,7 @@ export function ServiceDetailHeader({ data }: { data: ServiceDetailData }) {
 
   return (
     <div>
-      <div className="relative aspect-[16/10] w-full bg-muted md:aspect-[21/9]">
+      <div className="relative aspect-[16/8] w-full bg-muted md:aspect-[21/7]">
         {data.image ? (
           <Image
             src={data.image}
@@ -24,15 +24,15 @@ export function ServiceDetailHeader({ data }: { data: ServiceDetailData }) {
             className="flex h-full w-full items-center justify-center"
             style={{ backgroundColor: `color-mix(in srgb, ${category.color} 15%, white)` }}
           >
-            <category.icon className="h-16 w-16" style={{ color: category.color }} />
+            <category.icon className="h-12 w-12" style={{ color: category.color }} />
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-2 px-5 pt-4 md:px-8">
-        <Badge className="w-fit px-2.5 text-xs font-semibold text-white" style={{ backgroundColor: category.color }}>
+      <div className="flex flex-col gap-1.5 px-4 pt-3 md:px-6">
+        <Badge className="h-6 w-fit rounded-full px-2 text-[0.7rem] font-semibold text-white" style={{ backgroundColor: category.color }}>
           {category.singularLabel}
         </Badge>
-        <h1 className="text-xl font-bold text-foreground">{data.title}</h1>
+        <h1 className="text-lg font-semibold text-foreground md:text-xl">{data.title}</h1>
         {data.verified && <VerifiedBadge />}
       </div>
     </div>

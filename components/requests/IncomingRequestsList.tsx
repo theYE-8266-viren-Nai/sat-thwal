@@ -156,17 +156,25 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     return (
       <div
         key={request.id}
-        className="content-visibility-list-item flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+        className="content-visibility-list-item flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3"
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-medium text-foreground">{requesterName}</p>
-            {request.note && <p className="mt-1 text-sm text-muted-foreground">{request.note}</p>}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{requesterName}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Requested {formatRelativeDate(request.created_at)}
+            </p>
           </div>
-          <Badge className={cn("shrink-0 px-2.5 text-xs font-semibold", REQUEST_STATUS_STYLES[request.status])}>
+          <Badge className={cn("h-6 shrink-0 rounded-full px-2 text-[0.7rem] font-semibold", REQUEST_STATUS_STYLES[request.status])}>
             {REQUEST_STATUS_LABEL[request.status]}
           </Badge>
         </div>
+
+        {request.note && (
+          <p className="line-clamp-2 rounded-lg bg-secondary/50 px-3 py-2 text-sm text-muted-foreground">
+            {request.note}
+          </p>
+        )}
 
         {request.status === "pending" && (
           <div className="flex gap-2">
@@ -246,43 +254,67 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
 
   function renderEmpty(message: string) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         {message}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 px-5 md:px-8">
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Incoming requests</h2>
-          <p className="text-sm text-muted-foreground">Pending students waiting for your response.</p>
-        </div>
+    <div className="flex flex-col gap-5 px-4 md:px-6">
+      <div className="grid grid-cols-3 gap-2">
+        <SummaryPill label="Pending" value={pendingRequests.length} />
+        <SummaryPill label="Accepted" value={acceptedRequests.length} />
+        <SummaryPill label="Completed" value={completedRequests.length} />
+      </div>
+
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Incoming requests" description="Pending students waiting for your response." />
         {pendingRequests.length > 0
           ? pendingRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No pending requests right now.")}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Accepted requests</h2>
-          <p className="text-sm text-muted-foreground">Students you have already accepted.</p>
-        </div>
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Accepted requests" description="Students you have already accepted." />
         {acceptedRequests.length > 0
           ? acceptedRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No accepted requests yet.")}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Resolved requests</h2>
-          <p className="text-sm text-muted-foreground">Cases closed by student, system, or school admin.</p>
-        </div>
+      <section className="flex flex-col gap-2.5">
+        <SectionHeading title="Resolved requests" description="Cases closed by student, system, or school admin." />
         {completedRequests.length > 0
           ? completedRequests.map((item) => renderRequestCard(item))
           : renderEmpty("No resolved requests yet.")}
       </section>
     </div>
   );
+}
+
+function SectionHeading({ title, description }: { title: string; description: string }) {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function SummaryPill({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+      <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-lg font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function formatRelativeDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
