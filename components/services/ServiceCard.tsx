@@ -23,9 +23,10 @@ const META_ICONS: Record<ServiceCardMeta["icon"], typeof MapPin> = {
 interface ServiceCardProps {
   data: ServiceCardData;
   preloadImage?: boolean;
+  showCta?: boolean;
 }
 
-export function ServiceCard({ data, preloadImage = false }: ServiceCardProps) {
+export function ServiceCard({ data, preloadImage = false, showCta = true }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
   const prefetch = usePredictivePrefetch(data);
 
@@ -77,12 +78,14 @@ export function ServiceCard({ data, preloadImage = false }: ServiceCardProps) {
 
           <div className="mt-auto flex items-center justify-between pt-2">
             <span className="font-semibold text-foreground">{data.priceLabel}</span>
-            <Badge
-              className="h-auto px-3 py-1.5 text-xs font-semibold text-white"
-              style={{ backgroundColor: category.color }}
-            >
-              {data.ctaLabel}
-            </Badge>
+            {showCta && (
+              <Badge
+                className="h-auto px-3 py-1.5 text-xs font-semibold text-white"
+                style={{ backgroundColor: category.color }}
+              >
+                {data.ctaLabel}
+              </Badge>
+            )}
           </div>
         </div>
       </Card>

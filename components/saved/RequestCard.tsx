@@ -234,7 +234,7 @@ export function RequestCard({
           )}
         </div>
       )}
-      <ServiceCard data={data} />
+      <ServiceCard data={data} showCta={false} />
       {status === "confirmed" && (canConfirmReceived || waitingForProvider || hasDispute) && (
         <div className="rounded-xl border border-border bg-card p-3">
           {hasDispute ? (
