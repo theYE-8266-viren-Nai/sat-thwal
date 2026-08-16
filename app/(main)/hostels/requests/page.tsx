@@ -19,7 +19,7 @@ export default async function HostelRequestsPage() {
 
   return (
     <div className="pb-6">
-      <PageHeader title="Room Requests" subtitle="Students who requested your room listing." />
+      <PageHeader title="Hostel Requests" subtitle="Review new requests and track accepted stays." />
       <IncomingRequestsList
         requests={requests}
         requesterNames={Object.fromEntries(

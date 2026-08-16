@@ -22,6 +22,15 @@ import type { Database } from "@/types/database.types";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return fallback;
+}
+
 interface IncomingRequestsListProps {
   requests: RequestRow[];
   requesterNames: Record<string, string>;
@@ -80,7 +89,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     },
     onError: (error, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      const message = error instanceof Error ? error.message : "Couldn't update the request. Try again.";
+      const message = getErrorMessage(error, "Couldn't update the request. Try again.");
       toast.error(message);
     },
     onSuccess: (updated, { status, requestId }) => {

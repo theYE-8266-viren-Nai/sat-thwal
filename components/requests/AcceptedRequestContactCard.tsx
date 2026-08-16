@@ -65,7 +65,7 @@ export function AcceptedRequestContactCard({
   if (contactQuery.isError) {
     return (
       <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
-        Contact details are unavailable right now.
+        Contact details could not load. Please make sure the latest database migrations are applied.
       </div>
     );
   }
