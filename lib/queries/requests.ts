@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, RequestStatus } from "@/types/database.types";
 import type { ServiceCategory } from "@/types/domain";
 
@@ -100,26 +100,8 @@ export async function getPeerRequestBlockReason(
   profileId: string,
   category: ServiceCategory,
 ) {
-  if (category === "tutor") {
-    const { data, error } = await supabase
-      .from("tutors")
-      .select("id")
-      .eq("owner_profile_id", profileId)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data ? "Tutors can't request other tutors." : null;
-  }
-
-  if (category === "hostel") {
-    const { data, error } = await supabase
-      .from("hostels")
-      .select("id")
-      .eq("owner_profile_id", profileId)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data ? "Room owners can't request other rooms." : null;
+  if (category === "tutor" || category === "hostel") {
+    return null;
   }
 
   if (category === "transportation") {
@@ -146,7 +128,6 @@ export async function getPeerRequestBlockReason(
 
   return null;
 }
-
 export async function createRequest(
   supabase: SupabaseClient<Database>,
   profileId: string,

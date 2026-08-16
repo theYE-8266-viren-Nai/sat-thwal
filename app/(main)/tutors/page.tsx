@@ -1,6 +1,7 @@
 "use client";
 
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
+import { AcademicSupportRelationships } from "@/components/tutors/AcademicSupportRelationships";
 import { getTutors, tutorToCard, type TutorRow } from "@/lib/queries/tutors";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { SUBJECTS } from "@/lib/constants/subjects";
@@ -51,6 +52,7 @@ export default function TutorsPage() {
       formatRangeValue={formatMMK}
       fetchRows={getTutors}
       toCard={tutorToCard}
+      renderSections={({ profileId }) => <AcademicSupportRelationships profileId={profileId} />}
       matchesSearch={(row, query) => {
         if (!query.trim()) return true;
         const q = query.toLowerCase();

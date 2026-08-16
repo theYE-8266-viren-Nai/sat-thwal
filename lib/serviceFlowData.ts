@@ -1,10 +1,10 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import { getFoodItemsByIds, foodToCard } from "@/lib/queries/food";
-import { getHostelByOwner, getHostelsByIds, hostelToCard } from "@/lib/queries/hostels";
-import { getProfile, getProfilesByIds } from "@/lib/queries/profiles";
-import { getRequests, normalizeRequestStatus } from "@/lib/queries/requests";
+import { getHostelByOwner, getHostelsByIds, hostelToCard, type HostelRow } from "@/lib/queries/hostels";
+import { getProfile, getProfilesByIds, type ProfileRow } from "@/lib/queries/profiles";
+import { getRequests, getRequestsForHostel, getRequestsForTutor, normalizeRequestStatus } from "@/lib/queries/requests";
 import { getRoutesByIds, routeToCard } from "@/lib/queries/transportation";
-import { getTutorByOwner, getTutorsByIds, tutorToCard } from "@/lib/queries/tutors";
+import { getTutorByOwner, getTutorsByIds, tutorToCard, type TutorRow } from "@/lib/queries/tutors";
 import type { Database } from "@/types/database.types";
 import type { ServiceCardData, ServiceCategory } from "@/types/domain";
 
@@ -90,6 +90,128 @@ export async function getSavedRequestItems(
     .filter((item): item is SavedRequestItem => Boolean(item));
 }
 
+export interface AcademicTutorRelationship {
+  request: RequestRow;
+  tutor: TutorRow;
+}
+
+export interface AcademicStudentRelationship {
+  request: RequestRow;
+  student: ProfileRow;
+}
+
+export interface AcademicSupportRelationships {
+  myTutors: AcademicTutorRelationship[];
+  myStudents: AcademicStudentRelationship[];
+}
+
+const ACTIVE_RELATIONSHIP_STATUSES = new Set(["confirmed", "completed"]);
+
+export async function getAcademicSupportRelationships(
+  supabase: SupabaseClient<Database>,
+  profileId: string,
+): Promise<AcademicSupportRelationships> {
+  const [myRequests, ownedTutor] = await Promise.all([
+    getRequests(supabase, profileId),
+    getTutorByOwner(supabase, profileId),
+  ]);
+
+  const tutorRequests = myRequests.filter(
+    (request) =>
+      request.service_type === "tutor" &&
+      ACTIVE_RELATIONSHIP_STATUSES.has(request.status),
+  );
+  const tutorIds = [...new Set(tutorRequests.map((request) => request.service_id))];
+
+  const [tutors, studentRequests] = await Promise.all([
+    getTutorsByIds(supabase, tutorIds),
+    ownedTutor ? getRequestsForTutor(supabase, ownedTutor.id) : Promise.resolve([]),
+  ]);
+  const tutorMap = new Map(tutors.map((tutor) => [tutor.id, tutor]));
+
+  const activeStudentRequests = studentRequests.filter((request) =>
+    ACTIVE_RELATIONSHIP_STATUSES.has(request.status),
+  );
+  const students = await getProfilesByIds(supabase, [
+    ...new Set(activeStudentRequests.map((request) => request.profile_id)),
+  ]);
+  const studentMap = new Map(students.map((student) => [student.id, student]));
+
+  return {
+    myTutors: tutorRequests
+      .map((request) => {
+        const tutor = tutorMap.get(request.service_id);
+        return tutor ? { request, tutor } : null;
+      })
+      .filter((item): item is AcademicTutorRelationship => Boolean(item)),
+    myStudents: activeStudentRequests
+      .map((request) => {
+        const student = studentMap.get(request.profile_id);
+        return student ? { request, student } : null;
+      })
+      .filter((item): item is AcademicStudentRelationship => Boolean(item)),
+  };
+}
+export interface HousingHostelRelationship {
+  request: RequestRow;
+  hostel: HostelRow;
+}
+
+export interface HousingResidentRelationship {
+  request: RequestRow;
+  resident: ProfileRow;
+}
+
+export interface HousingRelationships {
+  myHostels: HousingHostelRelationship[];
+  myResidents: HousingResidentRelationship[];
+}
+
+export async function getHousingRelationships(
+  supabase: SupabaseClient<Database>,
+  profileId: string,
+): Promise<HousingRelationships> {
+  const [myRequests, ownedHostel] = await Promise.all([
+    getRequests(supabase, profileId),
+    getHostelByOwner(supabase, profileId),
+  ]);
+
+  const hostelRequests = myRequests.filter(
+    (request) =>
+      request.service_type === "hostel" &&
+      ACTIVE_RELATIONSHIP_STATUSES.has(request.status),
+  );
+  const hostelIds = [...new Set(hostelRequests.map((request) => request.service_id))];
+
+  const [hostels, residentRequests] = await Promise.all([
+    getHostelsByIds(supabase, hostelIds),
+    ownedHostel ? getRequestsForHostel(supabase, ownedHostel.id) : Promise.resolve([]),
+  ]);
+  const hostelMap = new Map(hostels.map((hostel) => [hostel.id, hostel]));
+
+  const activeResidentRequests = residentRequests.filter((request) =>
+    ACTIVE_RELATIONSHIP_STATUSES.has(request.status),
+  );
+  const residents = await getProfilesByIds(supabase, [
+    ...new Set(activeResidentRequests.map((request) => request.profile_id)),
+  ]);
+  const residentMap = new Map(residents.map((resident) => [resident.id, resident]));
+
+  return {
+    myHostels: hostelRequests
+      .map((request) => {
+        const hostel = hostelMap.get(request.service_id);
+        return hostel ? { request, hostel } : null;
+      })
+      .filter((item): item is HousingHostelRelationship => Boolean(item)),
+    myResidents: activeResidentRequests
+      .map((request) => {
+        const resident = residentMap.get(request.profile_id);
+        return resident ? { request, resident } : null;
+      })
+      .filter((item): item is HousingResidentRelationship => Boolean(item)),
+  };
+}
 export async function getIncomingRequestItems(
   supabase: SupabaseClient<Database>,
   scope: IncomingRequestScope,
