@@ -2,6 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, RequestStatus, ServiceType } from "@/types/database.types";
 import { normalizeRequestStatus } from "@/lib/queries/requests";
 
+export type AdminRequestResolutionState =
+  | "open"
+  | "awaiting_student"
+  | "auto_resolve_due_soon"
+  | "disputed"
+  | "resolved";
+
 export interface AdminRequestDetail {
   id: string;
   serviceType: ServiceType;
@@ -17,6 +24,13 @@ export interface AdminRequestDetail {
   requesterCompletedAt: string | null;
   ownerCompletedAt: string | null;
   completedAt: string | null;
+  studentDisputedAt: string | null;
+  studentDisputeReason: string | null;
+  resolvedByAdminId: string | null;
+  adminResolutionNote: string | null;
+  autoResolveAt: string | null;
+  resolutionSource: Database["public"]["Tables"]["requests"]["Row"]["resolution_source"];
+  resolutionState: AdminRequestResolutionState;
 }
 
 const SERVICE_LABELS: Record<ServiceType, string> = {
@@ -95,8 +109,29 @@ export async function getAdminRequestDetails(
       requesterCompletedAt: request.requester_completed_at,
       ownerCompletedAt: request.owner_completed_at,
       completedAt: request.completed_at,
+      studentDisputedAt: request.student_disputed_at,
+      studentDisputeReason: request.student_dispute_reason,
+      resolvedByAdminId: request.resolved_by_admin_id,
+      adminResolutionNote: request.admin_resolution_note,
+      autoResolveAt: request.auto_resolve_at,
+      resolutionSource: request.resolution_source,
+      resolutionState: getResolutionState(request),
     };
   });
+}
+
+function getResolutionState(
+  request: Database["public"]["Tables"]["requests"]["Row"],
+): AdminRequestResolutionState {
+  if (request.status === "completed") return "resolved";
+  if (request.status !== "confirmed") return "open";
+  if (request.student_disputed_at) return "disputed";
+  if (!request.owner_completed_at || request.requester_completed_at) return "open";
+  if (!request.auto_resolve_at) return "awaiting_student";
+
+  const dueAt = new Date(request.auto_resolve_at).getTime();
+  const oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
+  return dueAt <= oneDayFromNow ? "auto_resolve_due_soon" : "awaiting_student";
 }
 
 function idsForService(

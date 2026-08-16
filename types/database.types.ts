@@ -2,6 +2,7 @@ export type SessionMode = "online" | "in_person" | "both";
 export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
+export type RequestResolutionSource = "student_confirmed" | "auto_resolved" | "admin_resolved";
 export type UserRole = "student" | "driver" | "admin" | "restaurant";
 export type FoodPackageType =
   | "breakfast_lunch_dinner"
@@ -16,6 +17,17 @@ export type ProviderRegistrationStatus =
   | "suspended";
 export type ProviderPaymentStatus = "submitted" | "paid" | "rejected" | "waived";
 export type ProviderPaymentMethod = "kbzpay" | "wavepay" | "bank_transfer" | "other";
+export type AdminAuditEntityType = "request" | "provider_registration";
+export type AdminAuditEventType =
+  | "request_created"
+  | "request_confirmed"
+  | "request_cancelled"
+  | "request_owner_completed"
+  | "request_student_completed"
+  | "request_completed"
+  | "provider_payment_submitted"
+  | "provider_approved"
+  | "provider_rejected";
 
 type ProfileRow = {
   id: string;
@@ -183,6 +195,13 @@ type RequestRow = {
   requester_completed_at: string | null;
   owner_completed_at: string | null;
   completed_at: string | null;
+  student_disputed_at: string | null;
+  student_dispute_reason: string | null;
+  resolved_by_admin_id: string | null;
+  admin_resolution_note: string | null;
+  auto_resolve_at: string | null;
+  resolution_source: RequestResolutionSource | null;
+  seen_by_owner: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -217,6 +236,18 @@ type ProviderPaymentSubmissionRow = {
   submitted_at: string;
   reviewed_at: string | null;
   reviewed_by: string | null;
+}
+
+type AdminAuditEventRow = {
+  id: string;
+  entity_type: AdminAuditEntityType;
+  entity_id: string;
+  event_type: AdminAuditEventType;
+  actor_profile_id: string | null;
+  actor_role: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
 }
 
 export type Database = {
@@ -339,6 +370,17 @@ export type Database = {
         Update: Partial<ProviderPaymentSubmissionRow>;
         Relationships: [];
       };
+      admin_audit_events: {
+        Row: AdminAuditEventRow;
+        Insert: Partial<AdminAuditEventRow> & {
+          entity_type: AdminAuditEntityType;
+          entity_id: string;
+          event_type: AdminAuditEventType;
+          summary: string;
+        };
+        Update: Partial<AdminAuditEventRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -350,7 +392,39 @@ export type Database = {
         Args: { p_request_id: string };
         Returns: RequestRow;
       };
+      mark_request_provided: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      confirm_request_received: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      dispute_request: {
+        Args: { p_request_id: string; p_reason: string };
+        Returns: RequestRow;
+      };
+      admin_resolve_request: {
+        Args: { p_request_id: string; p_note?: string | null };
+        Returns: RequestRow;
+      };
+      admin_cancel_request: {
+        Args: { p_request_id: string; p_note?: string | null };
+        Returns: RequestRow;
+      };
+      resolve_due_requests: {
+        Args: Record<string, never>;
+        Returns: RequestRow[];
+      };
       mark_request_responses_seen: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      get_owner_unseen_resolutions: {
+        Args: Record<string, never>;
+        Returns: RequestRow[];
+      };
+      mark_owner_resolutions_seen: {
         Args: Record<string, never>;
         Returns: undefined;
       };

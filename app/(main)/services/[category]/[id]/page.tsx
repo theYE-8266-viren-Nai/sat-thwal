@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Wallet, Clock, MapPin } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getServerAuthContext } from "@/lib/auth/server";
 import { getTutorById, tutorToDetail } from "@/lib/queries/tutors";
 import { getHostelById, hostelToDetail } from "@/lib/queries/hostels";
 import { getFoodItemById, foodToDetail } from "@/lib/queries/food";
@@ -16,7 +16,7 @@ import { RecordRecentlyViewed } from "@/components/detail/RecordRecentlyViewed";
 import { RouteTimeline } from "@/components/transportation/RouteTimeline";
 import { ProviderRegistrationGate } from "@/components/provider/ProviderRegistrationGate";
 import { getProviderRegistrationWithPayment } from "@/lib/queries/providerRegistrations";
-import type { ServiceCategory } from "@/types/domain";
+import type { ServiceCardData, ServiceCategory } from "@/types/domain";
 import type { ServiceDetailData } from "@/types/detail";
 import type { ProviderType } from "@/types/database.types";
 
@@ -29,6 +29,30 @@ const AMENITIES_TITLE: Record<ServiceCategory, string> = {
   transportation: "Included",
 };
 
+function detailToCard(detail: ServiceDetailData): ServiceCardData {
+  return {
+    id: detail.id,
+    category: detail.category,
+    image: detail.image,
+    title: detail.title,
+    subtitle: detail.providerName,
+    priceLabel: detail.priceLabel,
+    rating: detail.rating,
+    reviewCount: detail.reviewCount,
+    verified: detail.verified,
+    meta: [
+      { icon: "map-pin", label: detail.locationLabel },
+      { icon: "clock", label: detail.availabilityLines[0] ?? "Availability on request" },
+    ],
+    ctaLabel: detail.ctaLabel,
+    href: `/services/${detail.category}/${detail.id}`,
+    routeStops: detail.routeStops,
+    vehicleType: detail.vehicleType,
+    availableSeats: detail.availableSeats,
+    totalSeats: detail.totalSeats,
+  };
+}
+
 export default async function ServiceDetailPage({
   params,
 }: {
@@ -39,11 +63,8 @@ export default async function ServiceDetailPage({
   if (!VALID_CATEGORIES.includes(category as ServiceCategory)) notFound();
   const typedCategory = category as ServiceCategory;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, userId, profile } = await getServerAuthContext();
+  if (!userId || !profile) return null;
 
   let detail: ServiceDetailData | null = null;
   let listingOwnerId: string | null = null;
@@ -73,15 +94,9 @@ export default async function ServiceDetailPage({
 
   if (!detail) notFound();
 
-  const isOwner = (listingOwnerId ?? detail.ownerProfileId) === user.id;
+  const isOwner = (listingOwnerId ?? detail.ownerProfileId) === userId;
   const needsProviderApproval =
     (typedCategory === "tutor" || typedCategory === "hostel") && !listingVerified;
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError) throw profileError;
   const isAdmin = profile?.role === "admin";
   if (needsProviderApproval && !isOwner && !isAdmin) notFound();
 
@@ -92,10 +107,10 @@ export default async function ServiceDetailPage({
         ? "hostel"
         : null;
   const [existingRequest, requestBlockReason, registrationState] = await Promise.all([
-    getExistingActiveRequest(supabase, user.id, typedCategory, id),
-    getPeerRequestBlockReason(supabase, user.id, typedCategory),
+    getExistingActiveRequest(supabase, userId, typedCategory, id),
+    getPeerRequestBlockReason(supabase, userId, typedCategory),
     isOwner && ownerProviderType
-      ? getProviderRegistrationWithPayment(supabase, user.id, ownerProviderType)
+      ? getProviderRegistrationWithPayment(supabase, userId, ownerProviderType)
       : Promise.resolve(null),
   ]);
 
@@ -140,13 +155,14 @@ export default async function ServiceDetailPage({
       <DetailActionBar
         category={typedCategory}
         serviceId={id}
-        profileId={user.id}
+        profileId={userId}
         title={detail.title}
         contactInfo={detail.contactInfo}
         isOwner={isOwner}
         routeStops={detail.routeStops}
         existingRequestStatus={existingRequest?.status ?? null}
         requestBlockReason={requestBlockReason}
+        optimisticCard={detailToCard(detail)}
       />
     </div>
   );

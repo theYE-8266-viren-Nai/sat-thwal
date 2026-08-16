@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -28,8 +29,8 @@ export default function SignupPage() {
       password,
       options: { data: { full_name: fullName } },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
@@ -38,6 +39,7 @@ export default function SignupPage() {
       router.refresh();
       return;
     }
+    setLoading(false);
     setCheckEmail(true);
   }
 
@@ -60,63 +62,70 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="border-none shadow-lg">
-      <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>Everything students need, in one place.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="fullName">Full name</Label>
-            <Input
-              id="fullName"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Thae Su Nandar"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button
-            type="submit"
-            size="touch"
-            disabled={loading}
-            className="mt-2 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
-          >
-            {loading ? "Creating account..." : "Continue"}
-          </Button>
-        </form>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium text-brand-indigo hover:underline">
-            Log in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+    <>
+      <LoadingOverlay
+        show={loading}
+        title="Creating your account"
+        description="Setting up your secure student access."
+      />
+      <Card className="border-none shadow-lg" aria-busy={loading}>
+        <CardHeader>
+          <CardTitle>Create your account</CardTitle>
+          <CardDescription>Everything students need, in one place.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Thae Su Nandar"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 6 characters"
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button
+              type="submit"
+              size="touch"
+              disabled={loading}
+              className="mt-2 rounded-xl bg-brand-indigo hover:bg-brand-indigo-dark"
+            >
+              Continue
+            </Button>
+          </form>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-brand-indigo hover:underline">
+              Log in
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    </>
   );
 }

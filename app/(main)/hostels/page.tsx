@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
+import { HousingRelationships } from "@/components/hostels/HousingRelationships";
 import { getHostels, hostelToCard, type HostelRow } from "@/lib/queries/hostels";
 import { TOWNSHIPS } from "@/lib/constants/townships";
 import { HOSTEL_FACILITIES, HOSTEL_ROOM_TYPES } from "@/lib/constants/facilities";
@@ -30,12 +31,14 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function HostelsPage() {
   return (
     <ServiceListingPage<HostelRow>
+      category="hostel"
       title="Student Housing"
       searchPlaceholder="Search approved housing or townships..."
       filterFields={FILTER_FIELDS}
       formatRangeValue={(n) => (n < 1000 ? `${n} km` : formatMMK(n))}
       fetchRows={getHostels}
       toCard={hostelToCard}
+      renderSections={({ profileId }) => <HousingRelationships profileId={profileId} />}
       matchesSearch={(row, query) => {
         if (!query.trim()) return true;
         const q = query.toLowerCase();

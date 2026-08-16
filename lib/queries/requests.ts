@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, RequestStatus } from "@/types/database.types";
 import type { ServiceCategory } from "@/types/domain";
 
@@ -7,6 +7,7 @@ export type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 export function normalizeRequestStatus<T extends RequestRow>(request: T): T {
   if (
     request.status === "confirmed" &&
+    !request.student_disputed_at &&
     request.requester_completed_at &&
     request.owner_completed_at
   ) {
@@ -99,26 +100,8 @@ export async function getPeerRequestBlockReason(
   profileId: string,
   category: ServiceCategory,
 ) {
-  if (category === "tutor") {
-    const { data, error } = await supabase
-      .from("tutors")
-      .select("id")
-      .eq("owner_profile_id", profileId)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data ? "Tutors can't request other tutors." : null;
-  }
-
-  if (category === "hostel") {
-    const { data, error } = await supabase
-      .from("hostels")
-      .select("id")
-      .eq("owner_profile_id", profileId)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data ? "Room owners can't request other rooms." : null;
+  if (category === "tutor" || category === "hostel") {
+    return null;
   }
 
   if (category === "transportation") {
@@ -145,7 +128,6 @@ export async function getPeerRequestBlockReason(
 
   return null;
 }
-
 export async function createRequest(
   supabase: SupabaseClient<Database>,
   profileId: string,
@@ -285,22 +267,81 @@ export async function markRequestCompletedByRequester(
   supabase: SupabaseClient<Database>,
   requestId: string,
 ) {
-  const { data, error } = await supabase.rpc("mark_request_completed_by_requester", {
-    p_request_id: requestId,
-  });
-  if (error) throw error;
-  return normalizeRequestStatus(data);
+  return confirmRequestReceived(supabase, requestId);
 }
 
 export async function markRequestCompletedByOwner(
   supabase: SupabaseClient<Database>,
   requestId: string,
 ) {
-  const { data, error } = await supabase.rpc("mark_request_completed_by_owner", {
+  return markRequestProvided(supabase, requestId);
+}
+
+export async function markRequestProvided(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("mark_request_provided", {
     p_request_id: requestId,
   });
   if (error) throw error;
   return normalizeRequestStatus(data);
+}
+
+export async function confirmRequestReceived(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+) {
+  const { data, error } = await supabase.rpc("confirm_request_received", {
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
+export async function disputeRequest(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+  reason: string,
+) {
+  const { data, error } = await supabase.rpc("dispute_request", {
+    p_request_id: requestId,
+    p_reason: reason,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
+export async function adminResolveRequest(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+  note?: string | null,
+) {
+  const { data, error } = await supabase.rpc("admin_resolve_request", {
+    p_request_id: requestId,
+    p_note: note ?? null,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
+export async function adminCancelRequest(
+  supabase: SupabaseClient<Database>,
+  requestId: string,
+  note?: string | null,
+) {
+  const { data, error } = await supabase.rpc("admin_cancel_request", {
+    p_request_id: requestId,
+    p_note: note ?? null,
+  });
+  if (error) throw error;
+  return normalizeRequestStatus(data);
+}
+
+export async function resolveDueRequests(supabase: SupabaseClient<Database>) {
+  const { data, error } = await supabase.rpc("resolve_due_requests");
+  if (error) throw error;
+  return (data ?? []).map(normalizeRequestStatus);
 }
 
 export async function getRequestsForTutor(supabase: SupabaseClient<Database>, tutorId: string) {
@@ -391,5 +432,16 @@ export async function markTutorRequestsSeenByOwner(
 
 export async function markResponsesSeen(supabase: SupabaseClient<Database>) {
   const { error } = await supabase.rpc("mark_request_responses_seen");
+  if (error) throw error;
+}
+
+export async function getUnseenOwnerResolutions(supabase: SupabaseClient<Database>) {
+  const { data, error } = await supabase.rpc("get_owner_unseen_resolutions");
+  if (error) throw error;
+  return (data ?? []).map(normalizeRequestStatus);
+}
+
+export async function markOwnerResolutionsSeen(supabase: SupabaseClient<Database>) {
+  const { error } = await supabase.rpc("mark_owner_resolutions_seen");
   if (error) throw error;
 }

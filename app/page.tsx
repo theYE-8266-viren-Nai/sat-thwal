@@ -1,16 +1,9 @@
 import { redirect } from "next/navigation";
-import { getProfile } from "@/lib/queries/profiles";
 import { getRoleLandingPath } from "@/lib/auth/roles";
-import { createClient } from "@/lib/supabase/server";
+import { getServerAuthContext } from "@/lib/auth/server";
 
 export default async function RootPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  const profile = await getProfile(supabase, user.id);
+  const { userId, profile } = await getServerAuthContext();
+  if (!userId) redirect("/login");
   redirect(getRoleLandingPath(profile?.role));
 }

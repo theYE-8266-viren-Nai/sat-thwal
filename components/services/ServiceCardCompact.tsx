@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { usePredictivePrefetch } from "@/lib/hooks/usePredictivePrefetch";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -22,13 +25,26 @@ interface ServiceCardCompactProps {
 export function ServiceCardCompact({ data }: ServiceCardCompactProps) {
   const category = CATEGORIES[data.category];
   const [primaryMeta, secondaryMeta] = data.meta;
+  const prefetch = usePredictivePrefetch(data);
 
   return (
-    <Link href={data.href} className="block">
+    <Link
+      href={data.href}
+      className="block min-h-11"
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+    >
       <Card className="flex flex-row items-center gap-3 overflow-hidden rounded-lg border-border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-muted sm:h-28 sm:w-28">
           {data.image ? (
-            <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
+            <Image
+              src={data.image}
+              alt={data.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 639px) 7rem, 8rem"
+            />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center"

@@ -7,9 +7,16 @@ interface ServiceSectionProps {
   seeAllHref?: string;
   items: ServiceCardData[];
   emptyLabel?: string;
+  preloadFirstImage?: boolean;
 }
 
-export function ServiceSection({ title, seeAllHref, items, emptyLabel }: ServiceSectionProps) {
+export function ServiceSection({
+  title,
+  seeAllHref,
+  items,
+  emptyLabel,
+  preloadFirstImage = false,
+}: ServiceSectionProps) {
   if (items.length === 0 && !emptyLabel) return null;
 
   return (
@@ -26,9 +33,9 @@ export function ServiceSection({ title, seeAllHref, items, emptyLabel }: Service
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 xl:grid-cols-4">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div key={`${item.category}-${item.id}`} className="w-60 shrink-0 md:w-auto">
-              <ServiceCard data={item} />
+              <ServiceCard data={item} preloadImage={preloadFirstImage && index === 0} />
             </div>
           ))}
         </div>

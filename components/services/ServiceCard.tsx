@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, Users, BookOpen, Utensils, Bus, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/services/VerifiedBadge";
+import { usePredictivePrefetch } from "@/lib/hooks/usePredictivePrefetch";
 import { CATEGORIES } from "@/lib/constants/categories";
 import type { ServiceCardData, ServiceCardMeta } from "@/types/domain";
 
@@ -19,17 +22,33 @@ const META_ICONS: Record<ServiceCardMeta["icon"], typeof MapPin> = {
 
 interface ServiceCardProps {
   data: ServiceCardData;
+  preloadImage?: boolean;
+  showCta?: boolean;
 }
 
-export function ServiceCard({ data }: ServiceCardProps) {
+export function ServiceCard({ data, preloadImage = false, showCta = true }: ServiceCardProps) {
   const category = CATEGORIES[data.category];
+  const prefetch = usePredictivePrefetch(data);
 
   return (
-    <Link href={data.href} className="block h-full">
+    <Link
+      href={data.href}
+      className="block h-full min-h-11"
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+    >
       <Card className="flex h-full flex-col overflow-hidden rounded-lg border-border py-0 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-        <div className="relative aspect-[5/3] w-full bg-muted">
+        <div className="relative aspect-[4/3] w-full bg-muted">
           {data.image ? (
-            <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
+            <Image
+              src={data.image}
+              alt={data.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 767px) 16rem, (max-width: 1023px) 33vw, 25vw"
+              preload={preloadImage}
+            />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center"
@@ -59,12 +78,14 @@ export function ServiceCard({ data }: ServiceCardProps) {
 
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
             <span className="min-w-0 truncate text-sm font-semibold text-foreground">{data.priceLabel}</span>
-            <Badge
-              className="h-7 shrink-0 rounded-full px-2.5 text-[0.7rem] font-semibold text-white"
-              style={{ backgroundColor: category.color }}
-            >
-              {data.ctaLabel}
-            </Badge>
+            {showCta && (
+              <Badge
+                className="h-7 shrink-0 rounded-full px-2.5 text-[0.7rem] font-semibold text-white"
+                style={{ backgroundColor: category.color }}
+              >
+                {data.ctaLabel}
+              </Badge>
+            )}
           </div>
         </div>
       </Card>

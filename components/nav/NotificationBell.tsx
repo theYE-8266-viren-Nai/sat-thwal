@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { Bell, CheckCircle2, Inbox, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  getUnseenOwnerResolutions,
   getUnseenResponses,
   getUnseenTutorRequestsForOwner,
+  markOwnerResolutionsSeen,
   markResponsesSeen,
   markTutorRequestsSeenByOwner,
 } from "@/lib/queries/requests";
@@ -29,20 +31,24 @@ interface NotificationBellProps {
 export function NotificationBell({ profileId }: NotificationBellProps) {
   const [unseenResponses, setUnseenResponses] = useState<RequestRow[]>([]);
   const [unseenTutorRequests, setUnseenTutorRequests] = useState<RequestRow[]>([]);
+  const [unseenOwnerResolutions, setUnseenOwnerResolutions] = useState<RequestRow[]>([]);
   const [open, setOpen] = useState(false);
-  const unseenCount = unseenResponses.length + unseenTutorRequests.length;
+  const unseenCount =
+    unseenResponses.length + unseenTutorRequests.length + unseenOwnerResolutions.length;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const supabase = createClient();
-      const [responses, tutorRequests] = await Promise.all([
+      const [responses, tutorRequests, ownerResolutions] = await Promise.all([
         getUnseenResponses(supabase, profileId),
         getUnseenTutorRequestsForOwner(supabase, profileId),
+        getUnseenOwnerResolutions(supabase),
       ]);
       if (!cancelled) {
         setUnseenResponses(responses);
         setUnseenTutorRequests(tutorRequests);
+        setUnseenOwnerResolutions(ownerResolutions);
       }
     }
     load();
@@ -58,9 +64,11 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
       await Promise.all([
         unseenResponses.length > 0 ? markResponsesSeen(supabase) : Promise.resolve(),
         unseenTutorRequests.length > 0 ? markTutorRequestsSeenByOwner(supabase, profileId) : Promise.resolve(),
+        unseenOwnerResolutions.length > 0 ? markOwnerResolutionsSeen(supabase) : Promise.resolve(),
       ]);
       setUnseenResponses([]);
       setUnseenTutorRequests([]);
+      setUnseenOwnerResolutions([]);
     }
   }
 
@@ -112,6 +120,23 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
                     )}
                     <p className="text-sm text-secondary-foreground">
                       Your {category.singularLabel.toLowerCase()} request was {accepted ? "accepted" : "declined"}.
+                    </p>
+                  </div>
+                );
+              })}
+              {unseenOwnerResolutions.map((request) => {
+                const category = CATEGORIES[request.service_type];
+                const resolved = request.status === "completed";
+                return (
+                  <div key={`owner-resolution-${request.id}`} className="flex items-start gap-3 rounded-xl bg-secondary px-4 py-3">
+                    {resolved ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-mint" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    )}
+                    <p className="text-sm text-secondary-foreground">
+                      An admin {resolved ? "resolved" : "cancelled"} a {category.singularLabel.toLowerCase()} case
+                      {request.admin_resolution_note ? `: ${request.admin_resolution_note}` : "."}
                     </p>
                   </div>
                 );

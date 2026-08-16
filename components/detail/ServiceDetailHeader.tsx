@@ -11,7 +11,14 @@ export function ServiceDetailHeader({ data }: { data: ServiceDetailData }) {
     <div>
       <div className="relative aspect-[16/8] w-full bg-muted md:aspect-[21/7]">
         {data.image ? (
-          <Image src={data.image} alt={data.title} fill className="object-cover" unoptimized />
+          <Image
+            src={data.image}
+            alt={data.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 767px) 100vw, calc(100vw - 16rem)"
+            preload
+          />
         ) : (
           <div
             className="flex h-full w-full items-center justify-center"

@@ -1,6 +1,11 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
+import { getServerAuthContext } from "@/lib/auth/server";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await getServerAuthContext();
+  if (userId) redirect("/");
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-5 py-12">
       <div className="mb-8 flex items-center gap-2">

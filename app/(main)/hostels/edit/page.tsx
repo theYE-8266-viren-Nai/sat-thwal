@@ -1,24 +1,21 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getServerAuthContext } from "@/lib/auth/server";
 import { getHostelByOwner } from "@/lib/queries/hostels";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HostelEditForm } from "@/components/hostel-edit/HostelEditForm";
 
 export default async function HostelEditPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, userId } = await getServerAuthContext();
+  if (!userId) return null;
 
-  const hostel = await getHostelByOwner(supabase, user.id);
+  const hostel = await getHostelByOwner(supabase, userId);
   if (!hostel) redirect("/hostels/list");
 
   return (
     <div className="pb-6">
       <PageHeader title="Edit Room Listing" subtitle="Update how students see your listing." />
       <HostelEditForm
-        userId={user.id}
+        userId={userId}
         defaultName={hostel.name}
         defaultImageUrl={hostel.image_url ?? ""}
         defaultTownship={hostel.township}

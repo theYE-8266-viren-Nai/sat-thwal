@@ -2,6 +2,7 @@
 
 import { ServiceListingPage } from "@/components/services/ServiceListingPage";
 import { ServiceSection } from "@/components/home/ServiceSection";
+import { ServiceSectionSkeleton } from "@/components/services/ServiceCardSkeleton";
 import {
   FOOD_PACKAGE_LABELS,
   getFoodItems,
@@ -30,6 +31,7 @@ const FILTER_FIELDS: FilterFieldConfig[] = [
 export default function FoodPage() {
   return (
     <ServiceListingPage<FoodItem>
+      category="food"
       title="Meal Support"
       searchPlaceholder="Search approved meal plans or kitchens..."
       filterFields={FILTER_FIELDS}
@@ -59,7 +61,14 @@ export default function FoodPage() {
       emptyMessage="No approved monthly meal plans match your filters yet. Try widening your search."
       hideMainList
       renderSections={({ filteredRows, profileId, loading }) => {
-        if (loading || !profileId) return null;
+        if (loading || !profileId) {
+          return (
+            <>
+              <ServiceSectionSkeleton title="All approved meal plans" />
+              <ServiceSectionSkeleton title="Vegetarian-friendly meal plans" />
+            </>
+          );
+        }
 
         const restaurantGroups = groupFoodItemsByRestaurant(filteredRows).sort(
           (a, b) => b[0].restaurant.rating - a[0].restaurant.rating
@@ -72,7 +81,7 @@ export default function FoodPage() {
 
         return (
           <>
-            <ServiceSection title="All approved meal plans" items={allPackages} />
+            <ServiceSection title="All approved meal plans" items={allPackages} preloadFirstImage />
             <ServiceSection title="Vegetarian-friendly meal plans" items={vegetarianPackages} />
             <ServiceSection title="Halal-friendly meal plans" items={halalPackages} />
           </>

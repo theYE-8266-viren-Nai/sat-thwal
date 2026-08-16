@@ -22,15 +22,13 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       setError(error.message);
       return;
     }
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = data.user;
     const { data: profile } = user
       ? await supabase.from("profiles").select("id, role").eq("id", user.id).single()
       : { data: null };

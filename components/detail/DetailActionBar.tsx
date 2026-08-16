@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Pencil, Inbox, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { ConfirmationModal } from "@/components/detail/ConfirmationModal";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { REQUEST_STATUS_LABEL } from "@/lib/constants/requestStatus";
 import type { RequestStatus } from "@/types/database.types";
-import type { RouteStop, ServiceCategory } from "@/types/domain";
+import type { RouteStop, ServiceCardData, ServiceCategory } from "@/types/domain";
 
 const PRIMARY_ACTION: Record<ServiceCategory, "book" | "request" | "requestSeat" | "subscribe"> = {
   tutor: "request",
@@ -36,6 +37,7 @@ interface DetailActionBarProps {
   routeStops?: RouteStop[];
   existingRequestStatus?: RequestStatus | null;
   requestBlockReason?: string | null;
+  optimisticCard?: ServiceCardData;
 }
 
 export function DetailActionBar({
@@ -47,11 +49,15 @@ export function DetailActionBar({
   routeStops,
   existingRequestStatus = null,
   requestBlockReason = null,
+  optimisticCard,
 }: DetailActionBarProps) {
+  const [optimisticRequestStatus, setOptimisticRequestStatus] = useState<RequestStatus | null>(null);
   const categoryConfig = CATEGORIES[category];
+  const displayedRequestStatus = optimisticRequestStatus ?? existingRequestStatus;
+
   const requestAlreadyExists =
-    (category === "tutor" || category === "hostel" || category === "transportation") &&
-    existingRequestStatus !== null;
+    (category === "tutor" || category === "hostel" || category === "food" || category === "transportation") &&
+    displayedRequestStatus !== null;
   const requestBlocked = requestBlockReason !== null;
 
   if (isOwner) {
@@ -92,7 +98,7 @@ export function DetailActionBar({
           <CheckCircle2 className="h-4 w-4" />
           <span className="truncate">
             {requestBlockReason ??
-              (existingRequestStatus ? REQUEST_STATUS_LABEL[existingRequestStatus] : "Requested")}
+              (displayedRequestStatus ? REQUEST_STATUS_LABEL[displayedRequestStatus] : "Requested")}
           </span>
         </Button>
       ) : (
@@ -103,6 +109,8 @@ export function DetailActionBar({
           profileId={profileId}
           title={title}
           routeStops={routeStops}
+          optimisticCard={optimisticCard}
+          onOptimisticStatusChange={setOptimisticRequestStatus}
           trigger={
             <Button
               size="lg"
