@@ -153,14 +153,10 @@ export default function HomePage() {
       />
       <SmartMatchSearchBox />
 
-      {ownedServicesQuery.data ? (
-        <CategoryCardGrid
-          existingTutorId={ownedServicesQuery.data.tutorId}
-          existingHostelId={ownedServicesQuery.data.hostelId}
-        />
-      ) : (
-        <CategoryGridSkeleton />
-      )}
+      <CategoryCardGrid
+        existingTutorId={ownedServicesQuery.data?.tutorId ?? null}
+        existingHostelId={ownedServicesQuery.data?.hostelId ?? null}
+      />
 
       {catalogLoading ? (
         <>

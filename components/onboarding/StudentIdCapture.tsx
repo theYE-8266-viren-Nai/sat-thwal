@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, Loader2, RotateCcw, ShieldCheck, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
 import { createClient } from "@/lib/supabase/client";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -165,7 +166,12 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" aria-busy={stage === "verifying"}>
+      <LoadingOverlay
+        show={stage === "verifying"}
+        title="Verifying your student ID"
+        description="Checking your official UIT student status."
+      />
       {stage === "choose" && (
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 text-sm text-muted-foreground">
@@ -285,7 +291,7 @@ export function StudentIdCapture({ userId, onVerified }: StudentIdCaptureProps) 
               onClick={submitForVerification}
             >
               {stage === "verifying" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {stage === "verifying" ? "Checking official UIT status..." : "Verify official UIT status"}
+              Verify official UIT status
             </Button>
           </div>
         </div>

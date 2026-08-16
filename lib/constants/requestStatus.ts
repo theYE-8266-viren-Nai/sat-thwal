@@ -10,6 +10,6 @@ export const REQUEST_STATUS_STYLES: Record<RequestStatus, string> = {
 export const REQUEST_STATUS_LABEL: Record<RequestStatus, string> = {
   pending: "Pending",
   confirmed: "Accepted",
-  completed: "Completed",
+  completed: "Resolved",
   cancelled: "Cancelled",
 };

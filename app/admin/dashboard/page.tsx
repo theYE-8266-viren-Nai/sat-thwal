@@ -7,15 +7,18 @@ import { getAdminRequestDetails } from "@/lib/admin/requestDetails";
 import { getSchoolReportingMetrics } from "@/lib/admin/schoolReportingMetrics";
 import { getAdminServiceOverview } from "@/lib/admin/serviceOverview";
 import { getPendingProviderRegistrationCount } from "@/lib/queries/providerRegistrations";
+import { resolveDueRequests } from "@/lib/queries/requests";
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 import { LogoutButton } from "@/components/profile/LogoutButton";
 import { RestaurantOwnerAccounts } from "@/components/admin/RestaurantOwnerAccounts";
+import { RequestResolutionActions } from "@/components/admin/RequestResolutionActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const { supabase, profile } = await requireAdminProfile();
+  await resolveDueRequests(supabase);
   const ownerAccountsResult = await loadRestaurantOwnerAccounts();
   const [
     schoolReportingMetrics,
@@ -33,9 +36,14 @@ export default async function AdminDashboardPage() {
     (sum, item) => sum + item.activeRequestCount,
     0,
   );
-  const completedRequestCount = requestDetails.filter(
+  const resolvedRequestCount = requestDetails.filter(
     (request) => request.status === "completed",
   ).length;
+  const reviewQueue = requestDetails.filter((request) =>
+    request.resolutionState === "disputed" ||
+    request.resolutionState === "awaiting_student" ||
+    request.resolutionState === "auto_resolve_due_soon"
+  );
 
   return (
     <main className="min-h-screen bg-background px-5 py-8 md:px-8">
@@ -176,6 +184,54 @@ export default async function AdminDashboardPage() {
 
       <section className="mx-auto mt-6 max-w-5xl">
         <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold text-foreground">Resolution Review Queue</h2>
+          <p className="text-sm text-muted-foreground">
+            Disputed and provider-confirmed cases that need school visibility.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {reviewQueue.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground lg:col-span-2">
+              No cases need review right now.
+            </div>
+          ) : (
+            reviewQueue.slice(0, 8).map((request) => (
+              <article key={request.id} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-foreground">{request.requesterName}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {request.serviceLabel} - {request.serviceName}
+                    </p>
+                  </div>
+                  <Badge className={cn("px-2.5 text-xs font-semibold", getResolutionBadgeClass(request.resolutionState))}>
+                    {getResolutionLabel(request.resolutionState)}
+                  </Badge>
+                </div>
+                {request.studentDisputeReason && (
+                  <p className="mt-3 rounded-lg bg-secondary px-3 py-2 text-sm text-muted-foreground">
+                    {request.studentDisputeReason}
+                  </p>
+                )}
+                <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                  <span>Provider confirmed: {request.ownerCompletedAt ? formatDateTime(request.ownerCompletedAt) : "-"}</span>
+                  <span>Auto-resolve: {request.autoResolveAt ? formatDateTime(request.autoResolveAt) : "-"}</span>
+                </div>
+                <div className="mt-4">
+                  <RequestResolutionActions
+                    requestId={request.id}
+                    requesterName={request.requesterName}
+                  />
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="mx-auto mt-6 max-w-5xl">
+        <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold text-foreground">Request Details</h2>
           <p className="text-sm text-muted-foreground">
             Recent student requests and school-visible service outcomes across every category.
@@ -198,7 +254,7 @@ export default async function AdminDashboardPage() {
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Requested</th>
                     <th className="px-4 py-3 font-medium">Accepted</th>
-                    <th className="px-4 py-3 font-medium">Completed</th>
+                    <th className="px-4 py-3 font-medium">Resolved</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -233,7 +289,13 @@ export default async function AdminDashboardPage() {
                             REQUEST_STATUS_STYLES[request.status],
                           )}
                         >
-                          {REQUEST_STATUS_LABEL[request.status]}
+                          {request.resolutionState === "disputed"
+                            ? "Disputed"
+                            : request.resolutionState === "awaiting_student"
+                              ? "Provider confirmed"
+                              : request.resolutionState === "auto_resolve_due_soon"
+                                ? "Auto-resolve due soon"
+                                : REQUEST_STATUS_LABEL[request.status]}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
@@ -296,12 +358,12 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-sm text-muted-foreground">Completed support cases</p>
+            <p className="text-sm text-muted-foreground">Resolved support cases</p>
             <p className="mt-1 text-3xl font-semibold text-foreground">
-              {completedRequestCount}
+              {resolvedRequestCount}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Student requests completed through approved service channels.
+              Student support cases closed through student, system, or admin resolution.
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:col-span-2 lg:col-span-4">
@@ -312,7 +374,7 @@ export default async function AdminDashboardPage() {
                   <p className="font-semibold text-foreground">Admin case audit trail</p>
                 </div>
                 <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                  Review request decisions, completion signals, provider approvals, and export
+                  Review request decisions, resolution signals, provider approvals, and export
                   school-visible case history for reporting.
                 </p>
               </div>
@@ -364,4 +426,18 @@ function MetricCell({ label, value }: { label: string; value: number }) {
       <p className="mt-1 text-xl font-semibold text-foreground">{value}</p>
     </div>
   );
+}
+
+function getResolutionLabel(state: string) {
+  if (state === "disputed") return "Disputed";
+  if (state === "auto_resolve_due_soon") return "Auto-resolve due soon";
+  if (state === "awaiting_student") return "Awaiting student response";
+  return "Open";
+}
+
+function getResolutionBadgeClass(state: string) {
+  if (state === "disputed") return "bg-destructive/10 text-destructive";
+  if (state === "auto_resolve_due_soon") return "bg-brand-orange/15 text-orange-700";
+  if (state === "awaiting_student") return "bg-brand-indigo/10 text-brand-indigo";
+  return "bg-secondary text-secondary-foreground";
 }

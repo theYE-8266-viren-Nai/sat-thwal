@@ -2,6 +2,7 @@ export type SessionMode = "online" | "in_person" | "both";
 export type GenderPolicy = "male" | "female" | "mixed";
 export type ServiceType = "tutor" | "hostel" | "food" | "transportation";
 export type RequestStatus = "pending" | "confirmed" | "completed" | "cancelled";
+export type RequestResolutionSource = "student_confirmed" | "auto_resolved" | "admin_resolved";
 export type UserRole = "student" | "driver" | "admin" | "restaurant";
 export type FoodPackageType =
   | "breakfast_lunch_dinner"
@@ -194,6 +195,12 @@ type RequestRow = {
   requester_completed_at: string | null;
   owner_completed_at: string | null;
   completed_at: string | null;
+  student_disputed_at: string | null;
+  student_dispute_reason: string | null;
+  resolved_by_admin_id: string | null;
+  admin_resolution_note: string | null;
+  auto_resolve_at: string | null;
+  resolution_source: RequestResolutionSource | null;
   created_at: string;
   updated_at: string;
 }
@@ -383,6 +390,30 @@ export type Database = {
       mark_request_completed_by_requester: {
         Args: { p_request_id: string };
         Returns: RequestRow;
+      };
+      mark_request_provided: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      confirm_request_received: {
+        Args: { p_request_id: string };
+        Returns: RequestRow;
+      };
+      dispute_request: {
+        Args: { p_request_id: string; p_reason: string };
+        Returns: RequestRow;
+      };
+      admin_resolve_request: {
+        Args: { p_request_id: string; p_note?: string | null };
+        Returns: RequestRow;
+      };
+      admin_cancel_request: {
+        Args: { p_request_id: string; p_note?: string | null };
+        Returns: RequestRow;
+      };
+      resolve_due_requests: {
+        Args: Record<string, never>;
+        Returns: RequestRow[];
       };
       mark_request_responses_seen: {
         Args: Record<string, never>;

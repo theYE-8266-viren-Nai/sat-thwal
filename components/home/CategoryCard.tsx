@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { GraduationCap, Home, Inbox, Search } from "lucide-react";
+import { GraduationCap, Home, Inbox, MoreHorizontal, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -53,33 +53,43 @@ export function CategoryCard({ category, existingTutorId, existingHostelId }: Ca
   }
 
   return (
-    <Sheet>
-      <SheetTrigger className={cardClassName}>{cardContent}</SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <SheetHeader>
-          <SheetTitle>{category.label}</SheetTitle>
-        </SheetHeader>
-        <div className="flex flex-col gap-2 px-4 pb-4">
-          {actions.map((action) => {
-            const ActionIcon = action.icon;
-            return (
-              <Button
-                key={action.href}
-                asChild
-                size="touch"
-                variant={action.className ? "default" : "outline"}
-                className={action.className ?? "justify-start rounded-xl"}
-              >
-                <Link href={action.href}>
-                  <ActionIcon className="h-4 w-4" />
-                  {action.label}
-                </Link>
-              </Button>
-            );
-          })}
-        </div>
-      </SheetContent>
-    </Sheet>
+    <div className="relative">
+      <Link href={category.href} className={cardClassName}>
+        {cardContent}
+      </Link>
+      <Sheet>
+        <SheetTrigger
+          className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-background/90 text-muted-foreground shadow-sm ring-1 ring-border transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`${category.label} actions`}
+        >
+          <MoreHorizontal className="h-5 w-5" />
+        </SheetTrigger>
+        <SheetContent side="bottom" className="rounded-t-2xl pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <SheetHeader>
+            <SheetTitle>{category.label}</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-2 px-4 pb-4">
+            {actions.map((action) => {
+              const ActionIcon = action.icon;
+              return (
+                <Button
+                  key={action.href}
+                  asChild
+                  size="touch"
+                  variant={action.className ? "default" : "outline"}
+                  className={action.className ?? "justify-start rounded-xl"}
+                >
+                  <Link href={action.href}>
+                    <ActionIcon className="h-4 w-4" />
+                    {action.label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }
 

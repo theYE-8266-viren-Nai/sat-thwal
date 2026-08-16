@@ -1,7 +1,20 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Noto_Sans_Myanmar } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const notoSansMyanmar = Noto_Sans_Myanmar({
+  subsets: ["myanmar"],
+  display: "swap",
+  variable: "--font-myanmar",
+});
 
 export const metadata: Metadata = {
   title: "ဆက်သွယ် ",
@@ -21,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`${inter.variable} ${notoSansMyanmar.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <QueryProvider>
           {children}

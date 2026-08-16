@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock, MapPin, Phone, Route } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Clock3, MapPin, Phone, Route } from "lucide-react";
 import { toast } from "sonner";
 import { RegistrationStatusActions } from "@/components/driver/RegistrationStatusActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { markRequestCompletedByOwner } from "@/lib/queries/requests";
+import { markRequestProvided } from "@/lib/queries/requests";
 import type { TransportationRegistrationWithDetails } from "@/lib/queries/transportationRegistrations";
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_STYLES } from "@/lib/constants/requestStatus";
 import { cn } from "@/lib/utils";
@@ -24,15 +24,15 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
   const acceptedRequests = requests.filter((request) => request.status === "confirmed");
   const completedRequests = requests.filter((request) => request.status === "completed");
 
-  async function complete(requestId: string) {
+  async function markProvided(requestId: string) {
     setPendingId(requestId);
     try {
       const supabase = createClient();
-      const updated = await markRequestCompletedByOwner(supabase, requestId);
-      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
+      await markRequestProvided(supabase, requestId);
+      toast.success("Support marked as provided.");
       router.refresh();
     } catch {
-      toast.error("Couldn't mark this request complete. Try again.");
+      toast.error("Couldn't mark support as provided. Try again.");
     } finally {
       setPendingId(null);
     }
@@ -41,13 +41,17 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
   function renderRequestCard(request: TransportationRegistrationWithDetails) {
     const studentName = request.student?.full_name ?? "Student";
     const routeName = request.route?.route_name ?? "Transportation route";
-    const canComplete = request.status === "confirmed" && !request.owner_completed_at;
+    const hasDispute = Boolean(request.student_disputed_at);
+    const canMarkProvided = request.status === "confirmed" && !request.owner_completed_at && !hasDispute;
     const waitingForStudent =
-      request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at;
+      request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at && !hasDispute;
     const studentCompletedFirst =
       request.status === "confirmed" && request.requester_completed_at && !request.owner_completed_at;
     const completedDateLabel = request.completed_at
       ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(request.completed_at))
+      : null;
+    const autoResolveDateLabel = request.auto_resolve_at
+      ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(request.auto_resolve_at))
       : null;
 
     return (
@@ -110,24 +114,38 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
           />
         )}
 
-        {request.status === "confirmed" && (canComplete || waitingForStudent || studentCompletedFirst) && (
+        {request.status === "confirmed" && (canMarkProvided || waitingForStudent || studentCompletedFirst || hasDispute) && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
-            {waitingForStudent ? (
-              <p className="text-sm text-muted-foreground">Waiting for student to confirm completion.</p>
+            {hasDispute ? (
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Student reported a problem</p>
+                  <p className="mt-1 text-sm text-muted-foreground">School admin review is needed.</p>
+                </div>
+              </div>
+            ) : waitingForStudent ? (
+              <div className="flex items-start gap-2">
+                <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
+                <p className="text-sm text-muted-foreground">
+                  Awaiting student response
+                  {autoResolveDateLabel ? `. Auto-resolves after ${autoResolveDateLabel}` : "."}
+                </p>
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {studentCompletedFirst && (
-                  <p className="text-sm text-muted-foreground">Student marked this complete.</p>
+                  <p className="text-sm text-muted-foreground">Student confirmed receipt. Mark support as provided.</p>
                 )}
                 <Button
                   size="touch"
                   className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
                   disabled={pendingId === request.id}
                   aria-busy={pendingId === request.id}
-                  onClick={() => complete(request.id)}
+                  onClick={() => markProvided(request.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  Complete
+                  Mark as provided
                 </Button>
               </div>
             )}
@@ -136,9 +154,9 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
 
         {request.status === "completed" && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
-            <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+            <p className="text-sm font-medium text-foreground">Resolved support case</p>
             {completedDateLabel && (
-              <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Resolved on {completedDateLabel}</p>
             )}
           </div>
         )}
@@ -184,10 +202,10 @@ export function DriverTransportationRequestsList({ requests }: DriverTransportat
         "No accepted transportation requests yet.",
       )}
       {renderSection(
-        "Completed requests",
-        "Requests both sides marked complete.",
+        "Resolved requests",
+        "Cases closed by student, system, or school admin.",
         completedRequests,
-        "No completed transportation requests yet.",
+        "No resolved transportation requests yet.",
       )}
     </div>
   );

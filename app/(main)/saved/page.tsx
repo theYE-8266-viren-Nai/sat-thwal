@@ -32,6 +32,7 @@ export default function SavedPage() {
   function getDisplayStatus(request: RequestRow): RequestStatus {
     if (
       request.status === "confirmed" &&
+      !request.student_disputed_at &&
       request.requester_completed_at &&
       request.owner_completed_at
     ) {
@@ -78,6 +79,10 @@ export default function SavedPage() {
               requesterCompletedAt={request.requester_completed_at}
               ownerCompletedAt={request.owner_completed_at}
               completedAt={request.completed_at}
+              studentDisputedAt={request.student_disputed_at}
+              studentDisputeReason={request.student_dispute_reason}
+              autoResolveAt={request.auto_resolve_at}
+              resolutionSource={request.resolution_source}
               onRequestChange={handleRequestChange}
             />
           </div>
@@ -94,7 +99,7 @@ export default function SavedPage() {
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="pending">Pending bookings</TabsTrigger>
             <TabsTrigger value="confirmed">Accepted</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="completed">Resolved</TabsTrigger>
           </TabsList>
           <TabsContent value="pending" className="pt-4">
             {renderRequestGrid("pending", "No pending bookings right now.")}
@@ -103,7 +108,7 @@ export default function SavedPage() {
             {renderRequestGrid("confirmed", "No accepted requests yet.")}
           </TabsContent>
           <TabsContent value="completed" className="pt-4">
-            {renderRequestGrid("completed", "No completed requests yet.")}
+            {renderRequestGrid("completed", "No resolved requests yet.")}
           </TabsContent>
         </Tabs>
       </div>

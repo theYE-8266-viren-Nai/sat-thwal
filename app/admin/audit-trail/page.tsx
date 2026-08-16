@@ -62,7 +62,7 @@ export default async function AdminAuditTrailPage({
               Admin case audit trail
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Review request decisions, completion signals, and provider approvals in one durable
+              Review request decisions, resolution signals, and provider approvals in one durable
               school-controlled record.
             </p>
           </div>

@@ -1,13 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
 import { toast } from "sonner";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { markRequestCompletedByRequester } from "@/lib/queries/requests";
+import { confirmRequestReceived, disputeRequest } from "@/lib/queries/requests";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { REQUEST_STATUS_STYLES, REQUEST_STATUS_LABEL } from "@/lib/constants/requestStatus";
@@ -26,6 +36,10 @@ interface RequestCardProps {
   requesterCompletedAt?: string | null;
   ownerCompletedAt?: string | null;
   completedAt?: string | null;
+  studentDisputedAt?: string | null;
+  studentDisputeReason?: string | null;
+  autoResolveAt?: string | null;
+  resolutionSource?: RequestRow["resolution_source"];
   onRequestChange?: (request: RequestRow) => void;
 }
 
@@ -38,27 +52,39 @@ export function RequestCard({
   requesterCompletedAt = null,
   ownerCompletedAt = null,
   completedAt = null,
+  studentDisputedAt = null,
+  studentDisputeReason = null,
+  autoResolveAt = null,
+  resolutionSource = null,
   onRequestChange,
 }: RequestCardProps) {
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
   const queryClient = useQueryClient();
-  const canComplete =
+  const hasDispute = Boolean(studentDisputedAt);
+  const canConfirmReceived =
     status === "confirmed" &&
-    (data.category === "tutor" || data.category === "hostel" || data.category === "transportation") &&
-    !requesterCompletedAt;
-  const waitingForProvider = status === "confirmed" && requesterCompletedAt && !ownerCompletedAt;
-  const providerCompletedFirst = status === "confirmed" && ownerCompletedAt && !requesterCompletedAt;
+    Boolean(ownerCompletedAt) &&
+    !requesterCompletedAt &&
+    !completedAt &&
+    !hasDispute;
+  const waitingForProvider =
+    status === "confirmed" && !ownerCompletedAt && !requesterCompletedAt && !hasDispute;
+  const autoResolveDateLabel = autoResolveAt
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(autoResolveAt))
+    : null;
   const completedDateLabel = completedAt
     ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(completedAt))
     : null;
-  const providerLabel =
-    data.category === "tutor"
-      ? "Tutor completed"
-      : data.category === "transportation"
-        ? "Driver completed"
-        : "Provider completed";
+  const resolutionLabel =
+    resolutionSource === "auto_resolved"
+      ? "Auto-resolved after review window"
+      : resolutionSource === "admin_resolved"
+        ? "Resolved by school admin"
+        : "Student confirmed support received";
 
-  const completeMutation = useMutation({
-    mutationFn: () => markRequestCompletedByRequester(createClient(), requestId),
+  const confirmMutation = useMutation({
+    mutationFn: () => confirmRequestReceived(createClient(), requestId),
     onMutate: async () => {
       const key = queryKeys.savedRequests(profileId);
       const requestsKey = queryKeys.profileRequests(profileId);
@@ -76,9 +102,10 @@ export function RequestCard({
           if (item.request.id !== requestId) return item;
           optimisticRequest = {
             ...item.request,
-            status: item.request.owner_completed_at ? "completed" : item.request.status,
+            status: "completed",
             requester_completed_at: now,
-            completed_at: item.request.owner_completed_at ? now : item.request.completed_at,
+            completed_at: now,
+            resolution_source: "student_confirmed",
             updated_at: now,
           };
           return { ...item, request: optimisticRequest };
@@ -102,7 +129,7 @@ export function RequestCard({
       if (context?.previousRequests) {
         queryClient.setQueryData(queryKeys.profileRequests(profileId), context.previousRequests);
       }
-      toast.error("Couldn't mark this request complete. Try again.");
+      toast.error("Couldn't confirm support received. Try again.");
     },
     onSuccess: (updated) => {
       queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
@@ -112,7 +139,72 @@ export function RequestCard({
         current.map((request) => (request.id === requestId ? updated : request)),
       );
       onRequestChange?.(updated);
-      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
+      toast.success("Support receipt confirmed.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.savedRequests(profileId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileRequests(profileId) });
+    },
+  });
+
+  const disputeMutation = useMutation({
+    mutationFn: () => disputeRequest(createClient(), requestId, disputeReason),
+    onMutate: async () => {
+      const key = queryKeys.savedRequests(profileId);
+      const requestsKey = queryKeys.profileRequests(profileId);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: key }),
+        queryClient.cancelQueries({ queryKey: requestsKey }),
+      ]);
+      const previous = queryClient.getQueryData<SavedRequestItem[]>(key);
+      const previousRequests = queryClient.getQueryData<RequestRow[]>(requestsKey);
+      const now = new Date().toISOString();
+      let optimisticRequest: RequestRow | null = null;
+
+      queryClient.setQueryData<SavedRequestItem[]>(key, (current = []) =>
+        current.map((item) => {
+          if (item.request.id !== requestId) return item;
+          optimisticRequest = {
+            ...item.request,
+            student_disputed_at: now,
+            student_dispute_reason: disputeReason.trim() || "Student reported a problem.",
+            updated_at: now,
+          };
+          return { ...item, request: optimisticRequest };
+        }),
+      );
+
+      if (optimisticRequest) onRequestChange?.(optimisticRequest);
+      if (optimisticRequest) {
+        queryClient.setQueryData<RequestRow[]>(requestsKey, (current = []) =>
+          current.map((request) => (request.id === requestId ? optimisticRequest as RequestRow : request)),
+        );
+      }
+      return { previous, previousRequests };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.savedRequests(profileId), context.previous);
+        const restored = context.previous.find((item) => item.request.id === requestId)?.request;
+        if (restored) onRequestChange?.(restored);
+      }
+      if (context?.previousRequests) {
+        queryClient.setQueryData(queryKeys.profileRequests(profileId), context.previousRequests);
+      }
+      const message = error instanceof Error ? error.message : "Couldn't report this problem. Try again.";
+      toast.error(message);
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<SavedRequestItem[]>(queryKeys.savedRequests(profileId), (current = []) =>
+        current.map((item) => (item.request.id === requestId ? { ...item, request: updated } : item)),
+      );
+      queryClient.setQueryData<RequestRow[]>(queryKeys.profileRequests(profileId), (current = []) =>
+        current.map((request) => (request.id === requestId ? updated : request)),
+      );
+      onRequestChange?.(updated);
+      setDisputeOpen(false);
+      setDisputeReason("");
+      toast.success("Problem reported for school review.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.savedRequests(profileId) });
@@ -132,40 +224,100 @@ export function RequestCard({
       </div>
       {status === "completed" && (
         <div className="rounded-xl border border-border bg-card p-3">
-          <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+          <p className="text-sm font-medium text-foreground">Resolved support case</p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="rounded-full bg-secondary px-2.5 py-1">Student completed</span>
-            <span className="rounded-full bg-secondary px-2.5 py-1">{providerLabel}</span>
+            <span className="rounded-full bg-secondary px-2.5 py-1">Support provided</span>
+            <span className="rounded-full bg-secondary px-2.5 py-1">{resolutionLabel}</span>
           </div>
           {completedDateLabel && (
-            <p className="mt-2 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
+            <p className="mt-2 text-sm text-muted-foreground">Resolved on {completedDateLabel}</p>
           )}
         </div>
       )}
       <ServiceCard data={data} />
-      {status === "confirmed" && (canComplete || waitingForProvider || providerCompletedFirst) && (
+      {status === "confirmed" && (canConfirmReceived || waitingForProvider || hasDispute) && (
         <div className="rounded-xl border border-border bg-card p-3">
-          {waitingForProvider ? (
-            <p className="text-sm text-muted-foreground">Waiting for provider to confirm completion.</p>
+          {hasDispute ? (
+            <div className="flex items-start gap-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Problem reported</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  School admin review is needed before this case is resolved.
+                </p>
+                {studentDisputeReason && (
+                  <p className="mt-2 rounded-lg bg-secondary px-3 py-2 text-sm text-muted-foreground">
+                    {studentDisputeReason}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : waitingForProvider ? (
+            <div className="flex items-start gap-2">
+              <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
+              <p className="text-sm text-muted-foreground">
+                Accepted. Waiting for provider to mark support as provided.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {providerCompletedFirst && (
-                <p className="text-sm text-muted-foreground">Provider marked this complete.</p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                Provider marked support as provided. Confirm receipt or report a problem
+                {autoResolveDateLabel ? ` before ${autoResolveDateLabel}` : ""}.
+              </p>
               <Button
                 size="touch"
                 className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-                disabled={completeMutation.isPending}
-                aria-busy={completeMutation.isPending}
-                onClick={() => completeMutation.mutate()}
+                disabled={confirmMutation.isPending || disputeMutation.isPending}
+                aria-busy={confirmMutation.isPending}
+                onClick={() => confirmMutation.mutate()}
               >
                 <CheckCircle2 className="h-4 w-4" />
-                Complete
+                Confirm received
+              </Button>
+              <Button
+                variant="outline"
+                size="touch"
+                className="rounded-xl"
+                disabled={confirmMutation.isPending || disputeMutation.isPending}
+                onClick={() => setDisputeOpen(true)}
+              >
+                <AlertCircle className="h-4 w-4" />
+                Report a problem
               </Button>
             </div>
           )}
         </div>
       )}
+      <Dialog open={disputeOpen} onOpenChange={setDisputeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report a problem</DialogTitle>
+            <DialogDescription>
+              Tell the school admin what went wrong with this support request.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={disputeReason}
+            onChange={(event) => setDisputeReason(event.target.value)}
+            placeholder="Describe the issue clearly."
+            minLength={8}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisputeOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-brand-mint text-white hover:bg-brand-mint/90"
+              disabled={disputeMutation.isPending || disputeReason.trim().length < 8}
+              aria-busy={disputeMutation.isPending}
+              onClick={() => disputeMutation.mutate()}
+            >
+              Submit report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

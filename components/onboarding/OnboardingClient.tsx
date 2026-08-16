@@ -10,6 +10,7 @@ import { LabeledSelect } from "@/components/shared/LabeledSelect";
 import { BudgetRangeSlider } from "@/components/onboarding/BudgetRangeSlider";
 import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { Logo } from "@/components/shared/Logo";
+import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 
 export function OnboardingClient({ profileId }: { profileId: string }) {
@@ -45,7 +46,12 @@ export function OnboardingClient({ profileId }: { profileId: string }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-8 px-5 py-10">
+    <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-8 px-5 py-10" aria-busy={loading}>
+      <LoadingOverlay
+        show={loading}
+        title="Saving your student profile"
+        description="Preparing your personalized service recommendations."
+      />
       <Logo />
 
       <div className="flex flex-col gap-2">

@@ -3,12 +3,12 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, CheckCircle2, X } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Clock3, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   confirmFoodPackageRequest,
   confirmHostelRequest,
-  markRequestCompletedByOwner,
+  markRequestProvided,
   updateRequestStatus,
 } from "@/lib/queries/requests";
 import { getIncomingRequestItems, type IncomingRequestItem, type IncomingRequestScope } from "@/lib/serviceFlowData";
@@ -95,8 +95,8 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     },
   });
 
-  const completeMutation = useMutation({
-    mutationFn: (requestId: string) => markRequestCompletedByOwner(createClient(), requestId),
+  const providedMutation = useMutation({
+    mutationFn: (requestId: string) => markRequestProvided(createClient(), requestId),
     onMutate: async (requestId) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<IncomingRequestItem[]>(queryKey);
@@ -113,6 +113,9 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
               status: completed ? "completed" : item.request.status,
               owner_completed_at: now,
               completed_at: completed ? now : item.request.completed_at,
+              auto_resolve_at: completed
+                ? item.request.auto_resolve_at
+                : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
               updated_at: now,
             },
           };
@@ -123,13 +126,13 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
     },
     onError: (_error, _requestId, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      toast.error("Couldn't mark this request complete. Try again.");
+      toast.error("Couldn't mark support as provided. Try again.");
     },
     onSuccess: (updated) => {
       queryClient.setQueryData<IncomingRequestItem[]>(queryKey, (current = []) =>
         current.map((item) => (item.request.id === updated.id ? { ...item, request: updated } : item)),
       );
-      toast.success(updated.status === "completed" ? "Request completed" : "Completion marked");
+      toast.success("Support marked as provided.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -137,13 +140,17 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
   });
 
   function renderRequestCard({ request, requesterName }: IncomingRequestItem) {
-    const canComplete = request.status === "confirmed" && !request.owner_completed_at;
+    const hasDispute = Boolean(request.student_disputed_at);
+    const canMarkProvided = request.status === "confirmed" && !request.owner_completed_at && !hasDispute;
     const waitingForStudent =
-      request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at;
+      request.status === "confirmed" && request.owner_completed_at && !request.requester_completed_at && !hasDispute;
     const studentCompletedFirst =
       request.status === "confirmed" && request.requester_completed_at && !request.owner_completed_at;
     const completedDateLabel = request.completed_at
       ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(request.completed_at))
+      : null;
+    const autoResolveDateLabel = request.auto_resolve_at
+      ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(request.auto_resolve_at))
       : null;
 
     return (
@@ -166,7 +173,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
             <Button
               size="touch"
               className="flex-1 rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-              disabled={respondMutation.isPending || completeMutation.isPending}
+              disabled={respondMutation.isPending || providedMutation.isPending}
               aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
               onClick={() => respondMutation.mutate({ requestId: request.id, status: "confirmed" })}
             >
@@ -177,7 +184,7 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
               variant="outline"
               size="touch"
               className="flex-1 rounded-xl"
-              disabled={respondMutation.isPending || completeMutation.isPending}
+              disabled={respondMutation.isPending || providedMutation.isPending}
               aria-busy={respondMutation.isPending && respondMutation.variables?.requestId === request.id}
               onClick={() => respondMutation.mutate({ requestId: request.id, status: "cancelled" })}
             >
@@ -187,24 +194,38 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
           </div>
         )}
 
-        {request.status === "confirmed" && (canComplete || waitingForStudent || studentCompletedFirst) && (
+        {request.status === "confirmed" && (canMarkProvided || waitingForStudent || studentCompletedFirst || hasDispute) && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
-            {waitingForStudent ? (
-              <p className="text-sm text-muted-foreground">Waiting for student to confirm completion.</p>
+            {hasDispute ? (
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Student reported a problem</p>
+                  <p className="mt-1 text-sm text-muted-foreground">School admin review is needed.</p>
+                </div>
+              </div>
+            ) : waitingForStudent ? (
+              <div className="flex items-start gap-2">
+                <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-brand-indigo" />
+                <p className="text-sm text-muted-foreground">
+                  Awaiting student response
+                  {autoResolveDateLabel ? `. Auto-resolves after ${autoResolveDateLabel}` : "."}
+                </p>
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {studentCompletedFirst && (
-                  <p className="text-sm text-muted-foreground">Student marked this complete.</p>
+                  <p className="text-sm text-muted-foreground">Student confirmed receipt. Mark support as provided.</p>
                 )}
                 <Button
                   size="touch"
                   className="rounded-xl bg-brand-mint text-white hover:bg-brand-mint/90"
-                  disabled={respondMutation.isPending || completeMutation.isPending}
-                  aria-busy={completeMutation.isPending && completeMutation.variables === request.id}
-                  onClick={() => completeMutation.mutate(request.id)}
+                  disabled={respondMutation.isPending || providedMutation.isPending}
+                  aria-busy={providedMutation.isPending && providedMutation.variables === request.id}
+                  onClick={() => providedMutation.mutate(request.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  Complete
+                  Mark as provided
                 </Button>
               </div>
             )}
@@ -213,9 +234,9 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
 
         {request.status === "completed" && (
           <div className="rounded-xl border border-border bg-secondary/40 p-3">
-            <p className="text-sm font-medium text-foreground">Completed by both sides</p>
+            <p className="text-sm font-medium text-foreground">Resolved support case</p>
             {completedDateLabel && (
-              <p className="mt-1 text-sm text-muted-foreground">Completed on {completedDateLabel}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Resolved on {completedDateLabel}</p>
             )}
           </div>
         )}
@@ -255,12 +276,12 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Completed requests</h2>
-          <p className="text-sm text-muted-foreground">Requests both sides marked complete.</p>
+          <h2 className="text-base font-semibold text-foreground">Resolved requests</h2>
+          <p className="text-sm text-muted-foreground">Cases closed by student, system, or school admin.</p>
         </div>
         {completedRequests.length > 0
           ? completedRequests.map((item) => renderRequestCard(item))
-          : renderEmpty("No completed requests yet.")}
+          : renderEmpty("No resolved requests yet.")}
       </section>
     </div>
   );

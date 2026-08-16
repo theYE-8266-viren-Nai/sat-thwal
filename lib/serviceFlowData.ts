@@ -145,6 +145,12 @@ export function createOptimisticRequest({
     requester_completed_at: null,
     owner_completed_at: null,
     completed_at: null,
+    student_disputed_at: null,
+    student_dispute_reason: null,
+    resolved_by_admin_id: null,
+    admin_resolution_note: null,
+    auto_resolve_at: null,
+    resolution_source: null,
     created_at: now,
     updated_at: now,
   };
