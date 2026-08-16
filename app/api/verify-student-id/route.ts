@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "google/gemini-3.1-flash-lite";
+const DEFAULT_VISION_MODEL = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free";
 
 type VisionCheckResult = {
   valid: boolean;
@@ -94,7 +94,7 @@ async function checkStudentId(base64Image: string, mimeType: string): Promise<Vi
         "X-OpenRouter-Title": "Sat Thwal Student ID Verification",
       },
       body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL,
+        model: process.env.OPENROUTER_VISION_MODEL ?? DEFAULT_VISION_MODEL,
         messages: [
           {
             role: "system",
