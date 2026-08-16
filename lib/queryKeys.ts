@@ -1,4 +1,4 @@
-﻿import type { ServiceCategory } from "@/types/domain";
+import type { ServiceCategory } from "@/types/domain";
 
 export const queryKeys = {
   currentUser: ["current-user"] as const,
@@ -9,6 +9,7 @@ export const queryKeys = {
   ownedServices: (profileId: string) => ["services", "owned", profileId] as const,
   savedRequests: (profileId: string) => ["requests", "saved", profileId] as const,
   incomingRequests: (scopeKey: string) => ["requests", "incoming", scopeKey] as const,
+  acceptedRequestContact: (requestId: string) => ["requests", "accepted-contact", requestId] as const,
   academicSupportRelationships: (profileId: string) => ["academic-support", "relationships", profileId] as const,
   housingRelationships: (profileId: string) => ["housing", "relationships", profileId] as const,
 };

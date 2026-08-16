@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
 import { toast } from "sonner";
+import { AcceptedRequestContactCard } from "@/components/requests/AcceptedRequestContactCard";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -235,6 +236,12 @@ export function RequestCard({
         </div>
       )}
       <ServiceCard data={data} showCta={false} />
+      <AcceptedRequestContactCard
+        requestId={requestId}
+        serviceType={data.category}
+        status={status}
+        viewer="student"
+      />
       {status === "confirmed" && (canConfirmReceived || waitingForProvider || hasDispute) && (
         <div className="rounded-xl border border-border bg-card p-3">
           {hasDispute ? (

@@ -250,6 +250,22 @@ type AdminAuditEventRow = {
   created_at: string;
 }
 
+export type AcceptedRequestContactRow = {
+  request_id: string;
+  service_type: "tutor" | "hostel";
+  request_status: Extract<RequestStatus, "confirmed" | "completed">;
+  request_note: string | null;
+  requested_at: string;
+  contact_profile_id: string;
+  contact_role: "student" | "tutor" | "hostel_owner";
+  full_name: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  township: string | null;
+  academic_year: string | null;
+  preferred_subjects: string[] | null;
+  language_preference: string | null;
+}
 export type Database = {
   public: {
     Tables: {
@@ -439,6 +455,10 @@ export type Database = {
       confirm_hostel_request: {
         Args: { p_request_id: string };
         Returns: RequestRow;
+      };
+      get_accepted_request_contact: {
+        Args: { p_request_id: string };
+        Returns: AcceptedRequestContactRow[];
       };
       submit_provider_registration_payment: {
         Args: {

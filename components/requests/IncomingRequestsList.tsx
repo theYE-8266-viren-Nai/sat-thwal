@@ -11,6 +11,7 @@ import {
   markRequestProvided,
   updateRequestStatus,
 } from "@/lib/queries/requests";
+import { AcceptedRequestContactCard } from "@/components/requests/AcceptedRequestContactCard";
 import { getIncomingRequestItems, type IncomingRequestItem, type IncomingRequestScope } from "@/lib/serviceFlowData";
 import { queryKeys } from "@/lib/queryKeys";
 import { Badge } from "@/components/ui/badge";
@@ -167,6 +168,13 @@ export function IncomingRequestsList({ requests, requesterNames, scopeKey, scope
             {REQUEST_STATUS_LABEL[request.status]}
           </Badge>
         </div>
+
+        <AcceptedRequestContactCard
+          requestId={request.id}
+          serviceType={request.service_type}
+          status={request.status}
+          viewer="provider"
+        />
 
         {request.status === "pending" && (
           <div className="flex gap-2">
