@@ -15,6 +15,8 @@ import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { ProfileSection, InfoRow } from "@/components/profile/ProfileSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { formatMMK } from "@/lib/utils";
 import type { StudentProfile } from "@/types/domain";
 
@@ -25,6 +27,7 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
 
   const [academicYear, setAcademicYear] = useState(profile.academicYear ?? "");
   const [township, setTownship] = useState(profile.township ?? "");
+  const [phone, setPhone] = useState(profile.phone ?? "");
   const [budget, setBudget] = useState<[number, number]>([
     profile.budgetMin ?? 50000,
     profile.budgetMax ?? 150000,
@@ -38,6 +41,7 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
       const updatedProfile = await updateProfile(supabase, profile.id, {
         academic_year: academicYear,
         township,
+        phone: phone.trim() || null,
         budget_min: budget[0],
         budget_max: budget[1],
         preferred_subjects: subjects,
@@ -55,6 +59,7 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
   function handleCancel() {
     setAcademicYear(profile.academicYear ?? "");
     setTownship(profile.township ?? "");
+    setPhone(profile.phone ?? "");
     setBudget([profile.budgetMin ?? 50000, profile.budgetMax ?? 150000]);
     setSubjects(profile.preferredSubjects);
     setEditing(false);
@@ -66,6 +71,7 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
         <ProfileSection title="Academic details">
           <InfoRow label="Academic year" value={profile.academicYear ?? "Not set"} />
           <InfoRow label="Township" value={profile.township ?? "Not set"} />
+          <InfoRow label="Phone" value={profile.phone ?? "Not set"} />
         </ProfileSection>
 
         <ProfileSection title="Preferences">
@@ -122,6 +128,19 @@ export function PreferenceEditor({ profile }: { profile: StudentProfile }) {
           onChange={setTownship}
           options={TOWNSHIPS}
         />
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="profile-phone">Phone number (optional)</Label>
+          <Input
+            id="profile-phone"
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            placeholder="09xxxxxxxxx"
+          />
+          <p className="text-xs text-muted-foreground">
+            Shared only with a tutor, housing owner, or driver after you both accept a request.
+          </p>
+        </div>
         <BudgetRangeSlider value={budget} onChange={setBudget} />
         <SubjectMultiSelect value={subjects} onChange={setSubjects} />
       </div>

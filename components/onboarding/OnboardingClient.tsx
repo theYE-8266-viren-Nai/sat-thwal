@@ -12,11 +12,14 @@ import { SubjectMultiSelect } from "@/components/onboarding/SubjectMultiSelect";
 import { Logo } from "@/components/shared/Logo";
 import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function OnboardingClient({ profileId }: { profileId: string }) {
   const router = useRouter();
   const [academicYear, setAcademicYear] = useState("");
   const [township, setTownship] = useState("");
+  const [phone, setPhone] = useState("");
   const [budget, setBudget] = useState<[number, number]>([50000, 150000]);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +34,7 @@ export function OnboardingClient({ profileId }: { profileId: string }) {
       await updateProfile(createClient(), profileId, {
         academic_year: academicYear,
         township,
+        phone: phone.trim() || null,
         budget_min: budget[0],
         budget_max: budget[1],
         preferred_subjects: subjects,
@@ -79,6 +83,19 @@ export function OnboardingClient({ profileId }: { profileId: string }) {
           onChange={setTownship}
           options={TOWNSHIPS}
         />
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="phone">Phone number (optional)</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            placeholder="09xxxxxxxxx"
+          />
+          <p className="text-xs text-muted-foreground">
+            Shared only with a tutor, housing owner, or driver after you both accept a request.
+          </p>
+        </div>
         <BudgetRangeSlider value={budget} onChange={setBudget} />
         <SubjectMultiSelect value={subjects} onChange={setSubjects} />
       </div>
