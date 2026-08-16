@@ -201,6 +201,7 @@ type RequestRow = {
   admin_resolution_note: string | null;
   auto_resolve_at: string | null;
   resolution_source: RequestResolutionSource | null;
+  seen_by_owner: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -416,6 +417,14 @@ export type Database = {
         Returns: RequestRow[];
       };
       mark_request_responses_seen: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      get_owner_unseen_resolutions: {
+        Args: Record<string, never>;
+        Returns: RequestRow[];
+      };
+      mark_owner_resolutions_seen: {
         Args: Record<string, never>;
         Returns: undefined;
       };

@@ -142,6 +142,7 @@ export function createOptimisticRequest({
     pickup_address: null,
     rejection_reason: null,
     seen_by_student: true,
+    seen_by_owner: true,
     requester_completed_at: null,
     owner_completed_at: null,
     completed_at: null,

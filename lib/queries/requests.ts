@@ -453,3 +453,14 @@ export async function markResponsesSeen(supabase: SupabaseClient<Database>) {
   const { error } = await supabase.rpc("mark_request_responses_seen");
   if (error) throw error;
 }
+
+export async function getUnseenOwnerResolutions(supabase: SupabaseClient<Database>) {
+  const { data, error } = await supabase.rpc("get_owner_unseen_resolutions");
+  if (error) throw error;
+  return (data ?? []).map(normalizeRequestStatus);
+}
+
+export async function markOwnerResolutionsSeen(supabase: SupabaseClient<Database>) {
+  const { error } = await supabase.rpc("mark_owner_resolutions_seen");
+  if (error) throw error;
+}
